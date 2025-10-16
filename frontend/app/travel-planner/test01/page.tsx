@@ -174,14 +174,8 @@ export default function App() {
 
   return (
     <>
-      <div className="h-screen flex flex-col">
-        {/* Header */}
-        <header className="w-full h-[82px] bg-[#1F2E3C] flex items-center px-4">
-          <h1 className="text-white text-xl">我的 Header</h1>
-        </header>
-
-        {/* Calendar */}
-        <div className="flex-1 p-4 flex justify-center">
+        {/* Calendar */}      
+        <div className="p-4 flex justify-center">
           <div className="w-1/2">
             <FullCalendar
               plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
@@ -190,7 +184,7 @@ export default function App() {
               selectable={true}
               selectMirror={true}
               unselectAuto={true}
-              height="100%"
+              // height="100%"
               stickyHeaderDates={true}
               headerToolbar={{
                 start: 'title',
@@ -222,9 +216,7 @@ export default function App() {
               }}
             />
           </div>
-        </div>
-      </div>
-      <footer className="h-[589px] bg-[#1F2E3C]"></footer>
+        </div>      
     </>
   );
 }
