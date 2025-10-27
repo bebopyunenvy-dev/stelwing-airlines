@@ -63,8 +63,8 @@
     "*.jsx": "javascriptreact"
   },
   "workbench.colorCustomizations": {
-    "activityBar.background": "#1F3129",
-    "titleBar.activeBackground": "#2C4539",
+    "activityBar.background": "#38516d",
+    "titleBar.activeBackground": "#38516d",
     "titleBar.activeForeground": "#F8FBFA"
   }
 }
