@@ -27,16 +27,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-Hant">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--background)] text-[var(--foreground)]`}
-      >
+      <body>
         <div className="flex min-h-screen flex-col">
           {/* 固定在頂端的導覽列 */}
-          <Header className="fixed left-0 top-0 z-50 w-full" />
-
-          {/* 讓出 header 的高度：依你的 header 高度微調 (例 72px 或 80px) */}
-          <main className="flex-1 pt-[80px]">{children}</main>
-
+          <Header className="sticky top-0 z-50 w-full" />
+          <main className="flex-1 flex flex-col">{children}</main>
           <Footer />
         </div>
       </body>
