@@ -11,10 +11,13 @@
   "dependencies": {
     "@fullcalendar/core": "^6.1.19",
     "@fullcalendar/daygrid": "^6.1.19",
+    "@fullcalendar/interaction": "^6.1.19",
     "@fullcalendar/list": "^6.1.19",
+    "@fullcalendar/multimonth": "^6.1.19",
     "@fullcalendar/react": "^6.1.19",
     "@fullcalendar/timegrid": "^6.1.19",
     "@types/css-modules": "^1.0.5",
+    "@types/fullcalendar": "^3.8.0",
     "lucide-react": "^0.545.0",
     "next": "15.5.3",
     "react": "19.1.0",
