@@ -191,3 +191,7 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.bg-ticket {
+  background: linear-gradient(180deg, #E1E2E2 0%, #E1E2E2 8%, white 8%, white 100%);
+}
