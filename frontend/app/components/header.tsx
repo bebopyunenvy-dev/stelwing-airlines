@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import clsx from 'clsx';
+import { ChevronDown, Globe, Plane } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 // icon 使用 lucide-react 套件，這是需要 npm i 的
-import { Menu, X } from 'lucide-react';
 
 export interface HeaderProps {
   className?: string;
@@ -25,40 +26,54 @@ export default function Header({}: HeaderProps) {
 
   return (
     <>
-      <header
-        className="
-      w-full bg-[#1F2E3C] 
-      px-[64px] py-[16px]
-      flex items-center gap-[48px]"
-      >
-        <Image
-          src="/logo-white.svg"
-          alt="Stelwing Logo"
-          width={125}
-          height={48}
-        />
-        <div className="nav-wrapper flex-1 flex justify-between">
+      <header className={clsx('bg-[var(--sw-primary)] h-[64px]')}>
+        {/* 固定高度 + 垂直置中，左右兩邊都對齊 */}
+        <div className="mx-auto w-full h-full px-[64px] flex items-center justify-between gap-[48px]">
+          {/* 左：Logo + 主導覽 */}
+          <div className="flex items-center gap-[48px]">
+            <Image
+              src="/logo-white.svg"
+              alt="Stelwing Logo"
+              width={125}
+              height={48}
+              className="block"
+              priority
+            />
 
-          {/* 五大功能橫向電腦版：預設隱藏，出現時使用 flex */}
-          <nav className="hidden md:flex gap-[36px]">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-white hover:text-[#DCBB87]"
-              >
-                {item.name}
-              </Link>
-            ))}
-          </nav>
+            {/* 五大功能：統一高度、leading 置零，視覺對齊右側 */}
+            <nav className="hidden md:flex items-center gap-[36px]">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="inline-flex items-center h-10 leading-none text-white hover:text-[var(--sw-accent)] transition"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
-          {/* 寬螢幕：工具列：(購物車)、(多語系切換)、會員中心 */}
-          <div>
+          {/* 右：語系 + 會員登入 */}
+          <div className="flex items-center gap-[24px]">
+            {/* 語系切換 */}
+            <button
+              type="button"
+              className="inline-flex items-center h-10 leading-none gap-2 text-white hover:text-[var(--sw-accent)] transition"
+              aria-label="切換語言"
+            >
+              <Globe className="w-4 h-4" />
+              <span>繁體中文</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
+
+            {/* 會員登入（用你的金色按鈕樣式） */}
             <Link
               href="/member-center"
-              className="text-white hover:text-[#DCBB87]"
+              className="sw-btn sw-btn--gold-primary inline-flex items-center h-10 leading-none gap-2"
             >
-              會員中心
+              <Plane className="w-4 h-4 text-[color:var(--sw-primary)]" />
+              會員登入
             </Link>
           </div>
         </div>
