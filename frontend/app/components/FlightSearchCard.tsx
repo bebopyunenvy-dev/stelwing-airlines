@@ -182,7 +182,7 @@ export default function FlightSearchCard({
     router.push(`/flight-booking?${params.toString()}`);
   };
 
-  /** 🔀 切換 單程 / 來回（置中分頁使用） */
+  /** 切換 單程 / 來回（置中分頁使用） */
   const setTripType = (tt: TripType) => {
     setValues((prev) => {
       if (tt === 'oneway') {
