@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 // icon 使用 lucide-react 套件，這是需要 npm i 的
-import { Menu, X } from 'lucide-react';
 
 export interface HeaderProps {
   className?: string;
@@ -38,7 +37,6 @@ export default function Header({}: HeaderProps) {
           height={48}
         />
         <div className="nav-wrapper flex-1 flex justify-between">
-
           {/* 五大功能橫向電腦版：預設隱藏，出現時使用 flex */}
           <nav className="hidden md:flex gap-[36px]">
             {navItems.map((item) => (

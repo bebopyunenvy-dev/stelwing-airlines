@@ -34,12 +34,12 @@ function getDaysInMonthExact(year: number, month: number): (Date | null)[] {
   const days: (Date | null)[] = [];
 
   // 1️⃣ 前面補空白（用 null 表示）
-  for (let i = 1; i < startingDayOfWeek; i++) {
+  for (let i = 0; i < startingDayOfWeek; i++) {
     days.push(null);
   }
 
   // 2️⃣ 填入本月日期
-  for (let i = 0; i <= daysInMonth; i++) {
+  for (let i = 1; i <= daysInMonth; i++) {
     days.push(new Date(year, month, i));
   }
   while (days.length < 42) {
