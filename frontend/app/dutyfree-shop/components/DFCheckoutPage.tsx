@@ -1,18 +1,20 @@
-'use client';
-import { CreditCard } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { DFCheckoutStepper } from '../components/DFCheckoutStepper';
 import { DFOrderSummary } from '../components/DFOrderSummary';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
-import { useDFStore } from '../context/DFStoreContext';
+import { CreditCard } from 'lucide-react';
 
-// ===============================
-// 型別定義
-// ===============================
+interface CartItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  quantity: number;
+}
+
 interface CheckoutForm {
   firstName: string;
   lastName: string;
@@ -23,101 +25,29 @@ interface CheckoutForm {
   cvc: string;
 }
 
-// ===============================
-// 主頁面
-// ===============================
-export default function CheckoutPage() {
-  const router = useRouter();
-  const { checkoutItem } = useDFStore();
+interface DFCheckoutPageProps {
+  cart: CartItem[];
+  subtotal: number;
+  discount: number;
+  checkoutForm: CheckoutForm;
+  checkoutErrors: Record<string, string>;
+  onFormChange: (field: keyof CheckoutForm, value: string) => void;
+  onClearError: (field: keyof CheckoutForm) => void;
+  onSubmit: () => void;
+  onNavigateCart: () => void;
+}
 
-  // 若沒有選擇商品
-  if (!checkoutItem) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-gray-600">
-        <p>目前沒有選擇商品。</p>
-        <Button
-          onClick={() => router.push('/dutyfree-shop')}
-          className="mt-4 bg-[var(--df-accent-gold)] text-white"
-        >
-          回到商品列表
-        </Button>
-      </div>
-    );
-  }
-
-  // ✅ 將選中商品包裝成購物車型態供 DFOrderSummary 使用
-  const cart = [
-    {
-      id: checkoutItem.id,
-      name: checkoutItem.name,
-      description: checkoutItem.description,
-      price: checkoutItem.price,
-      image: checkoutItem.images?.[0] || checkoutItem.image,
-      quantity: 1,
-    },
-  ];
-
-  const subtotal = checkoutItem.price;
-  const discount = 0;
-
-  // 表單狀態
-  const [checkoutForm, setCheckoutForm] = useState<CheckoutForm>({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    cardNumber: '',
-    expiry: '',
-    cvc: '',
-  });
-  const [checkoutErrors, setCheckoutErrors] = useState<
-    Record<keyof CheckoutForm, string>
-  >({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    cardNumber: '',
-    expiry: '',
-    cvc: '',
-  });
-
-  // 改變表單欄位
-  const onFormChange = (field: keyof CheckoutForm, value: string) => {
-    setCheckoutForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  // 清除錯誤訊息
-  const onClearError = (field: keyof CheckoutForm) => {
-    setCheckoutErrors((prev) => ({ ...prev, [field]: '' }));
-  };
-
-  // 模擬提交
-  const onSubmit = () => {
-    // ✅ 基本欄位檢查
-    const newErrors: Record<string, string> = {};
-    if (!checkoutForm.firstName) newErrors.firstName = '請輸入姓氏';
-    if (!checkoutForm.lastName) newErrors.lastName = '請輸入名字';
-    if (!checkoutForm.phone) newErrors.phone = '請輸入電話';
-    if (!checkoutForm.email) newErrors.email = '請輸入 Email';
-    if (!checkoutForm.cardNumber) newErrors.cardNumber = '請輸入信用卡號';
-    if (!checkoutForm.expiry) newErrors.expiry = '請輸入有效日期';
-    if (!checkoutForm.cvc) newErrors.cvc = '請輸入安全碼';
-
-    if (Object.keys(newErrors).length > 0) {
-      setCheckoutErrors(newErrors as any);
-      return;
-    }
-
-    alert('✅ 結帳成功！感謝您的購買！');
-    router.push('/dutyfree-shop');
-  };
-
-  // 返回購物車
-  const onNavigateCart = () => {
-    router.push('/dutyfree-shop/cart');
-  };
-
+export function DFCheckoutPage({
+  cart,
+  subtotal,
+  discount,
+  checkoutForm,
+  checkoutErrors,
+  onFormChange,
+  onClearError,
+  onSubmit,
+  onNavigateCart,
+}: DFCheckoutPageProps) {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="mx-auto px-4 lg:px-16 max-w-7xl">
@@ -132,72 +62,72 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <Label>姓</Label>
-                  <Input
-                    placeholder="First name"
+                  <Input 
+                    placeholder="First name" 
                     value={checkoutForm.firstName}
                     onChange={(e) => {
                       onFormChange('firstName', e.target.value);
-                      onClearError('firstName');
+                      if (checkoutErrors.firstName) {
+                        onClearError('firstName');
+                      }
                     }}
                     className={checkoutErrors.firstName ? 'border-red-500' : ''}
                   />
                   {checkoutErrors.firstName && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {checkoutErrors.firstName}
-                    </p>
+                    <p className="text-sm text-red-500 mt-1">{checkoutErrors.firstName}</p>
                   )}
                 </div>
                 <div>
                   <Label>名</Label>
-                  <Input
-                    placeholder="Last name"
+                  <Input 
+                    placeholder="Last name" 
                     value={checkoutForm.lastName}
                     onChange={(e) => {
                       onFormChange('lastName', e.target.value);
-                      onClearError('lastName');
+                      if (checkoutErrors.lastName) {
+                        onClearError('lastName');
+                      }
                     }}
                     className={checkoutErrors.lastName ? 'border-red-500' : ''}
                   />
                   {checkoutErrors.lastName && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {checkoutErrors.lastName}
-                    </p>
+                    <p className="text-sm text-red-500 mt-1">{checkoutErrors.lastName}</p>
                   )}
                 </div>
               </div>
               <div className="mb-4">
                 <Label>聯絡電話</Label>
-                <Input
-                  placeholder="09xxxxxxxx"
+                <Input 
+                  placeholder="09xxxxxxxx" 
                   value={checkoutForm.phone}
                   onChange={(e) => {
                     onFormChange('phone', e.target.value);
-                    onClearError('phone');
+                    if (checkoutErrors.phone) {
+                      onClearError('phone');
+                    }
                   }}
                   className={checkoutErrors.phone ? 'border-red-500' : ''}
                 />
                 {checkoutErrors.phone && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {checkoutErrors.phone}
-                  </p>
+                  <p className="text-sm text-red-500 mt-1">{checkoutErrors.phone}</p>
                 )}
               </div>
               <div>
                 <Label>EMAIL</Label>
-                <Input
-                  type="email"
-                  placeholder="Your Email"
+                <Input 
+                  type="email" 
+                  placeholder="Your Email" 
                   value={checkoutForm.email}
                   onChange={(e) => {
                     onFormChange('email', e.target.value);
-                    onClearError('email');
+                    if (checkoutErrors.email) {
+                      onClearError('email');
+                    }
                   }}
                   className={checkoutErrors.email ? 'border-red-500' : ''}
                 />
                 {checkoutErrors.email && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {checkoutErrors.email}
-                  </p>
+                  <p className="text-sm text-red-500 mt-1">{checkoutErrors.email}</p>
                 )}
               </div>
             </div>
@@ -208,10 +138,7 @@ export default function CheckoutPage() {
               <RadioGroup defaultValue="card">
                 <div className="flex items-center space-x-3 mb-4 p-4 border rounded-lg">
                   <RadioGroupItem value="card" id="card" />
-                  <Label
-                    htmlFor="card"
-                    className="flex items-center gap-2 cursor-pointer flex-1"
-                  >
+                  <Label htmlFor="card" className="flex items-center gap-2 cursor-pointer flex-1">
                     <CreditCard className="w-5 h-5" />
                     信用卡付款
                   </Label>
@@ -228,56 +155,54 @@ export default function CheckoutPage() {
               <div className="mt-6 space-y-4">
                 <div>
                   <Label>信用卡號</Label>
-                  <Input
-                    placeholder="1234 1234 1234 1234"
+                  <Input 
+                    placeholder="1234 1234 1234 1234" 
                     value={checkoutForm.cardNumber}
                     onChange={(e) => {
                       onFormChange('cardNumber', e.target.value);
-                      onClearError('cardNumber');
+                      if (checkoutErrors.cardNumber) {
+                        onClearError('cardNumber');
+                      }
                     }}
-                    className={
-                      checkoutErrors.cardNumber ? 'border-red-500' : ''
-                    }
+                    className={checkoutErrors.cardNumber ? 'border-red-500' : ''}
                   />
                   {checkoutErrors.cardNumber && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {checkoutErrors.cardNumber}
-                    </p>
+                    <p className="text-sm text-red-500 mt-1">{checkoutErrors.cardNumber}</p>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>有效日期</Label>
-                    <Input
-                      placeholder="MM/YY"
+                    <Input 
+                      placeholder="MM/YY" 
                       value={checkoutForm.expiry}
                       onChange={(e) => {
                         onFormChange('expiry', e.target.value);
-                        onClearError('expiry');
+                        if (checkoutErrors.expiry) {
+                          onClearError('expiry');
+                        }
                       }}
                       className={checkoutErrors.expiry ? 'border-red-500' : ''}
                     />
                     {checkoutErrors.expiry && (
-                      <p className="text-sm text-red-500 mt-1">
-                        {checkoutErrors.expiry}
-                      </p>
+                      <p className="text-sm text-red-500 mt-1">{checkoutErrors.expiry}</p>
                     )}
                   </div>
                   <div>
                     <Label>CVC</Label>
-                    <Input
-                      placeholder="CVC code"
+                    <Input 
+                      placeholder="CVC code" 
                       value={checkoutForm.cvc}
                       onChange={(e) => {
                         onFormChange('cvc', e.target.value);
-                        onClearError('cvc');
+                        if (checkoutErrors.cvc) {
+                          onClearError('cvc');
+                        }
                       }}
                       className={checkoutErrors.cvc ? 'border-red-500' : ''}
                     />
                     {checkoutErrors.cvc && (
-                      <p className="text-sm text-red-500 mt-1">
-                        {checkoutErrors.cvc}
-                      </p>
+                      <p className="text-sm text-red-500 mt-1">{checkoutErrors.cvc}</p>
                     )}
                   </div>
                 </div>
@@ -286,14 +211,14 @@ export default function CheckoutPage() {
 
             {/* Actions */}
             <div className="flex gap-4">
-              <Button
+              <Button 
                 variant="outline"
                 onClick={onNavigateCart}
                 className="flex-1"
               >
                 上一步
               </Button>
-              <Button
+              <Button 
                 onClick={onSubmit}
                 className="flex-1 bg-[var(--df-accent-gold)] hover:bg-[var(--df-accent-gold)]/90 text-white"
               >

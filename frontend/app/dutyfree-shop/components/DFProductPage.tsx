@@ -1,6 +1,5 @@
 'use client';
 import { ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
-import { useState } from 'react';
 import { DFQuantitySelector } from '../components/DFQuantitySelector';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { Button } from '../components/ui/button';
@@ -10,7 +9,8 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  image: string;
+  image?: string;
+  images?: string[];
   category?: string;
   subcategory?: string;
 }
@@ -42,12 +42,11 @@ export function DFProductPage({
   onPrevImage,
   onSelectImage,
 }: DFProductPageProps) {
-  const productImages = [
-    product.image,
-    product.image,
-    product.image,
-    product.image,
-  ];
+  // ✅ 多圖支援：若有 product.images，就用它；否則使用 image 或 fallback
+  const productImages =
+    product.images && product.images.length > 0
+      ? product.images
+      : [product.image || '/images/dutyfree/mainLeft.jpg'];
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -79,47 +78,57 @@ export function DFProductPage({
               />
 
               {/* Left Arrow Button */}
-              <button
-                onClick={onPrevImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-[var(--df-accent-gold)] text-white p-3 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--df-accent-gold)]/90"
-                aria-label="Previous image"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
+              {productImages.length > 1 && (
+                <button
+                  onClick={onPrevImage}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-[var(--df-accent-gold)] text-white p-3 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--df-accent-gold)]/90"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+              )}
 
               {/* Right Arrow Button */}
-              <button
-                onClick={onNextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-[var(--df-accent-gold)] text-white p-3 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--df-accent-gold)]/90"
-                aria-label="Next image"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
+              {productImages.length > 1 && (
+                <button
+                  onClick={onNextImage}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-[var(--df-accent-gold)] text-white p-3 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--df-accent-gold)]/90"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              )}
 
               {/* Image Counter */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded text-sm">
-                {currentImageIndex + 1} / {productImages.length}
-              </div>
-            </div>
-            <div className="grid grid-cols-4 gap-2 md:gap-4">
-              {productImages.map((img, i) => (
-                <div
-                  key={i}
-                  className={`aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-                    currentImageIndex === i
-                      ? 'border-[var(--df-accent-gold)]'
-                      : 'border-transparent hover:border-gray-300'
-                  }`}
-                  onClick={() => onSelectImage(i)}
-                >
-                  <ImageWithFallback
-                    src={img}
-                    alt={`${product.name} ${i + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+              {productImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded text-sm">
+                  {currentImageIndex + 1} / {productImages.length}
                 </div>
-              ))}
+              )}
             </div>
+
+            {/* Thumbnail List */}
+            {productImages.length > 1 && (
+              <div className="grid grid-cols-4 gap-2 md:gap-4">
+                {productImages.map((img, i) => (
+                  <div
+                    key={i}
+                    className={`aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                      currentImageIndex === i
+                        ? 'border-[var(--df-accent-gold)]'
+                        : 'border-transparent hover:border-gray-300'
+                    }`}
+                    onClick={() => onSelectImage(i)}
+                  >
+                    <ImageWithFallback
+                      src={img}
+                      alt={`${product.name} ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right: Info */}
@@ -190,36 +199,5 @@ export function DFProductPage({
         </div>
       </div>
     </div>
-  );
-}
-
-// 假資料開始==========
-export default function ProductPage() {
-  const [quantity, setQuantity] = useState(1);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const product = {
-    id: 'p1',
-    name: '香氛蠟燭',
-    description: '純粹香氣，魅力永恆，適合送禮或自用。',
-    price: 1580,
-    image:
-      'https://media.istockphoto.com/id/1139151316/photo/shiba-inu-dog.jpg?s=1024x1024&w=is&k=20&c=WzdvP6rDSJt9xJZE83zaA9Gms5hYMOa8GfMbC3gyfvY=',
-  };
-
-  return (
-    <DFProductPage
-      product={product}
-      quantity={quantity}
-      currentImageIndex={currentImageIndex}
-      orderNumber="DF2025-001"
-      onQuantityChange={setQuantity}
-      onAddToCart={() => alert('加入購物車')}
-      onBuyNow={() => alert('立即結帳')}
-      onNavigateHome={() => console.log('回首頁')}
-      onNextImage={() => setCurrentImageIndex((prev) => (prev + 1) % 4)}
-      onPrevImage={() => setCurrentImageIndex((prev) => (prev - 1 + 4) % 4)}
-      onSelectImage={(i) => setCurrentImageIndex(i)}
-    />
   );
 }

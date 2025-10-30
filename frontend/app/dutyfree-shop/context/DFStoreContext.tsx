@@ -1,0 +1,277 @@
+'use client';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { authStorage, cartStorage, promoStorage } from '../utils/storage';
+
+// ===============================
+// 型別定義
+// ===============================
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  images?: string[];
+  category?: string;
+  subcategory?: string;
+}
+
+interface CartItem extends Product {
+  quantity: number;
+}
+
+interface DFStoreContextType {
+  products: Product[];
+  cart: CartItem[];
+  isLoggedIn: boolean;
+  discount: number;
+  promoCode: string;
+  discountPercent: number;
+  checkoutItem: Product | null;
+  setCheckoutItem: (item: Product | null) => void;
+  addToCart: (product: Product, qty: number) => void;
+  removeFromCart: (id: string) => void;
+  updateCartQuantity: (id: string, quantity: number) => void;
+  applyPromoCode: (code: string) => void;
+}
+
+// ===============================
+// Context 建立
+// ===============================
+const DFStoreContext = createContext<DFStoreContextType | undefined>(undefined);
+
+// ===============================
+// Provider 實作
+// ===============================
+export function DFStoreProvider({ children }: { children: React.ReactNode }) {
+  // 假資料（全站共用）
+  const products: Product[] = [
+    {
+      id: '1',
+      name: 'Estee Lauder 雅詩蘭黛',
+      description: '特潤修護肌透精華水方程雙層唇釉精華100ML',
+      price: 8800,
+      image: '/images/dutyfree/sunglasses.png',
+      images: [
+        '/images/dutyfree/brown.png',
+        '/images/dutyfree/diorlipstick.png',
+        '/images/dutyfree/sunglasses.png',
+        '/images/dutyfree/sunglasses.png',
+      ],
+      category: '美妝保養',
+      subcategory: '臉部',
+    },
+    {
+      id: '2',
+      name: 'Chanel N°5 系列',
+      description: '經典香水-50mL',
+      price: 6800,
+      image: '/images/dutyfree/perfume.jpg',
+      images: [
+        '/images/dutyfree/perfume.jpg',
+        '/images/dutyfree/sunglasses.png',
+        '/images/dutyfree/sunglasses.png',
+        '/images/dutyfree/sunglasses.png',
+      ],
+      category: '香氛花園',
+      subcategory: '女仕',
+    },
+    {
+      id: '3',
+      name: 'Prada 太陽眼鏡',
+      description: '義大利設計師款式',
+      price: 15800,
+      image: '/images/dutyfree/sunglasses.png',
+      images: [
+        '/images/dutyfree/sunglasses.png',
+        '/images/dutyfree/sunglasses.png',
+        '/images/dutyfree/sunglasses.png',
+        '/images/dutyfree/sunglasses.png',
+      ],
+      category: '時尚精品',
+      subcategory: '配件',
+    },
+    {
+      id: '4',
+      name: 'Aesop 室內香氛噴霧',
+      description: '香氛・伊蘭香調',
+      price: 2100,
+      image: '/images/dutyfree/aromatherapy.png',
+      images: [
+        '/images/dutyfree/aromatherapy.png',
+        '/images/dutyfree/diorlipstick.png',
+        '/images/dutyfree/diorlipstick.png',
+        '/images/dutyfree/diorlipstick.png',
+      ],
+      category: '品味生活',
+      subcategory: '家居',
+    },
+    {
+      id: 'm1',
+      name: 'Dior 癮誘粉漾潤唇膏',
+      description: '001 粉紅色 經典保濕潤唇膏',
+      price: 1500,
+      image: '/images/dutyfree/diorlipstick.png',
+      images: [
+        '/images/dutyfree/diorlipstick.png',
+        '/images/dutyfree/chanel-2.jpg',
+        '/images/dutyfree/chanel-3.jpg',
+        '/images/dutyfree/chanel-4.jpg',
+      ],
+      category: '美妝保養',
+      subcategory: '彩妝',
+    },
+    {
+      id: 'm2',
+      name: 'YSL 情挑誘色唇膏',
+      description: '12 號珊瑚紅・絲滑亮澤',
+      price: 1650,
+      image: '/images/dutyfree/sunglasses.png',
+      images: [
+        '/images/dutyfree/brown.png',
+        '/images/dutyfree/chanel-2.jpg',
+        '/images/dutyfree/chanel-3.jpg',
+        '/images/dutyfree/chanel-4.jpg',
+      ],
+      category: '美妝保養',
+      subcategory: '彩妝',
+    },
+    {
+      id: 'm3',
+      name: 'NARS 裸光蜜粉餅',
+      description: '控油柔焦定妝粉餅・透明色',
+      price: 1750,
+      image: '/images/dutyfree/sunglasses.png',
+      images: [
+        '/images/dutyfree/brown.png',
+        '/images/dutyfree/chanel-2.jpg',
+        '/images/dutyfree/chanel-3.jpg',
+        '/images/dutyfree/chanel-4.jpg',
+      ],
+      category: '美妝保養',
+      subcategory: '彩妝',
+    },
+    {
+      id: 'm4',
+      name: 'Benefit 俏皮光暈腮紅',
+      description: '粉嫩蜜桃色・自然好氣色',
+      price: 1350,
+      image: '/images/dutyfree/sunglasses.png',
+      images: [
+        '/images/dutyfree/brown.png',
+        '/images/dutyfree/chanel-2.jpg',
+        '/images/dutyfree/chanel-3.jpg',
+        '/images/dutyfree/chanel-4.jpg',
+      ],
+      category: '美妝保養',
+      subcategory: '彩妝',
+    },
+  ];
+
+  // 狀態管理
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [checkoutItem, setCheckoutItem] = useState<Product | null>(null); // ✅ 新增狀態
+
+  // LocalStorage 載入
+  useEffect(() => {
+    const savedCart = cartStorage.load();
+    const savedLogin = authStorage.loadLoginState();
+    const savedPromo = promoStorage.load();
+    if (savedCart.length) setCart(savedCart);
+    if (savedLogin) setIsLoggedIn(savedLogin);
+    if (savedPromo.promoCode) {
+      setPromoCode(savedPromo.promoCode);
+      setDiscount(savedPromo.discount);
+      setDiscountPercent(savedPromo.discountPercent);
+    }
+  }, []);
+
+  // LocalStorage 寫入
+  useEffect(() => cartStorage.save(cart), [cart]);
+  useEffect(() => authStorage.saveLoginState(isLoggedIn), [isLoggedIn]);
+  useEffect(() => {
+    if (promoCode) promoStorage.save(promoCode, discount, discountPercent);
+  }, [promoCode, discount, discountPercent]);
+
+  // 操作方法
+  const addToCart = (product: Product, qty: number) => {
+    const existing = cart.find((item) => item.id === product.id);
+    if (existing) {
+      setCart(
+        cart.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + qty }
+            : item
+        )
+      );
+    } else {
+      setCart([...cart, { ...product, quantity: qty }]);
+    }
+    toast.success('已加入購物車！', { description: `${product.name} x${qty}` });
+  };
+
+  const removeFromCart = (id: string) => {
+    setCart(cart.filter((item) => item.id !== id));
+    toast.success('商品已移除');
+  };
+
+  const updateCartQuantity = (id: string, quantity: number) => {
+    setCart(
+      cart.map((item) => (item.id === id ? { ...item, quantity } : item))
+    );
+  };
+
+  const applyPromoCode = (code: string) => {
+    if (code.toLowerCase() === 'stelwing95') {
+      const subtotal = cart.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+      const discountAmount = Math.round(subtotal * 0.05);
+      setPromoCode(code);
+      setDiscount(discountAmount);
+      setDiscountPercent(5);
+      toast.success('折扣碼已套用', { description: '95 折優惠' });
+    } else {
+      toast.error('無效的折扣碼');
+    }
+  };
+
+  // ===============================
+  // Context 提供值
+  // ===============================
+  return (
+    <DFStoreContext.Provider
+      value={{
+        products,
+        cart,
+        isLoggedIn,
+        discount,
+        promoCode,
+        discountPercent,
+        checkoutItem,
+        setCheckoutItem,
+        addToCart,
+        removeFromCart,
+        updateCartQuantity,
+        applyPromoCode,
+      }}
+    >
+      {children}
+    </DFStoreContext.Provider>
+  );
+}
+
+// ===============================
+// 自訂 Hook
+// ===============================
+export const useDFStore = () => {
+  const ctx = useContext(DFStoreContext);
+  if (!ctx) throw new Error('useDFStore 必須在 DFStoreProvider 內使用');
+  return ctx;
+};

@@ -8,11 +8,11 @@ interface DFQuantitySelectorProps {
   max?: number;
 }
 
-export function DFQuantitySelector({ 
-  value, 
-  onChange, 
-  min = 1, 
-  max = 99 
+export function DFQuantitySelector({
+  value,
+  onChange,
+  min = 1,
+  max = 99,
 }: DFQuantitySelectorProps) {
   const handleDecrease = () => {
     if (value > min) {
@@ -44,7 +44,7 @@ export function DFQuantitySelector({
       >
         <Minus className="h-4 w-4" />
       </Button>
-      
+
       <input
         type="number"
         value={value}
@@ -53,7 +53,7 @@ export function DFQuantitySelector({
         max={max}
         className="w-16 h-10 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--df-accent-gold)]"
       />
-      
+
       <Button
         variant="outline"
         size="icon"

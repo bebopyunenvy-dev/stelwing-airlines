@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import './style.css'; // ✅ 僅此區域的 CSS
+import { DFStoreProvider } from './context/DFStoreContext';
+import './style.css';
 
 export const metadata: Metadata = {
   title: 'Stelwing Duty Free',
@@ -11,5 +12,13 @@ export default function DutyFreeLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <main className="min-h-screen flex flex-col">{children}</main>;
+  return (
+    <html lang="zh-Hant">
+      <body className="bg-gray-50 text-gray-900">
+        <DFStoreProvider>
+          <main className="min-h-screen flex flex-col">{children}</main>
+        </DFStoreProvider>
+      </body>
+    </html>
+  );
 }
