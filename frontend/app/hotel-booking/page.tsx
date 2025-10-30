@@ -74,7 +74,10 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* ========== 1. SearchBar（頂部搜尋欄） ========== */}
-      <SearchBar />
+      <SearchBar
+        selectedRange={selectedRange}
+        onDateChange={setSelectedRange}
+      />
 
       {/* ========== 2. 日曆區域 ========== */}
       <div className="py-12 flex flex-col items-center">

@@ -5,7 +5,8 @@ import { useState } from 'react';
 import Calendar, { DateRange } from './Calendar';
 
 interface SearchBarProps {
-  // 當搜尋條件改變時，通知父組件
+  selectedRange?: DateRange;
+  onDateChange?: (range: DateRange | undefined) => void;
   onSearchChange?: (params: {
     checkIn: Date | undefined;
     checkOut: Date | undefined;
@@ -14,18 +15,16 @@ interface SearchBarProps {
   }) => void;
 }
 
-export default function SearchBar({ onSearchChange }: SearchBarProps) {
-  // ========== State 狀態管理 ==========
+export default function SearchBar({
+  selectedRange,
+  onDateChange,
+  onSearchChange,
+}: SearchBarProps) {
   const [showCalendar, setShowCalendar] = useState(false);
-  const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(
-    undefined
-  );
   const [adults, setAdults] = useState(2);
   const [rooms, setRooms] = useState(1);
 
-  /**
-   * 格式化日期顯示
-   */
+  // 顯示日期文字
   const formatDate = (date: Date | undefined, placeholder: string) => {
     if (!date) return placeholder;
     const month = date.toLocaleString('en-US', { month: 'short' });
@@ -37,7 +36,9 @@ export default function SearchBar({ onSearchChange }: SearchBarProps) {
    * 處理日期選擇
    */
   const handleDateSelect = (range: DateRange | undefined) => {
-    setSelectedRange(range);
+    // 將選取結果回傳給父層（同步 Page）
+    if (onDateChange) onDateChange(range);
+
     // 當兩個日期都選好後，自動關閉日曆
     if (range?.from && range?.to) {
       setShowCalendar(false);
