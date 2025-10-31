@@ -61,10 +61,5 @@
   "files.associations": {
     "*.tsx": "typescriptreact",
     "*.jsx": "javascriptreact"
-  },
-  "workbench.colorCustomizations": {
-    "activityBar.background": "#38516d",
-    "titleBar.activeBackground": "#38516d",
-    "titleBar.activeForeground": "#F8FBFA"
   }
 }
