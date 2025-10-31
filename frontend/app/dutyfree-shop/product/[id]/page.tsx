@@ -10,10 +10,9 @@ import { useDFStore } from '../../context/DFStoreContext';
 export default function ProductPage() {
   const router = useRouter();
   const { id } = useParams(); // 從網址抓 id
-  const { products, addToCart } = useDFStore(); // 從 context 讀取假資料
+  const { products, addToCart, isLoggedIn, setCheckoutItem } = useDFStore(); // ✅ 新增 isLoggedIn / setCheckoutItem
   const product = products.find((p) => p.id === id);
 
-  // ✅ 加上這兩個 state
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -149,8 +148,13 @@ export default function ProductPage() {
 
               <Button
                 onClick={() => {
-                  addToCart(product, quantity); // ✅ 先加入購物車
-                  router.push('/dutyfree-shop/cart'); // ✅ 再跳轉購物車頁
+                  setCheckoutItem(product); // ✅ 暫存要結帳的商品
+                  addToCart(product, quantity); // ✅ 加入購物車
+                  if (!isLoggedIn) {
+                    router.push('/dutyfree-shop/login'); // ❌ 未登入 → 登入頁
+                  } else {
+                    router.push('/dutyfree-shop/cart'); // ✅ 已登入 → 購物車頁
+                  }
                 }}
                 className="w-full bg-[var(--df-accent-gold)] hover:bg-[var(--df-accent-gold)]/90 text-white h-12"
               >

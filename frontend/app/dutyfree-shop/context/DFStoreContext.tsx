@@ -25,6 +25,7 @@ interface DFStoreContextType {
   products: Product[];
   cart: CartItem[];
   isLoggedIn: boolean;
+  setIsLoggedIn: (value: boolean) => void; // ✅ 新增：登入控制
   discount: number;
   promoCode: string;
   discountPercent: number;
@@ -45,7 +46,7 @@ const DFStoreContext = createContext<DFStoreContextType | undefined>(undefined);
 // Provider 實作
 // ===============================
 export function DFStoreProvider({ children }: { children: React.ReactNode }) {
-  // 假資料（全站共用）
+  // 假資料
   const products: Product[] = [
     {
       id: '1',
@@ -175,7 +176,7 @@ export function DFStoreProvider({ children }: { children: React.ReactNode }) {
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [discountPercent, setDiscountPercent] = useState(0);
-  const [checkoutItem, setCheckoutItem] = useState<Product | null>(null); // ✅ 新增狀態
+  const [checkoutItem, setCheckoutItem] = useState<Product | null>(null);
 
   // LocalStorage 載入
   useEffect(() => {
@@ -251,6 +252,7 @@ export function DFStoreProvider({ children }: { children: React.ReactNode }) {
         products,
         cart,
         isLoggedIn,
+        setIsLoggedIn, // ✅ 新增登入 setter
         discount,
         promoCode,
         discountPercent,

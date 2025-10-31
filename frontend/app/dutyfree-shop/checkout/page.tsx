@@ -28,10 +28,34 @@ interface CheckoutForm {
 // ===============================
 export default function CheckoutPage() {
   const router = useRouter();
-  const { checkoutItem } = useDFStore();
+  const { checkoutItem, cart } = useDFStore();
 
-  // 若沒有選擇商品
-  if (!checkoutItem) {
+  // ✅ 所有 hooks 都放在頂部，不能放在條件 return 之後
+  const [checkoutForm, setCheckoutForm] = useState<CheckoutForm>({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    cardNumber: '',
+    expiry: '',
+    cvc: '',
+  });
+
+  const [checkoutErrors, setCheckoutErrors] = useState<
+    Record<keyof CheckoutForm, string>
+  >({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    cardNumber: '',
+    expiry: '',
+    cvc: '',
+  });
+
+  // ✅ 條件：若沒商品，就顯示提示畫面
+  const noItems = !checkoutItem && cart.length === 0;
+  if (noItems) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-gray-600">
         <p>目前沒有選擇商品。</p>
@@ -45,56 +69,41 @@ export default function CheckoutPage() {
     );
   }
 
-  // ✅ 將選中商品包裝成購物車型態供 DFOrderSummary 使用
-  const cart = [
-    {
-      id: checkoutItem.id,
-      name: checkoutItem.name,
-      description: checkoutItem.description,
-      price: checkoutItem.price,
-      image: checkoutItem.images?.[0] || checkoutItem.image,
-      quantity: 1,
-    },
-  ];
+  // ✅ 若 checkoutItem 有值，優先顯示單品結帳；否則顯示購物車內容
+  const cartItems = checkoutItem
+    ? [
+        {
+          id: checkoutItem.id,
+          name: checkoutItem.name,
+          description: checkoutItem.description,
+          price: checkoutItem.price,
+          image: checkoutItem.images?.[0] || checkoutItem.image,
+          quantity: 1,
+        },
+      ]
+    : cart;
 
-  const subtotal = checkoutItem.price;
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
   const discount = 0;
 
-  // 表單狀態
-  const [checkoutForm, setCheckoutForm] = useState<CheckoutForm>({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    cardNumber: '',
-    expiry: '',
-    cvc: '',
-  });
-  const [checkoutErrors, setCheckoutErrors] = useState<
-    Record<keyof CheckoutForm, string>
-  >({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    cardNumber: '',
-    expiry: '',
-    cvc: '',
-  });
-
-  // 改變表單欄位
+  // ===============================
+  // 表單邏輯
+  // ===============================
   const onFormChange = (field: keyof CheckoutForm, value: string) => {
     setCheckoutForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // 清除錯誤訊息
   const onClearError = (field: keyof CheckoutForm) => {
     setCheckoutErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
-  // 模擬提交
+  // ===============================
+  // 提交邏輯
+  // ===============================
   const onSubmit = () => {
-    // ✅ 基本欄位檢查
     const newErrors: Record<string, string> = {};
     if (!checkoutForm.firstName) newErrors.firstName = '請輸入姓氏';
     if (!checkoutForm.lastName) newErrors.lastName = '請輸入名字';
@@ -110,23 +119,25 @@ export default function CheckoutPage() {
     }
 
     alert('✅ 結帳成功！感謝您的購買！');
-    router.push('/dutyfree-shop');
+    router.push('/dutyfree-shop/complete');
   };
 
-  // 返回購物車
   const onNavigateCart = () => {
     router.push('/dutyfree-shop/cart');
   };
 
+  // ===============================
+  // 畫面輸出
+  // ===============================
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="mx-auto px-4 lg:px-16 max-w-7xl">
         <DFCheckoutStepper currentStep={2} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-          {/* Left: Form */}
+          {/* Left: 表單區 */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Contact Info */}
+            {/* 聯絡資訊 */}
             <div className="bg-white rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-6">聯絡資訊</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -165,6 +176,7 @@ export default function CheckoutPage() {
                   )}
                 </div>
               </div>
+
               <div className="mb-4">
                 <Label>聯絡電話</Label>
                 <Input
@@ -182,6 +194,7 @@ export default function CheckoutPage() {
                   </p>
                 )}
               </div>
+
               <div>
                 <Label>EMAIL</Label>
                 <Input
@@ -202,7 +215,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Payment Method */}
+            {/* 付款方式 */}
             <div className="bg-white rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-6">付款方式</h2>
               <RadioGroup defaultValue="card">
@@ -224,7 +237,7 @@ export default function CheckoutPage() {
                 </div>
               </RadioGroup>
 
-              {/* Card Details */}
+              {/* 信用卡資料 */}
               <div className="mt-6 space-y-4">
                 <div>
                   <Label>信用卡號</Label>
@@ -284,7 +297,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Actions */}
+            {/* 按鈕區 */}
             <div className="flex gap-4">
               <Button
                 variant="outline"
@@ -302,10 +315,10 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Right: Order Summary */}
+          {/* 右側：訂單摘要 */}
           <div>
             <DFOrderSummary
-              items={cart}
+              items={cartItems}
               subtotal={subtotal}
               discount={discount}
               sticky

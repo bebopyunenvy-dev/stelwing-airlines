@@ -1,5 +1,13 @@
+import {
+  ChevronDown,
+  Menu,
+  Search,
+  ShoppingCart,
+  Trash2,
+  User,
+  X,
+} from 'lucide-react';
 import { useState } from 'react';
-import { Search, ShoppingCart, User, ChevronDown, Menu, X, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface CartItem {
@@ -19,13 +27,13 @@ interface DFHeaderProps {
   onRemoveItem?: (id: string) => void;
 }
 
-export function DFHeader({ 
-  cartItemCount = 0, 
+export function DFHeader({
+  cartItemCount = 0,
   cartItems = [],
   onCartClick,
   onCheckoutClick,
   onMemberClick,
-  onRemoveItem
+  onRemoveItem,
 }: DFHeaderProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -35,24 +43,23 @@ export function DFHeader({
   const categories = [
     {
       name: '訂購概要',
-      subcategories: ['如何訂購', '付款方式', '配送說明']
+      subcategories: ['如何訂購', '付款方式', '配送說明'],
     },
     {
       name: '行程規劃',
-      subcategories: ['航班資訊', '機場指南', '旅遊建議']
+      subcategories: ['航班資訊', '機場指南', '旅遊建議'],
     },
     {
       name: '住宿預訂',
-      subcategories: ['酒店推薦', '預訂流程', '優惠方案']
     },
     {
       name: '免稅商品',
-      subcategories: ['香水彩妝', '保養品', '精品配件', '酒類煙草']
+      subcategories: ['香水彩妝', '保養品', '精品配件', '酒類煙草'],
     },
     {
       name: '旅遊分享',
-      subcategories: ['旅遊心得', '景點推薦', '美食指南']
-    }
+      subcategories: ['旅遊心得', '景點推薦', '美食指南'],
+    },
   ];
 
   return (
@@ -63,13 +70,32 @@ export function DFHeader({
           <div className="flex items-center gap-8">
             <a href="/" className="flex items-center gap-2">
               <div className="relative">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="var(--df-accent-gold)" />
-                  <path d="M2 17L12 22L22 17" stroke="var(--df-accent-gold)" strokeWidth="2" />
-                  <path d="M2 12L12 17L22 12" stroke="var(--df-accent-gold)" strokeWidth="2" />
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 2L2 7L12 12L22 7L12 2Z"
+                    fill="var(--df-accent-gold)"
+                  />
+                  <path
+                    d="M2 17L12 22L22 17"
+                    stroke="var(--df-accent-gold)"
+                    strokeWidth="2"
+                  />
+                  <path
+                    d="M2 12L12 17L22 12"
+                    stroke="var(--df-accent-gold)"
+                    strokeWidth="2"
+                  />
                 </svg>
               </div>
-              <span className="text-xl font-semibold tracking-wide">STELWING</span>
+              <span className="text-xl font-semibold tracking-wide">
+                STELWING
+              </span>
             </a>
 
             {/* Desktop Navigation */}
@@ -83,7 +109,9 @@ export function DFHeader({
                 >
                   <button className="flex items-center gap-1 py-6 transition-colors hover:text-[var(--df-accent-gold)]">
                     {category.name}
-                    <ChevronDown className={`w-4 h-4 transition-transform ${activeCategory === category.name ? 'rotate-180' : ''}`} />
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${activeCategory === category.name ? 'rotate-180' : ''}`}
+                    />
                   </button>
 
                   {/* Flyout Menu */}
@@ -108,10 +136,10 @@ export function DFHeader({
           {/* Right Actions */}
           <div className="flex items-center gap-4">
             {/* Search - Hidden on header, will show in category section */}
-            
+
             {/* Cart with Dropdown */}
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setCartDropdownOpen(!cartDropdownOpen)}
                 className="relative p-2 hover:text-[var(--df-accent-gold)] transition-colors"
               >
@@ -129,7 +157,7 @@ export function DFHeader({
                   <div className="p-4 border-b">
                     <h3 className="font-semibold">購物車 ({cartItemCount})</h3>
                   </div>
-                  
+
                   {cartItems.length === 0 ? (
                     <div className="p-8 text-center text-gray-500">
                       購物車是空的
@@ -138,15 +166,27 @@ export function DFHeader({
                     <>
                       <div className="max-h-96 overflow-y-auto">
                         {cartItems.map((item) => (
-                          <div key={item.id} className="p-4 border-b hover:bg-gray-50 flex gap-3">
+                          <div
+                            key={item.id}
+                            className="p-4 border-b hover:bg-gray-50 flex gap-3"
+                          >
                             <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
-                              <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                              />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{item.name}</p>
-                              <p className="text-sm text-gray-500">x{item.quantity}</p>
+                              <p className="text-sm font-medium truncate">
+                                {item.name}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                x{item.quantity}
+                              </p>
                               <p className="text-sm font-medium text-[var(--df-accent-gold)]">
-                                TWD {(item.price * item.quantity).toLocaleString()}
+                                TWD{' '}
+                                {(item.price * item.quantity).toLocaleString()}
                               </p>
                             </div>
                             <button
@@ -176,7 +216,7 @@ export function DFHeader({
             </div>
 
             {/* Member Center */}
-            <Button 
+            <Button
               onClick={onMemberClick}
               className="hidden lg:flex items-center gap-2 bg-[var(--df-accent-gold)] hover:bg-[var(--df-accent-gold)]/90 text-white rounded-full px-4 py-2"
             >
@@ -185,11 +225,15 @@ export function DFHeader({
             </Button>
 
             {/* Mobile Menu Toggle */}
-            <button 
+            <button
               className="lg:hidden p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -219,7 +263,7 @@ export function DFHeader({
                 ))}
               </div>
             ))}
-            <Button 
+            <Button
               onClick={onMemberClick}
               className="w-full mt-4 bg-[var(--df-accent-gold)] hover:bg-[var(--df-accent-gold)]/90 text-white"
             >

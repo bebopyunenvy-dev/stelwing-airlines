@@ -15,15 +15,17 @@ export default function CartPage() {
     applyPromoCode,
     discount,
     promoCode,
+    isLoggedIn, // ✅ 取出登入狀態
   } = useDFStore();
 
   const [code, setCode] = useState('');
 
+  // 小計與總金額
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const total = subtotal - discount;
+  const total = Math.max(0, subtotal - discount);
 
   if (cart.length === 0) {
     return (
@@ -38,6 +40,23 @@ export default function CartPage() {
       </div>
     );
   }
+
+  // 套用折扣碼
+  const handleApplyCode = () => {
+    const formatted = code.trim().toLowerCase();
+    if (!formatted) return;
+    applyPromoCode(formatted);
+    setCode('');
+  };
+
+  // ✅ 點擊前往結帳
+  const handleCheckout = () => {
+    if (!isLoggedIn) {
+      router.push('/dutyfree-shop/login');
+    } else {
+      router.push('/dutyfree-shop/checkout');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -124,16 +143,21 @@ export default function CartPage() {
                   className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--df-accent-gold)]"
                 />
                 <Button
-                  onClick={() => applyPromoCode(code)}
+                  onClick={handleApplyCode}
                   className="bg-[var(--df-accent-gold)] text-white hover:bg-[var(--df-accent-gold)]/90"
                 >
                   套用
                 </Button>
               </div>
+              {promoCode && discount > 0 && (
+                <p className="text-xs text-green-600 mt-1">
+                  已套用優惠碼 <strong>{promoCode}</strong>（95 折）
+                </p>
+              )}
             </div>
 
             <Button
-              onClick={() => router.push('/dutyfree-shop/checkout')}
+              onClick={handleCheckout}
               className="w-full mt-6 bg-[var(--df-accent-gold)] text-white hover:bg-[var(--df-accent-gold)]/90"
             >
               前往結帳
