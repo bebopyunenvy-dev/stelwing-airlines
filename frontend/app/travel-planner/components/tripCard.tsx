@@ -7,8 +7,10 @@ export interface Trip {
   destination: string | null; // 選填或 null：行程目的地
   startDate: string; // 必填：開始日期
   startTimezone: string; // 必填：開始日期時區
+  displayStartDate: string; //程式給：轉時區的開始日期
   endDate: string; // 必填：結束日期
   endTimezone: string; // 必填：結束日期時區
+  displayEndDate: string; //程式給：轉時區的結束日期
   note: string | null; // 選填或 null：備註
   coverImage: string | null; // 選填或 null：封面圖片
   status: string; //程式帶：旅程進行狀態
@@ -46,7 +48,10 @@ export default function TripCard({ trip }: TripCardProps) {
         {/* 第 2 塊：行程文字內容 */}
         <div className="flex-1 px-4 flex flex-col">
           <h6 className="sw-h6">
-            {trip.startDate} - {trip.endDate}
+            {trip.displayStartDate}{' '}
+            <span className="text-[#8b929a] text-xs">{trip.startTimezone}</span>{' '}
+            - {trip.displayEndDate}{' '}
+            <span className="text-[#8b929a] text-xs">{trip.endTimezone}</span>
           </h6>
           <div className="flex-1">
             <h6 className="sw-h6">{trip.title}</h6>
@@ -94,7 +99,7 @@ export default function TripCard({ trip }: TripCardProps) {
             <h6 className="sw-h6">查看詳細行程</h6>
           </button>
           <button className="sw-btn border border-solid border-(--sw-grey)">
-            <h6 className="sw-h6">刪除整個行程</h6>
+            <h6 className="sw-h6">刪除整趟旅程</h6>
           </button>
         </div>
       </div>

@@ -13,7 +13,7 @@ export default function ListPage() {
       userId: '1',
       title: '12 月東京旅：一般',
       destination: '日本：東京、輕井澤、富士山、鐮倉',
-      startDate: '2025-12-12T00:00:00.000Z',
+      startDate: '2025-12-11T16:00:00.000Z',
       startTimezone: 'Asia/Taipei',
       endDate: '2025-12-27T00:00:00.000Z',
       endTimezone: 'Asia/Taipei',
@@ -95,6 +95,15 @@ export default function ListPage() {
   // DateTime.utc：建立一個 utc 的時間物件
 
   // #endregion
+  // function：搭配時區轉換 UTC 時間呈現時間
+  function convertToTimezone(isoString: string, timezone: string): string {
+    const utcDateTime = DateTime.fromISO(isoString, { zone: 'utc' });
+    const localTime = utcDateTime.setZone(timezone);
+    const formatLocalTime = localTime.toFormat('yyyy-MM-dd');
+
+    return formatLocalTime;
+  }
+
   // function：取得旅程狀態：待啟程、進行中、已結束
   function calculateStatus(trip: any): string {
     const nowUTC = DateTime.utc();
@@ -117,6 +126,8 @@ export default function ListPage() {
   const tripsForUI = mockTrips.map((trip) => ({
     ...trip,
     status: calculateStatus(trip), //前端用：判斷旅程是否進行中的欄位
+    displayStartDate: convertToTimezone(trip.startDate, trip.startTimezone),
+    displayEndDate: convertToTimezone(trip.endDate, trip.endTimezone),
   }));
 
   // 功能：Tab 分頁切換
@@ -132,7 +143,7 @@ export default function ListPage() {
   return (
     <>
       <div className="flex-1 flex flex-col items-center px-16 py-8 gap-6 w-full">
-        <h5 className="sw-h5">行程規劃</h5>
+        <h5 className="sw-h5">旅程規劃</h5>
         <section
           className="flex-1 border border-solid border-black rounded-2xl
           w-full flex flex-col
@@ -144,7 +155,7 @@ export default function ListPage() {
             <div className="flex-1 flex flex-col">
               <div className="mb-6">
                 <button className="sw-btn sw-btn--gold-square">
-                  <h6>建立新行程</h6>
+                  <h6>建立新旅程</h6>
                 </button>
               </div>
               {/* 行程列表 */}
@@ -168,10 +179,14 @@ export default function ListPage() {
                 {/* 很多卡片 */}
                 <div className="flex-1 p-4 flex flex-col gap-6 border border-solid border-(--sw-grey)">
                   {/* 單一卡片 */}
-                  {filteredTrips.map((t) => (
-                    // 關鍵：一定要給 key（即使不傳資料也要 key）
-                    <TripCard key={t.id} trip={t} />
-                  ))}
+                  {filteredTrips.length > 0 ? (
+                    filteredTrips.map((t) => (
+                      // 關鍵：一定要給 key（即使不傳資料也要 key）
+                      <TripCard key={t.id} trip={t} />
+                    ))
+                  ) : (
+                    <div className="text-(--sw-white)">尚無旅程規劃</div>
+                  )}
                 </div>
               </div>
             </div>
