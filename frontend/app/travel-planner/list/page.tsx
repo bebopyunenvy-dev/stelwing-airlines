@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 // @ts-expect-error 我不寫就跳錯我只好加啊氣死
 import { DateTime } from 'luxon';
 import TripCard from '../components/tripCard';
@@ -42,7 +43,7 @@ export default function ListPage() {
       userId: '1',
       title: '加拿大躲熊熊',
       destination: '溫哥華',
-      startDate: '2025-10-31T00:00:00.000Z',
+      startDate: '2025-11-01T07:00:00.000Z',
       startTimezone: 'America/Vancouver',
       endDate: '2025-11-05T00:00:00.000Z',
       endTimezone: 'America/Vancouver',
@@ -85,6 +86,7 @@ export default function ListPage() {
   ];
 
   // #region 關於 Luxon
+
   // Luxon 的 DateTime 物件是「時間點 + 時區」的組合
   // DateTime.fromISO(時間的 ISOstring, {zone: '時區'})：將 ISOSstring 轉成帶有時區資料的 DateTime 物件
   // DateTime.setZone：把這個時間物件移去別的時區顯示，同一時間、不同時區顯示
@@ -93,14 +95,11 @@ export default function ListPage() {
   // DateTime.utc：建立一個 utc 的時間物件
 
   // #endregion
+  // function：取得旅程狀態：待啟程、進行中、已結束
   function calculateStatus(trip: any): string {
     const nowUTC = DateTime.utc();
-    const startDateUTC = DateTime.fromISO(trip.startDate, {
-      zone: trip.startTimezone,
-    }).toUTC();
-    const endDateUTC = DateTime.fromISO(trip.endDate, {
-      zone: trip.endTimezone,
-    });
+    const startDateUTC = DateTime.fromISO(trip.startDate);
+    const endDateUTC = DateTime.fromISO(trip.endDate);
 
     let status;
     if (nowUTC < startDateUTC) {
@@ -114,14 +113,25 @@ export default function ListPage() {
     return status;
   }
 
+  // function：根據後端 API 傳來的 Data，調整後的前端用 Data
   const tripsForUI = mockTrips.map((trip) => ({
     ...trip,
     status: calculateStatus(trip), //前端用：判斷旅程是否進行中的欄位
   }));
 
+  // 功能：Tab 分頁切換
+  const tabs = ['全部', '待啟程', '進行中', '已結束'];
+  const [activeTab, setActiveTab] = useState('全部');
+  const filteredTrips =
+    // 當 activeTab 為全部時，呈現所有 trips 資料，否則就使用 filter 語法，將 trips 資料留下 status 和 activeTab 相同的
+    activeTab === '全部'
+      ? tripsForUI
+      : tripsForUI.filter((t) => t.status === activeTab);
+
+  // return 畫面
   return (
     <>
-      <div className="flex flex-col items-center px-16 py-8 gap-6 w-full">
+      <div className="flex-1 flex flex-col items-center px-16 py-8 gap-6 w-full">
         <h5 className="sw-h5">行程規劃</h5>
         <section
           className="flex-1 border border-solid border-black rounded-2xl
@@ -129,21 +139,40 @@ export default function ListPage() {
           overflow-hidden"
         >
           <div className="p-4">search！</div>
-          {/* 行程列表區*/}
-          <div className="flex-1 p-10 bg-(--sw-primary)">
-            <nav></nav>
-            <div className="">
-              <div>
+          {/* 主內容 */}
+          <div className="flex-1 flex p-10 bg-(--sw-primary)">
+            <div className="flex-1 flex flex-col">
+              <div className="mb-6">
                 <button className="sw-btn sw-btn--gold-square">
                   <h6>建立新行程</h6>
                 </button>
               </div>
-              <div className="py-6 flex flex-col gap-6">
-                {/* 單一卡片 */}
-                {tripsForUI.map((t) => (
-                  // 關鍵：一定要給 key（即使不傳資料也要 key）
-                  <TripCard key={t.id} trip={t} />
-                ))}
+              {/* 行程列表 */}
+              <div className="flex-1 flex flex-col">
+                {/* 分頁切換 */}
+                <div className="text-(--sw-white) flex gap-2 items-center px-4 relative top-px">
+                  <div className="sw-p1 mr-1">篩選旅程狀態</div>
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab}
+                      className={`sw-p1 ${
+                        // 當 activeTab 是現在要生成的這個 tab，就顯示 active 的 class，否則是一般的 class
+                        activeTab === tab ? 'tab-border-active' : 'tab-border'
+                      }`}
+                      onClick={() => setActiveTab(tab)}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+                {/* 很多卡片 */}
+                <div className="flex-1 p-4 flex flex-col gap-6 border border-solid border-(--sw-grey)">
+                  {/* 單一卡片 */}
+                  {filteredTrips.map((t) => (
+                    // 關鍵：一定要給 key（即使不傳資料也要 key）
+                    <TripCard key={t.id} trip={t} />
+                  ))}
+                </div>
               </div>
             </div>
           </div>

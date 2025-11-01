@@ -3,11 +3,11 @@
 
 /* ==== Tokens (精簡) ==== */
 :root {
-  --sw-primary: #1F2E3C;   /* 深藍主色 */
-  --sw-accent:  #D9B37B;   /* 金色 */
-  --sw-grey:    #C5C9CD;
-  --sw-white:   #FFFFFF;
-  --sw-black:   #000000;
+  --sw-primary: #1f2e3c; /* 深藍主色 */
+  --sw-accent: #d9b37b; /* 金色 */
+  --sw-grey: #c5c9cd;
+  --sw-white: #ffffff;
+  --sw-black: #000000;
 
   --background: var(--sw-white);
   --foreground: var(--sw-primary);
@@ -20,13 +20,25 @@
 /* ==== Reset ==== */
 *,
 ::before,
-::after { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Noto Sans TC", "思源黑體", system-ui, -apple-system,
-    "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font-family:
+    "Noto Sans TC",
+    "思源黑體",
+    system-ui,
+    -apple-system,
+    "PingFang TC",
+    "Microsoft JhengHei",
+    sans-serif;
   line-height: 1.6;
 }
 
@@ -36,9 +48,13 @@ body {
 
 /* 標題階層（Heading Styles） */
 .sw-h1 {
-  font-size: clamp(40px, 6vw, 72px); /* 自適應 H1 標題字級（最大72px，最小40px） */
-  font-weight: 800;                  /* 粗體強調主標題 */
-  line-height: 1.15;                 /* 緊密行高讓標題更集中 */
+  font-size: clamp(
+    40px,
+    6vw,
+    72px
+  ); /* 自適應 H1 標題字級（最大72px，最小40px） */
+  font-weight: 800; /* 粗體強調主標題 */
+  line-height: 1.15; /* 緊密行高讓標題更集中 */
 }
 
 .sw-h2 {
@@ -48,43 +64,42 @@ body {
 }
 
 .sw-h3 {
-  font-size: 48px;   /* 第三級標題，用於章節或區塊標題 */
+  font-size: 48px; /* 第三級標題，用於章節或區塊標題 */
   font-weight: 700;
 }
 
 .sw-h4 {
-  font-size: 36px;   /* 常用於區段小標題或段落開頭 */
+  font-size: 36px; /* 常用於區段小標題或段落開頭 */
   font-weight: 700;
 }
 
 .sw-h5 {
-  font-size: 24px;   /* 次要標題，例如卡片標題或小區塊 */
+  font-size: 24px; /* 次要標題，例如卡片標題或小區塊 */
   font-weight: 700;
 }
 
 .sw-h6 {
-  font-size: 16px;   /* 小型標題，用於內文中的標示文字 */
+  font-size: 16px; /* 小型標題，用於內文中的標示文字 */
   font-weight: 600;
 }
 
 /* 內文字級（Paragraph Styles） */
 .sw-p1 {
-  font-size: 14px;       /* 一般段落文字大小 */
+  font-size: 14px; /* 一般段落文字大小 */
   line-height: 1.6;
 }
 
 .sw-p2 {
-  font-size: 12px;       /* 較次要的說明文字 */
-  color: #4B5563;        /* 偏灰色，降低比重 */
+  font-size: 12px; /* 較次要的說明文字 */
+  color: #4b5563; /* 偏灰色，降低比重 */
   line-height: 1.6;
 }
 
 /* 補充文字（Caption / 註解） */
 .sw-caption {
-  font-size: 12px;       /* 小字型標註 */
-  color: #6B7280;        /* 更淺灰色，常用於副標或提示文字 */
+  font-size: 12px; /* 小字型標註 */
+  color: #6b7280; /* 更淺灰色，常用於副標或提示文字 */
 }
-
 
 /* ==== Buttons Base ==== */
 .sw-btn {
@@ -98,7 +113,10 @@ body {
   font-size: 14px;
   border: 1px solid var(--sw-grey);
   border-radius: 8px;
-  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    box-shadow 0.2s ease;
 }
 
 /* 通用 Hover 動畫 */
@@ -108,7 +126,7 @@ body {
 
 .sw-btn:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1) inset;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) inset;
 }
 
 .sw-btn:focus-visible {
@@ -169,7 +187,7 @@ body {
 /* Hover：略暗、加輕陰影 */
 .sw-btn--grey-primary:hover:not(:disabled) {
   filter: brightness(0.93);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* 方形按鈕 */
@@ -181,7 +199,7 @@ body {
 }
 .sw-btn--grey-square:hover:not(:disabled) {
   filter: brightness(0.93);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* 停用 */
@@ -192,6 +210,38 @@ body {
   cursor: not-allowed;
 }
 
+/* --------- */
+/* 黃蕾在用的 */
+/* --------- */
+
 .bg-ticket {
-  background: linear-gradient(180deg, #E1E2E2 0%, #E1E2E2 8%, white 8%, white 100%);
+  background: linear-gradient(
+    180deg,
+    #e1e2e2 0%,
+    #e1e2e2 8%,
+    white 8%,
+    white 100%
+  );
+}
+
+.tab-border {
+  border: 1px solid var(--sw-grey);
+  padding: 4px 36px;
+  border-radius: 8px 8px 0 0;
+  background-color: var(--sw-grey);
+  color: var(--sw-black);
+  cursor: pointer;
+}
+
+.tab-border:hover {
+  filter: brightness(1.5);
+}
+
+.tab-border-active {
+  border: 1px solid var(--sw-grey);
+  border-bottom: 1px solid var(--sw-primary);
+  padding: 4px 36px;
+  border-radius: 8px 8px 0 0;
+  background-color: var(--sw-primary);
+  color: var(--sw-white);
 }
