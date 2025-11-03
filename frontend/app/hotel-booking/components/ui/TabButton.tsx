@@ -11,7 +11,7 @@ const TabButton = ({ text, selected = false, onClick }: TabButtonProps) => {
     <button
       onClick={onClick}
       className={`
-        px-7 py-2 rounded-full font-bold transition-all duration-200
+        px-7 py-1 rounded-full font-bold transition-all duration-200
         ${
           selected
             ? 'bg-[#DCBB87] text-white shadow-md'

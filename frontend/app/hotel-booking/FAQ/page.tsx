@@ -162,7 +162,6 @@ export default function FAQPage() {
       <section className="w-full py-8 sm:py-12">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
           <div className="flex flex-wrap gap-2 sm:gap-4 justify-center border-[3px] border-[#8e7c60] rounded-full p-4">
-            {/* 修正：p-3 → p-5 */}
             {tabButtons.map((tab) => (
               <TabButton
                 key={tab}
