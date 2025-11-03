@@ -1,153 +1,250 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+// @ts-expect-error 我不寫就跳錯我只好加啊氣死
+import { DateTime } from 'luxon';
+import CreatePlanModal from '../components/createPlanModal';
 import TripCard from '../components/tripCard';
 // export interface ListPageProps {}
 
 export default function ListPage() {
   const mockTrips = [
     {
-      id: 1,
-      userId: 123,
-      title: '巴黎浪漫七日遊',
-      destination: 'France - Paris',
-      startDate: '2025-10-20T09:00:00Z',
-      endDate: '2025-10-26T18:00:00Z',
-      note: '巴黎鐵塔、羅浮宮、凡爾賽宮都要走一遍，\n記得帶雨具，天氣可能多變。',
+      id: '1',
+      userId: '1',
+      title: '12 月東京旅：一般',
+      destination: '日本：東京、輕井澤、富士山、鐮倉',
+      startDate: '2025-12-11T16:00:00.000Z',
+      startTimezone: 'Asia/Taipei',
+      endDate: '2025-12-27T00:00:00.000Z',
+      endTimezone: 'Asia/Taipei',
+      note: '',
       coverImage: '',
-      collaborators: [],
       isDeleted: 0,
-      createdAt: '2025-10-01T12:00:00Z',
-      updatedAt: '2025-10-01T12:00:00Z',
+      createdAt: '2025-10-30T07:35:38.608Z',
+      updatedAt: '2025-10-30T07:35:38.608Z',
     },
     {
-      id: 2,
-      userId: 123,
-      title: '紐約城市探索',
-      destination: 'USA - New York',
-      startDate: '2025-11-05T09:00:00Z',
-      endDate: '2025-11-12T18:00:00Z',
-      note: '自由女神像、第五大道購物、百老匯音樂劇。\n地鐵複雜，建議事先查好路線。',
+      id: '2',
+      userId: '1',
+      title: '12 月東京旅：雨備',
+      destination: '日本：東京、輕井澤、富士山、鐮倉',
+      startDate: '2025-12-12T00:00:00.000Z',
+      startTimezone: 'Asia/Taipei',
+      endDate: '2025-12-27T00:00:00.000Z',
+      endTimezone: 'Asia/Taipei',
+      note: '雨天就去迪士尼',
       coverImage: '',
-      collaborators: [],
       isDeleted: 0,
-      createdAt: '2025-10-01T12:00:00Z',
-      updatedAt: '2025-10-01T12:00:00Z',
+      createdAt: '2025-10-30T07:35:38.608Z',
+      updatedAt: '2025-10-30T07:35:38.608Z',
     },
     {
-      id: 3,
-      userId: 123,
-      title: '東京深度旅遊',
-      destination: 'Japan - Tokyo',
-      startDate: '2025-10-25T09:00:00Z',
-      endDate: '2025-10-31T18:00:00Z',
-      note: '淺草寺、秋葉原、銀座購物、涉谷拍照打卡，\n每晚嘗試不同拉麵店。',
+      id: '3',
+      userId: '1',
+      title: '加拿大躲熊熊',
+      destination: '溫哥華',
+      startDate: '2025-11-01T07:00:00.000Z',
+      startTimezone: 'America/Vancouver',
+      endDate: '2025-11-05T00:00:00.000Z',
+      endTimezone: 'America/Vancouver',
+      note: '此時此刻應該尚未開始',
       coverImage: '',
-      collaborators: [],
       isDeleted: 0,
-      createdAt: '2025-10-01T12:00:00Z',
-      updatedAt: '2025-10-01T12:00:00Z',
+      createdAt: '2025-10-30T07:35:38.608Z',
+      updatedAt: '2025-10-30T07:35:38.608Z',
     },
     {
-      id: 4,
-      userId: 123,
-      title: '倫敦週末快閃',
-      destination: 'UK - London',
-      startDate: '2025-10-18T09:00:00Z',
-      endDate: '2025-10-20T18:00:00Z',
-      note: '倫敦眼、大笨鐘、泰晤士河遊船，\n行程緊湊，需提早訂票。',
+      id: '4',
+      userId: '1',
+      title: '10 月泰國清邁',
+      destination: '清邁',
+      startDate: '2025-10-03T00:00:00.000Z',
+      startTimezone: 'Asia/Taipei',
+      endDate: '2025-10-05T00:00:00.000Z',
+      endTimezone: 'Asia/Taipei',
+      note: '大阿啊啊啊啊象',
       coverImage: '',
-      collaborators: [],
       isDeleted: 0,
-      createdAt: '2025-10-01T12:00:00Z',
-      updatedAt: '2025-10-01T12:00:00Z',
+      createdAt: '2025-10-30T07:35:38.608Z',
+      updatedAt: '2025-10-30T07:35:38.608Z',
     },
     {
-      id: 5,
-      userId: 123,
-      title: '巴塞隆納美食藝術之旅',
-      destination: 'Spain - Barcelona',
-      startDate: '2025-10-10T09:00:00Z',
-      endDate: '2025-10-15T18:00:00Z',
-      note: '高第建築巡禮，拉巴爾街小吃品嚐。\n注意小偷與貴重物品安全。',
+      id: '5',
+      userId: '1',
+      title: '只有我想去尼泊爾',
+      destination: 'Kathmandu、Pokhara、Chitwan',
+      startDate: '2025-09-11T00:00:00.000Z',
+      startTimezone: 'Asia/Taipei',
+      endDate: '2025-09-21T00:00:00.000Z',
+      endTimezone: 'Asia/Kathmandu',
+      note: '尼泊爾的湖',
       coverImage: '',
-      collaborators: [],
       isDeleted: 0,
-      createdAt: '2025-10-01T12:00:00Z',
-      updatedAt: '2025-10-01T12:00:00Z',
-    },
-    {
-      id: 6,
-      userId: 123,
-      title: '羅馬古蹟漫遊',
-      destination: 'Italy - Rome',
-      startDate: '2025-09-28T09:00:00Z',
-      endDate: '2025-10-02T18:00:00Z',
-      note: '鬥獸場、萬神殿、梵蒂岡博物館。\n每個景點建議提前買票。',
-      coverImage: '',
-      collaborators: [],
-      isDeleted: 0,
-      createdAt: '2025-10-01T12:00:00Z',
-      updatedAt: '2025-10-01T12:00:00Z',
-    },
-    {
-      id: 7,
-      userId: 123,
-      title: '阿姆斯特丹運河遊',
-      destination: 'Netherlands - Amsterdam',
-      startDate: '2025-10-01T09:00:00Z',
-      endDate: '2025-10-05T18:00:00Z',
-      note: '運河船遊、梵谷博物館、咖啡館巡禮。\n行程悠閒，可慢慢拍照打卡。',
-      coverImage: '',
-      collaborators: [],
-      isDeleted: 0,
-      createdAt: '2025-10-01T12:00:00Z',
-      updatedAt: '2025-10-01T12:00:00Z',
-    },
-    {
-      id: 8,
-      userId: 123,
-      title: '悉尼海港假期',
-      destination: 'Australia - Sydney',
-      startDate: '2025-10-12T09:00:00Z',
-      endDate: '2025-10-16T18:00:00Z',
-      note: '歌劇院、海港大橋、邦迪海灘。\n記得準備防曬用品，海風可能很強。',
-      coverImage: '',
-      collaborators: [],
-      isDeleted: 0,
-      createdAt: '2025-10-01T12:00:00Z',
-      updatedAt: '2025-10-01T12:00:00Z',
+      createdAt: '2025-10-30T07:35:38.608Z',
+      updatedAt: '2025-10-30T07:35:38.608Z',
     },
   ];
 
+  interface Trip {
+    id: string;
+    userId: string;
+    title: string;
+    destination: string;
+    startDate: string;
+    startTimezone: string;
+    endDate: string;
+    endTimezone: string;
+    note: string;
+    coverImage: string;
+    isDeleted: number;
+    createdAt: string;
+    updatedAt: string;
+  }
+  interface tripForUI extends Trip {
+    status: string;
+    displayStartDate: string;
+    displayEndDate: string;
+  }
+
+  const tabs = ['全部', '待啟程', '進行中', '已結束'];
+  const [activeTab, setActiveTab] = useState('全部');
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [error, setError] = useState(null);
+  const [showCreatePlanModal, setShowCreatePlanModal] = useState(false); //預設彈出新增視窗不顯示
+
+  // #region 關於 Luxon
+
+  // Luxon 的 DateTime 物件是「時間點 + 時區」的組合
+  // DateTime.fromISO(時間的 ISOstring, {zone: '時區'})：將 ISOSstring 轉成帶有時區資料的 DateTime 物件
+  // DateTime.setZone：把這個時間物件移去別的時區顯示，同一時間、不同時區顯示
+  // DateTime.toUTC：把這個時間物件轉成 UTC (+0) 時區會顯示的時間
+  // DateTime.toISO：把這個時間物件轉成帶有時區資訊的 ISO 字串
+  // DateTime.utc：建立一個 utc 的時間物件
+
+  // #endregion
+  // function：搭配時區轉換 UTC 時間呈現時間
+  function convertToTimezone(isoString: string, timezone: string): string {
+    const utcDateTime = DateTime.fromISO(isoString, { zone: 'utc' });
+    const localTime = utcDateTime.setZone(timezone);
+    const formatLocalTime = localTime.toFormat('yyyy-MM-dd');
+
+    return formatLocalTime;
+  }
+
+  // function：取得旅程狀態：待啟程、進行中、已結束
+  function calculateStatus(trip: any): string {
+    const nowUTC = DateTime.utc();
+    const startDateUTC = DateTime.fromISO(trip.startDate);
+    const endDateUTC = DateTime.fromISO(trip.endDate);
+
+    let status;
+    if (nowUTC < startDateUTC) {
+      status = '待啟程';
+    } else if (nowUTC < endDateUTC) {
+      status = '進行中';
+    } else {
+      status = '已結束';
+    }
+
+    return status;
+  }
+
+  // data：fetch 後端取得資料
+  useEffect(() => {
+    async function fetchTrips() {
+      try {
+        // const res = await fetch('http://localhost:3007/api/plans');
+        const res = await fetch('http://192.168.65.164:3007/api/plans');
+        // 如果 res 回傳失敗，建立 Error 物件並將 message 設定為無法取得旅程資料，且跳到 catch 環節 setError
+        if (!res.ok) throw new Error('無法取得旅程資料');
+        const data = await res.json();
+        setTrips(data);
+      } catch (err: any) {
+        setError(err.message);
+      }
+    }
+    fetchTrips();
+  }, []);
+
+  // data：根據後端 API 傳來的 Data，調整後的前端用 Data
+  const tripsForUI: tripForUI[] = trips.map((trip) => ({
+    ...trip,
+    status: calculateStatus(trip), //前端用：判斷旅程是否進行中的欄位
+    displayStartDate: convertToTimezone(trip.startDate, trip.startTimezone),
+    displayEndDate: convertToTimezone(trip.endDate, trip.endTimezone),
+  }));
+
+  // data：Tab 分頁切換篩選出要列出的項目
+  const filteredTrips =
+    // 當 activeTab 為全部時，呈現所有 trips 資料，否則就使用 filter 語法，將 trips 資料留下 status 和 activeTab 相同的
+    activeTab === '全部'
+      ? tripsForUI
+      : tripsForUI.filter((t) => t.status === activeTab);
+
+  // return 畫面
   return (
     <>
-      <div className="flex flex-col items-center px-16 py-8 gap-6 w-full">
-        <h5 className="sw-h5">行程規劃</h5>
+      <div className="flex-1 flex flex-col items-center px-16 py-8 gap-6 w-full">
+        <h5 className="sw-h5">旅程規劃</h5>
         <section
           className="flex-1 border border-solid border-black rounded-2xl
           w-full flex flex-col
           overflow-hidden"
         >
+          {/* 搜尋及排序 */}
           <div className="p-4">search！</div>
-          {/* 行程列表區*/}
-          <div className="flex-1 p-10 bg-(--sw-primary)">
-            <nav></nav>
-            <div className="">
-              <div>
-                <button className="sw-btn sw-btn--gold-square">
-                  <h6>建立新行程</h6>
+          {/* 主內容 */}
+          <div className="flex-1 flex p-10 bg-(--sw-primary)">
+            <div className="flex-1 flex flex-col">
+              {/* 新增行程按鈕 */}
+              <div className="mb-6">
+                <button
+                  className="sw-btn sw-btn--gold-square"
+                  onClick={() => setShowCreatePlanModal(true)}
+                >
+                  <h6>建立新旅程</h6>
                 </button>
               </div>
-              <div className="py-6 flex flex-col gap-6">
-                {/* 單一卡片 */}
-                {mockTrips.map((t) => (
-                  // 關鍵：一定要給 key（即使不傳資料也要 key）
-                  <TripCard key={t.id} trip={t} />
-                ))}
+              {/* 行程列表 */}
+              <div className="flex-1 flex flex-col">
+                {/* 分頁切換 */}
+                <div className="text-(--sw-white) flex gap-2 items-center px-4 relative top-px">
+                  <div className="sw-p1 mr-1">篩選旅程狀態</div>
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab}
+                      className={`sw-p1 ${
+                        // 當 activeTab 是現在要生成的這個 tab，就顯示 active 的 class，否則是一般的 class
+                        activeTab === tab ? 'tab-border-active' : 'tab-border'
+                      }`}
+                      onClick={() => setActiveTab(tab)}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+                {/* 很多卡片 */}
+                <div className="flex-1 p-4 flex flex-col gap-6 border border-solid border-(--sw-grey)">
+                  {/* 單一卡片 */}
+                  {filteredTrips.length > 0 ? (
+                    filteredTrips.map((t) => (
+                      // 關鍵：一定要給 key（即使不傳資料也要 key）
+                      <TripCard key={t.id} trip={t} />
+                    ))
+                  ) : (
+                    <div className="text-(--sw-white)">尚無旅程規劃</div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </section>
+        {/* 彈出視窗：新增旅程 */}
+        {showCreatePlanModal && (
+          // 因為 modal 是子元件，React 中子元件不能傳資料給父元件、不能改變父元件狀態，所以由父元件將這個操作函式傳給子元件讓子元件使用
+          <CreatePlanModal onClose={() => setShowCreatePlanModal(false)} />
+        )}
       </div>
     </>
   );

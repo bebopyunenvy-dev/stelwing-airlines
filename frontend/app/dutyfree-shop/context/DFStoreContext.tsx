@@ -59,7 +59,7 @@ export function DFStoreProvider({ children }: { children: React.ReactNode }) {
       description:
         '融合高濃度花蜜精華與漆光色料，一抹即現鮮明色澤與鏡面光感。輕盈不厚重的質地能長效保濕，同時修護乾裂唇紋，打造柔滑飽滿的立體唇形，全天維持水潤亮澤。',
       price: 8800,
-      image: 'images/dutyfree/dior4.png',
+      image: '/images/dutyfree/dior4.png',
       images: [
         '/images/dutyfree/dior1.png',
         '/images/dutyfree/dior2.png',

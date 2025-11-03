@@ -72,3 +72,21 @@ model Flight {
 
   @@map("flights")
 }
+
+model Plan {
+  id          BigInt    @id @default(autoincrement()) @map("id")
+  userId      BigInt    @map("user_id")
+  title       String    @map("title")
+  destination String?   @map("destination")
+  startDate   DateTime  @map("start_date")
+  startTimezone String   @map("start_timezone")
+  endDate     DateTime  @map("end_date")
+  endTimezone    String   @map("end_timezone")
+  note        String?   @db.Text @map("note")
+  coverImage  String?   @map("cover_image")
+  isDeleted   Int       @default(0) @map("is_deleted")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("plan")
+}
