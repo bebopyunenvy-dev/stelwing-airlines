@@ -147,10 +147,11 @@ export default function FAQPage() {
             <div className="flex justify-center">
               <Button
                 text="搜尋"
-                text_font_size="text-lg" // 修正：原本 24px 太大
+                text_font_size="text" // 修正：原本 24px 太大
                 text_font_weight="font-bold"
-                border_border_radius="rounded-[26px]"
-                className="px-8 py-3" // 增加內距
+                text_color="text-black"
+                border_border_radius="rounded-full"
+                className="px-15 py-2" // 增加內距
                 onClick={handleSearch}
               />
             </div>
@@ -161,7 +162,7 @@ export default function FAQPage() {
       {/* Tab 導覽 */}
       <section className="w-full py-8 sm:py-12">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
-          <div className="flex flex-wrap gap-2 sm:gap-4 justify-center border-[3px] border-[#8e7c60] rounded-full p-4">
+          <div className="flex flex-wrap gap-2 sm:gap-4 justify-center border-[3px] border-[#8e7c60] rounded-full p-3">
             {tabButtons.map((tab) => (
               <TabButton
                 key={tab}
