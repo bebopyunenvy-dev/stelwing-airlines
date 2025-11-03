@@ -267,6 +267,17 @@ body {
     padding: 4px 8px;
   }
 
+  select {
+    width: 100%;
+    border: 1px solid var(--sw-grey);
+    border-radius: 6px;
+    padding: 4px 8px;
+    appearance: none;
+    /* option:hover {
+      background-color: var(--sw-accent);
+    } */
+  }
+
   textarea {
     width: 100%;
     border: 1px solid var(--sw-grey);

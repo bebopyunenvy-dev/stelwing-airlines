@@ -2,11 +2,23 @@
 
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { timezones } from '../src/data/timezone';
 
 export default function CreatePlanModal({ onClose }: { onClose: () => void }) {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [formData, setFormData] = useState({
+    title: '',
+    destination: '',
+    startDate: '',
+    startTimezone: '',
+    endDate: '',
+    endTimezone: '',
+    note: '',
+    coverImage: '',
+  });
 
+  // 功能：顯示彈出視窗時，背景主畫面無法滾動
   useEffect(() => {
     // 在元件首次渲染後，將超過視窗範圍的內容都 hidden，不能滾動
     document.body.style.overflow = 'hidden';
@@ -16,6 +28,46 @@ export default function CreatePlanModal({ onClose }: { onClose: () => void }) {
       document.body.style.overflow = '';
     };
   }, []); // 在元件首次渲染後執行
+
+  // 功能：旅程結束日期不得早於開始日期
+  useEffect(() => {
+    if (endDate && endDate < startDate) {
+      setEndDate(startDate);
+    }
+  }, [startDate, endDate]);
+
+  // 功能：監看欄位變化
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // 功能：結束日期不得早於開始日期
+  const handleStartDateChange = (newStartDate: string) => {
+    setFormData((prev) => {
+      const correctedEndDate =
+        // 如果原本的結束日期已經設定、不是 undefined，而且早於開始日期，則把結束日期改為新的開始日期，如果等於或晚於開始日期就沒問題，使用原本的結束日期
+        prev.endDate && prev.endDate < newStartDate
+          ? newStartDate
+          : prev.endDate;
+      return { ...prev, startDate: newStartDate, endDate: correctedEndDate };
+    });
+  };
+
+  // 功能：表單送出
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    // e 是事件物件，這裡指表單的 submit 事件，參數 e 冒號後面都是型別定義，TS 就可以知道 e 有哪些屬性和方法可以使用
+    e.preventDefault();
+    // FormData 是瀏覽器提供的內建物件，可以快速抓取 form 裡所有的欄位資料，而 e.currentTarget 可以取得這次表單 submit 事件綁的元素，也就是我們要的 form
+    const data = new FormData(e.currentTarget);
+    // FormData 是一個物件，所以可以用物件的方法操作。
+    const formData = Object.fromEntries(data.entries());
+    console.log('送出的表單資料:', formData);
+  };
 
   return (
     <>
@@ -31,16 +83,26 @@ export default function CreatePlanModal({ onClose }: { onClose: () => void }) {
             <X />
           </button>
           <h5 className="sw-h5 mb-3">新增旅程</h5>
-          <form action="" className="flex-1 overflow-y-auto pr-3">
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto pr-3">
             {/* 旅程標題 */}
             <div className="sw-l-input">
               <label htmlFor="title">旅程標題</label>
-              <input id="title" name="title" type="text" />
+              <input
+                id="title"
+                name="title"
+                type="text"
+                onChange={handleChange}
+              />
             </div>
             {/* 目的地 */}
             <div className="sw-l-input">
               <label htmlFor="destination">目的地</label>
-              <input id="destination" name="destination" type="text" />
+              <input
+                id="destination"
+                name="destination"
+                type="text"
+                onChange={handleChange}
+              />
             </div>
             {/* 開始日期及時區 */}
             <div className="flex gap-4">
@@ -56,7 +118,14 @@ export default function CreatePlanModal({ onClose }: { onClose: () => void }) {
               </div>
               <div className="flex-2 sw-l-input">
                 <label htmlFor="startTimezone">開始日期時區</label>
-                {/* <input id="startTimezone" name="startTimezone" type="date" /> */}
+                <select id="startTimezone" name="startTimezone">
+                  <option value="">選擇時區 ⭣</option>
+                  {timezones.map((tz) => (
+                    <option key={tz.value} value={tz.value}>
+                      {tz.city} {tz.code} - {tz.country}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             {/* 結束日期及時區 */}
@@ -74,7 +143,14 @@ export default function CreatePlanModal({ onClose }: { onClose: () => void }) {
               </div>
               <div className="flex-2 sw-l-input">
                 <label htmlFor="endTimezone">結束日期時區</label>
-                {/* <input id="startTimezone" name="startTimezone" type="date" /> */}
+                <select id="endTimezone" name="endTimezone">
+                  <option value="">選擇時區 ⭣</option>
+                  {timezones.map((tz) => (
+                    <option key={tz.value} value={tz.value}>
+                      {tz.city} {tz.code} - {tz.country}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             {/* 備註 */}
@@ -108,7 +184,9 @@ export default function CreatePlanModal({ onClose }: { onClose: () => void }) {
             </div>
             {/* 儲存按鈕 */}
             <div className="flex justify-end">
-              <button className="sw-btn sw-btn--gold-square">確認新增</button>
+              <button type="submit" className="sw-btn sw-btn--gold-square">
+                確認新增
+              </button>
             </div>
           </form>
         </div>

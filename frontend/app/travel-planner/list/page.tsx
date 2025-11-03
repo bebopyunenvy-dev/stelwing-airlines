@@ -154,7 +154,8 @@ export default function ListPage() {
   useEffect(() => {
     async function fetchTrips() {
       try {
-        const res = await fetch('http://localhost:3007/api/plans');
+        // const res = await fetch('http://localhost:3007/api/plans');
+        const res = await fetch('http://192.168.65.164:3007/api/plans');
         // 如果 res 回傳失敗，建立 Error 物件並將 message 設定為無法取得旅程資料，且跳到 catch 環節 setError
         if (!res.ok) throw new Error('無法取得旅程資料');
         const data = await res.json();
