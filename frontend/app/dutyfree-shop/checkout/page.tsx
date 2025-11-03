@@ -1,112 +1,327 @@
 'use client';
-import { ChevronRight } from 'lucide-react';
+import { CreditCard } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { DFCartItem } from './components/DFCartItem';
-import { DFCouponInput } from './components/DFCouponInput';
-import { DFOrderSummary } from './components/DFOrderSummary';
+import { DFCheckoutStepper } from '../components/DFCheckoutStepper';
+import { DFOrderSummary } from '../components/DFOrderSummary';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
+import { useDFStore } from '../context/DFStoreContext';
 
-interface CartItem {
-  id: number;
-  image: string;
-  name: string;
-  description: string;
-  quantity: number;
-  price: number;
+// ===============================
+// 型別定義
+// ===============================
+interface CheckoutForm {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  cardNumber: string;
+  expiry: string;
+  cvc: string;
 }
 
-export default function App() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      image:
-        'https://images.unsplash.com/photo-1631701464241-99f7f0ed6f8f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687',
-      name: 'Chanel N°5系列',
-      description: '經典香水-50mL',
-      quantity: 1,
-      price: 6800,
-    },
-  ]);
+// ===============================
+// 主頁面
+// ===============================
+export default function CheckoutPage() {
+  const router = useRouter();
+  const { checkoutItem, cart } = useDFStore();
 
-  const handleQuantityChange = (id: number, newQuantity: number) => {
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
+  // ✅ 所有 hooks 都放在頂部，不能放在條件 return 之後
+  const [checkoutForm, setCheckoutForm] = useState<CheckoutForm>({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    cardNumber: '',
+    expiry: '',
+    cvc: '',
+  });
+
+  const [checkoutErrors, setCheckoutErrors] = useState<
+    Record<keyof CheckoutForm, string>
+  >({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    cardNumber: '',
+    expiry: '',
+    cvc: '',
+  });
+
+  // ✅ 條件：若沒商品，就顯示提示畫面
+  const noItems = !checkoutItem && cart.length === 0;
+  if (noItems) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-gray-600">
+        <p>目前沒有選擇商品。</p>
+        <Button
+          onClick={() => router.push('/dutyfree-shop')}
+          className="mt-4 bg-[var(--df-accent-gold)] text-white"
+        >
+          回到商品列表
+        </Button>
+      </div>
     );
-  };
+  }
 
-  const handleRemoveItem = (id: number) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
-  };
-
-  const handleApplyCoupon = (code: string) => {
-    // 優惠券邏輯可以在這裡實現
-    console.log('Applied coupon:', code);
-    alert(`已套用優惠券: ${code}`);
-  };
-
-  const handleCheckout = () => {
-    alert('前往結帳');
-  };
+  // ✅ 若 checkoutItem 有值，優先顯示單品結帳；否則顯示購物車內容
+  const cartItems = checkoutItem
+    ? [
+        {
+          id: checkoutItem.id,
+          name: checkoutItem.name,
+          description: checkoutItem.description,
+          price: checkoutItem.price,
+          image: checkoutItem.images?.[0] || checkoutItem.image,
+          quantity: 1,
+        },
+      ]
+    : cart;
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const total = subtotal;
+  const discount = 0;
 
+  // ===============================
+  // 表單邏輯
+  // ===============================
+  const onFormChange = (field: keyof CheckoutForm, value: string) => {
+    setCheckoutForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const onClearError = (field: keyof CheckoutForm) => {
+    setCheckoutErrors((prev) => ({ ...prev, [field]: '' }));
+  };
+
+  // ===============================
+  // 提交邏輯
+  // ===============================
+  const onSubmit = () => {
+    const newErrors: Record<string, string> = {};
+    if (!checkoutForm.firstName) newErrors.firstName = '請輸入姓氏';
+    if (!checkoutForm.lastName) newErrors.lastName = '請輸入名字';
+    if (!checkoutForm.phone) newErrors.phone = '請輸入電話';
+    if (!checkoutForm.email) newErrors.email = '請輸入 Email';
+    if (!checkoutForm.cardNumber) newErrors.cardNumber = '請輸入信用卡號';
+    if (!checkoutForm.expiry) newErrors.expiry = '請輸入有效日期';
+    if (!checkoutForm.cvc) newErrors.cvc = '請輸入安全碼';
+
+    if (Object.keys(newErrors).length > 0) {
+      setCheckoutErrors(newErrors as any);
+      return;
+    }
+
+    alert('✅ 結帳成功！感謝您的購買！');
+    router.push('/dutyfree-shop/complete');
+  };
+
+  const onNavigateCart = () => {
+    router.push('/dutyfree-shop/cart');
+  };
+
+  // ===============================
+  // 畫面輸出
+  // ===============================
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
-          <span>首頁</span>
-          <ChevronRight className="h-4 w-4" />
-          <span>購物車</span>
-        </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="mx-auto px-4 lg:px-16 max-w-7xl">
+        <DFCheckoutStepper currentStep={2} />
 
-        {/* Title */}
-        <h1 className="mb-8 text-[#333333]">購物車</h1>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+          {/* Left: 表單區 */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* 聯絡資訊 */}
+            <div className="bg-white rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-6">聯絡資訊</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <Label>姓</Label>
+                  <Input
+                    placeholder="First name"
+                    value={checkoutForm.firstName}
+                    onChange={(e) => {
+                      onFormChange('firstName', e.target.value);
+                      onClearError('firstName');
+                    }}
+                    className={checkoutErrors.firstName ? 'border-red-500' : ''}
+                  />
+                  {checkoutErrors.firstName && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {checkoutErrors.firstName}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label>名</Label>
+                  <Input
+                    placeholder="Last name"
+                    value={checkoutForm.lastName}
+                    onChange={(e) => {
+                      onFormChange('lastName', e.target.value);
+                      onClearError('lastName');
+                    }}
+                    className={checkoutErrors.lastName ? 'border-red-500' : ''}
+                  />
+                  {checkoutErrors.lastName && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {checkoutErrors.lastName}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Cart Items Section */}
-          <div className="lg:col-span-2">
-            {/* Header */}
-            <div className="grid grid-cols-[200px_1fr] gap-6 pb-4 border-b border-gray-200 mb-4">
-              <div className="text-gray-600">商品</div>
-              <div className="flex items-center justify-between">
-                <div className="text-gray-600">數量</div>
-                <div className="flex items-center gap-12">
-                  <div className="text-gray-600">小計</div>
-                  <div className="w-8"></div>
+              <div className="mb-4">
+                <Label>聯絡電話</Label>
+                <Input
+                  placeholder="09xxxxxxxx"
+                  value={checkoutForm.phone}
+                  onChange={(e) => {
+                    onFormChange('phone', e.target.value);
+                    onClearError('phone');
+                  }}
+                  className={checkoutErrors.phone ? 'border-red-500' : ''}
+                />
+                {checkoutErrors.phone && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {checkoutErrors.phone}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label>EMAIL</Label>
+                <Input
+                  type="email"
+                  placeholder="Your Email"
+                  value={checkoutForm.email}
+                  onChange={(e) => {
+                    onFormChange('email', e.target.value);
+                    onClearError('email');
+                  }}
+                  className={checkoutErrors.email ? 'border-red-500' : ''}
+                />
+                {checkoutErrors.email && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {checkoutErrors.email}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* 付款方式 */}
+            <div className="bg-white rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-6">付款方式</h2>
+              <RadioGroup defaultValue="card">
+                <div className="flex items-center space-x-3 mb-4 p-4 border rounded-lg">
+                  <RadioGroupItem value="card" id="card" />
+                  <Label
+                    htmlFor="card"
+                    className="flex items-center gap-2 cursor-pointer flex-1"
+                  >
+                    <CreditCard className="w-5 h-5" />
+                    信用卡付款
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-3 p-4 border rounded-lg">
+                  <RadioGroupItem value="linepay" id="linepay" />
+                  <Label htmlFor="linepay" className="cursor-pointer flex-1">
+                    LinePay
+                  </Label>
+                </div>
+              </RadioGroup>
+
+              {/* 信用卡資料 */}
+              <div className="mt-6 space-y-4">
+                <div>
+                  <Label>信用卡號</Label>
+                  <Input
+                    placeholder="1234 1234 1234 1234"
+                    value={checkoutForm.cardNumber}
+                    onChange={(e) => {
+                      onFormChange('cardNumber', e.target.value);
+                      onClearError('cardNumber');
+                    }}
+                    className={
+                      checkoutErrors.cardNumber ? 'border-red-500' : ''
+                    }
+                  />
+                  {checkoutErrors.cardNumber && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {checkoutErrors.cardNumber}
+                    </p>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>有效日期</Label>
+                    <Input
+                      placeholder="MM/YY"
+                      value={checkoutForm.expiry}
+                      onChange={(e) => {
+                        onFormChange('expiry', e.target.value);
+                        onClearError('expiry');
+                      }}
+                      className={checkoutErrors.expiry ? 'border-red-500' : ''}
+                    />
+                    {checkoutErrors.expiry && (
+                      <p className="text-sm text-red-500 mt-1">
+                        {checkoutErrors.expiry}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Label>CVC</Label>
+                    <Input
+                      placeholder="CVC code"
+                      value={checkoutForm.cvc}
+                      onChange={(e) => {
+                        onFormChange('cvc', e.target.value);
+                        onClearError('cvc');
+                      }}
+                      className={checkoutErrors.cvc ? 'border-red-500' : ''}
+                    />
+                    {checkoutErrors.cvc && (
+                      <p className="text-sm text-red-500 mt-1">
+                        {checkoutErrors.cvc}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Cart Items */}
-            {cartItems.length > 0 ? (
-              cartItems.map((item) => (
-                <DFCartItem
-                  key={item.id}
-                  {...item}
-                  onQuantityChange={handleQuantityChange}
-                  onRemove={handleRemoveItem}
-                />
-              ))
-            ) : (
-              <div className="text-center py-12 text-gray-500">
-                購物車是空的
-              </div>
-            )}
+            {/* 按鈕區 */}
+            <div className="flex gap-4">
+              <Button
+                variant="outline"
+                onClick={onNavigateCart}
+                className="flex-1"
+              >
+                上一步
+              </Button>
+              <Button
+                onClick={onSubmit}
+                className="flex-1 bg-[var(--df-accent-gold)] hover:bg-[var(--df-accent-gold)]/90 text-white"
+              >
+                下一步
+              </Button>
+            </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <DFCouponInput onApplyCoupon={handleApplyCoupon} />
+          {/* 右側：訂單摘要 */}
+          <div>
             <DFOrderSummary
+              items={cartItems}
               subtotal={subtotal}
-              total={total}
-              onCheckout={handleCheckout}
+              discount={discount}
+              sticky
             />
           </div>
         </div>
