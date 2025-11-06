@@ -19,14 +19,15 @@ const router = express.Router();
 
 // | GET | /api/plans | 讀取所有旅程 |
 router.get("/", async (req: Request, res: Response) => {
-    const userId = 3;
+    const userId = 2;
 
-    if (!userId) return res.status(404).json({ message: "沒有提供User ID" })
+    if (!userId) return res.status(404).json({ message: "沒有提供User ID" }) //之後有 JWT 驗證時拉掉
 
     try {
       const plans = await prisma.plan.findMany({
         where: {
             userId: userId,
+            isDeleted: 0,
         },
         orderBy: {
             startDate: "desc",
@@ -42,7 +43,7 @@ router.get("/", async (req: Request, res: Response) => {
 router.post("/", async (req: Request, res: Response) => {
   const userId = 3; //之後改為從 JWT 取 userID
 
-  if (!userId) return res.status(404).json({ message: "沒有提供User ID" })
+  if (!userId) return res.status(404).json({ message: "沒有提供User ID" }) //之後有 JWT 驗證時拉掉
 
   try {
     const {
@@ -82,5 +83,44 @@ router.post("/", async (req: Request, res: Response) => {
     });
   }
 })
+
+// | DELETE | /api/plans/:planId | 刪除旅程 |
+router.delete('/:id', async (req: Request, res: Response) => {
+  const userId = 2; //之後改為從 JWT 取 userID
+  const planId = Number(req.params.id);
+  
+  // 驗證：(有沒有提供 userId)、有沒有提供 tripId、tripId 是不是數字
+  if (!userId) return res.status(404).json({ message: "沒有提供User ID" }); //之後有 JWT 驗證時拉掉
+  if (!planId || isNaN(planId)) {
+    return res.status(400).json({ message: "沒有提供有效的旅程 ID" })
+  };
+
+  try {
+    const plan = await prisma.plan.findUnique({ 
+      where: { id: planId },
+    });
+
+    if (!plan) {
+      return res.status(404).json({ message: "此筆旅程資料不存在" });
+    };
+
+    if (plan.userId !== BigInt(userId)) {
+      return res.status(403).json({ message: "沒有權限刪除此資料" });
+    }
+
+    await prisma.plan.update({
+      where: { id: planId },
+      data: { isDeleted: 1 },
+    });
+
+    res.json({ message: "旅程刪除成功" });
+
+  } catch (err) {
+    res.status(500).json({ message: "系統錯誤，請再試一次" });
+  };
+
+  
+
+});
 
 export default router;

@@ -7,6 +7,7 @@ import { timezones } from '../src/data/timezone';
 import { DateTime } from 'luxon';
 
 export default function CreatePlanModal({ onClose }: { onClose: () => void }) {
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
   const [formData, setFormData] = useState({
     title: '',
     destination: '',
@@ -71,7 +72,7 @@ export default function CreatePlanModal({ onClose }: { onClose: () => void }) {
         endDate: endDateTime.toUTC().toISO(),
       };
 
-      const res = await fetch('http://localhost:3007/api/plans', {
+      const res = await fetch(`${API_BASE}/plans`, {
         method: 'POST',
         headers: {
           'content-type': 'application/json',

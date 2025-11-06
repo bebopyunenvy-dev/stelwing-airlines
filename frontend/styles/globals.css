@@ -249,6 +249,16 @@ body {
   );
 }
 
+.bg-ticket-red {
+  background: linear-gradient(
+    180deg,
+    #a52422 0%,
+    #a52422 8%,
+    white 8%,
+    white 100%
+  );
+}
+
 .tab-border {
   border: 1px solid var(--sw-grey);
   padding: 4px 36px;

@@ -1,7 +1,7 @@
 'use client';
 
-import * as AlertDialog from '@radix-ui/react-alert-dialog';
-import { Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import ConfirmDialog from './confirmDialog';
 
 export interface Trip {
   id: string; // 必填：用於 key
@@ -41,6 +41,31 @@ const STATUS_TEXT_COLORS: Record<string, string> = {
 };
 
 export default function TripCard({ trip }: TripCardProps) {
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+  const [isOpenDeletePlan, setIsOpenDeletePlan] = useState(false);
+
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/plans/${trip.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // setIsOpenDeletePlan(false);
+        // alert(data.message);
+      } else {
+        // alert(data.message || '刪除失敗');
+      }
+    } catch (error) {
+      alert(`系統錯誤，請再試一次：${error}`);
+    }
+  };
+
   return (
     <>
       <div className="rounded-lg bg-ticket py-4 flex">
@@ -101,51 +126,21 @@ export default function TripCard({ trip }: TripCardProps) {
           <button className="sw-btn border border-solid border-(--sw-grey)">
             <h6 className="sw-h6">查看詳細行程</h6>
           </button>
-          {/* 刪除按鈕：使用 UI 套件 */}
-          <AlertDialog.Root>
-            {/* Trigger：觸發彈出視窗的按紐 */}
-            {/* asChild：如果有下，裡面包一個 button div，如果沒下，直接寫文字，元件會幫忙生成 button */}
-            <AlertDialog.Trigger asChild>
-              <button className="sw-btn border border-solid border-(--sw-grey)">
-                <h6 className="sw-h6">刪除整趟旅程</h6>
-              </button>
-            </AlertDialog.Trigger>
-            {/* Portal：入口網站的意思，所有要談出的內容及畫面，會傳送到 body 層，讓內容保證蓋在所有內容最上層 */}
-            <AlertDialog.Portal>
-              {/* Overlay：蓋掉畫面的半透明層，目前一樣設定為固定位置、佔滿全畫面、黑色半透明 50% */}
-              <AlertDialog.Overlay className="fixed inset-0 bg-black/50" />
-              {/* Content：彈出視窗本體，目前設定：固定位置、置中畫面、背景白色、padding-6、圓角 */}
-              <AlertDialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg flex overflow-hidden">
-                <div className="bg-[#a52422] p-3 text-white">
-                  <Trash2 />
-                </div>
-                <div className="p-6">
-                  {/* Title：彈出視窗標題 */}
-                  <AlertDialog.Title className="text-lg font-bold">
-                    確定要刪除這趟旅程嗎？
-                  </AlertDialog.Title>
-                  {/* Description：描述 */}
-                  <AlertDialog.Description className="mt-2 text-sm text-(--sw-gray)">
-                    整趟旅程及已建立的每日行程細項皆會刪除
-                  </AlertDialog.Description>
-                  {/* 自己用 div 把按鈕包成一包 */}
-                  <div className="mt-8 flex justify-end gap-2">
-                    {/* Cancel：取消操作 */}
-                    <AlertDialog.Cancel className="sw-btn">
-                      取消
-                    </AlertDialog.Cancel>
-                    {/* Action：執行操作 */}
-                    <AlertDialog.Action
-                      className="sw-btn sw-btn--red-square"
-                      onClick={() => console.log('刪除按鈕被點擊')}
-                    >
-                      確認刪除
-                    </AlertDialog.Action>
-                  </div>
-                </div>
-              </AlertDialog.Content>
-            </AlertDialog.Portal>
-          </AlertDialog.Root>
+          <button
+            className="sw-btn border border-solid border-(--sw-grey)"
+            onClick={() => setIsOpenDeletePlan(true)}
+          >
+            <h6 className="sw-h6">刪除整趟旅程</h6>
+          </button>
+          {/* 彈出視窗 / UI 套件：確認是否刪除 */}
+          <ConfirmDialog
+            open={isOpenDeletePlan}
+            onOpenChange={setIsOpenDeletePlan}
+            title={'確定要刪除這趟旅程嗎？'}
+            description={'整趟旅程及已建立的每日行程細項皆會刪除'}
+            confirmText={'確認刪除'}
+            onConfirm={() => handleDelete()}
+          />
         </div>
       </div>
     </>
