@@ -1,236 +1,200 @@
 'use client';
 
-import Image from 'next/image';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import FilterSidebar from '../components/FilterSidebar';
+import HotelResultCard from '../components/HotelResultCard';
+import { AmenityKey, MAX_PRICE, MIN_PRICE } from '../interfaces/constants';
+
+interface Hotel {
+  id: number;
+  name: string;
+  engName?: string;
+  location: string;
+  rating: number;
+  price: number;
+  image: string;
+  amenities: AmenityKey[];
+  taxFree?: boolean;
+  notes?: string;
+  roomType?: string;
+}
+
+const hotels: Hotel[] = [
+  {
+    id: 1,
+    name: '東橫INN 成田機場新館',
+    engName: 'Narita Airport Terminal | Hotel',
+    location: '第二航廈・機場內',
+    rating: 4.6,
+    price: 8000,
+    image: '/images/hotel/hotel1.jpeg',
+    amenities: [
+      'wifi',
+      'parking',
+      'cafe',
+      'restaurant',
+      'frontDesk24h',
+      'luggageStorage',
+      'shuttleService',
+    ],
+    taxFree: true,
+    notes: '位於成田機場第二航廈內的靜謐酒店，提供便利休憩及過夜住宿。',
+    roomType: '經濟雙床房',
+  },
+  {
+    id: 2,
+    name: '成田日航酒店',
+    engName: 'Narita Airport Terminal | Hotel',
+    location: '第二航廈・機場內',
+    rating: 4.9,
+    price: 8000,
+    image: '/images/hotel/hotel2.jpeg',
+    amenities: [
+      'wifi',
+      'parking',
+      'cafe',
+      'restaurant',
+      'frontDesk24h',
+      'luggageStorage',
+      'shuttleService',
+    ],
+    taxFree: true,
+    notes: '位於成田機場第二航廈內的靜謐酒店，提供便利休憩及過夜住宿。',
+    roomType: '經典雙床房',
+  },
+  {
+    id: 3,
+    name: 'Solana Smart INN 成田空港',
+    engName: 'Narita Airport Terminal | Hotel',
+    location: '第二航廈・機場內',
+    rating: 4.7,
+    price: 10000,
+    image: '/images/hotel/hotel3.jpeg',
+    amenities: [
+      'wifi',
+      'parking',
+      'cafe',
+      'restaurant',
+      'frontDesk24h',
+      'luggageStorage',
+      'shuttleService',
+    ],
+    taxFree: true,
+    notes: '位於成田機場第二航廈內的靜謐酒店，提供便利休憩及過夜住宿。',
+    roomType: '經典雙床房',
+  },
+  {
+    id: 4,
+    name: 'Grand Hotel Narita Airport',
+    engName: 'Grand Hotel Narita Airport',
+    location: '第二航廈・機場內',
+    rating: 4.7,
+    price: 10000,
+    image: '/images/hotel/hotel4.jpeg',
+    amenities: [
+      'wifi',
+      'parking',
+      'cafe',
+      'restaurant',
+      'frontDesk24h',
+      'luggageStorage',
+      'shuttleService',
+    ],
+    taxFree: true,
+    notes: '位於成田機場第二航廈內的靜謐酒店，提供便利休憩及過夜住宿。',
+    roomType: '經典雙床房',
+  },
+];
 
 export default function HotelPage() {
   const [showFilter, setShowFilter] = useState(false);
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    MIN_PRICE,
+    MAX_PRICE,
+  ]);
+  const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
+  const [selectedAmenities, setSelectedAmenities] = useState<AmenityKey[]>([]);
 
-  const hotels = [
-    {
-      id: 1,
-      name: '東橫INN 成田機場新館',
-      location: 'Narita Airport Terminal | Hotel',
-      rating: 4.6,
-      price: 8000,
-      image: '/images/hotel/hotel1.jpeg',
+  const handleFilter = useCallback(
+    ({
+      priceMin,
+      priceMax,
+      rating,
+      amenities,
+    }: {
+      priceMin: number;
+      priceMax: number;
+      rating?: number[];
+      amenities?: AmenityKey[];
+    }) => {
+      setPriceRange([priceMin, priceMax]);
+      setSelectedRatings(rating || []);
+      setSelectedAmenities(amenities || []);
     },
-    {
-      id: 2,
-      name: '成田日航酒店',
-      location: 'Narita Airport Terminal | Hotel',
-      rating: 4.9,
-      price: 8000,
-      image: '/images/hotel/hotel2.jpeg',
-    },
-    {
-      id: 3,
-      name: 'Solana Smart INN 成田空港',
-      location: 'Narita Airport Terminal | Hotel',
-      rating: 4.7,
-      price: 10000,
-      image: '/images/hotel/hotel3.jpeg',
-    },
-    {
-      id: 4,
-      name: 'Grand Hotel Narita Airport',
-      location: 'Narita Airport Terminal | Hotel',
-      rating: 4.7,
-      price: 10000,
-      image: '/images/hotel/hotel4.jpeg',
-    },
-  ];
+    []
+  );
+
+  const filteredHotels = useMemo(() => {
+    return hotels.filter((hotel) => {
+      if (hotel.price < priceRange[0] || hotel.price > priceRange[1])
+        return false;
+      if (
+        selectedRatings.length > 0 &&
+        !selectedRatings.some((r) => hotel.rating >= r)
+      )
+        return false;
+      if (
+        selectedAmenities.length > 0 &&
+        !selectedAmenities.every((a) => hotel.amenities.includes(a))
+      )
+        return false;
+      return true;
+    });
+  }, [priceRange, selectedRatings, selectedAmenities]);
 
   return (
     <div
-      className="min-h-screen w-full bg-cover bg-center bg-no-repeat"
+      className="min-h-screen w-full bg-cover bg-center bg-no-repeat relative"
       style={{ backgroundImage: "url('/images/hotel/bg1.jpeg')" }}
     >
-      <div className="flex flex-col md:flex-row w-full h-full bg-black/40">
-        {/* 左側篩選區 */}
-        <aside className="w-full md:w-1/4 p-4 md:p-6">
-          {/* 手機版篩選按鈕 */}
+      <div className="flex flex-col md:flex-row w-full h-full bg-black/40 min-h-screen p-4 md:p-8">
+        <FilterSidebar
+          isMobileOpen={showFilter}
+          onClose={() => setShowFilter(false)}
+          onFilter={handleFilter}
+        />
+
+        <main className="flex-1 overflow-y-auto space-y-6 px-4 md:px-8">
           <button
-            onClick={() => setShowFilter(!showFilter)}
-            className="md:hidden flex items-center justify-between w-full bg-white/80 rounded-lg px-4 py-2 font-semibold text-gray-800 shadow"
+            onClick={() => setShowFilter(true)}
+            className="md:hidden mb-4 border rounded-md px-4 py-2 bg-white text-gray-800 font-bold w-full"
           >
-            <span>篩選條件</span>
-            <span>{showFilter ? '▲' : '▼'}</span>
+            篩選條件
           </button>
 
-          {/* 篩選內容 */}
-          <div
-            className={`transition-all duration-300 overflow-hidden ${
-              showFilter ? 'max-h-[1500px] mt-4' : 'max-h-0 md:max-h-none'
-            } md:block`}
-          >
-            <div className="bg-white/90 rounded-2xl shadow-lg backdrop-blur-md space-y-6 p-4 md:p-6">
-              <div>
-                <Image
-                  src="/images/hotel/map.jpeg"
-                  alt="地圖截圖"
-                  width={400}
-                  height={200}
-                  className="rounded-xl mb-4"
-                />
-                <h2 className="text-lg font-semibold mb-2">價格範圍（每晚）</h2>
-                <input
-                  type="range"
-                  min="3000"
-                  max="50000"
-                  className="w-full accent-[#DCBB87]"
-                />
-                <div className="flex justify-between text-sm text-gray-700 mt-1">
-                  <span>¥3,000</span>
-                  <span>¥50,000</span>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-md font-semibold mb-2">最低評分</h3>
-                <ul className="space-y-2 text-sm text-gray-700">
-                  <li>
-                    <input type="checkbox" /> 4.5星以上
-                  </li>
-                  <li>
-                    <input type="checkbox" /> 4星以上
-                  </li>
-                  <li>
-                    <input type="checkbox" /> 3.5星以上
-                  </li>
-                  <li>
-                    <input type="checkbox" /> 3星以上
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-md font-semibold mb-2">設施</h3>
-                <ul className="space-y-2 text-sm text-gray-700">
-                  <li>
-                    <input type="checkbox" /> WiFi
-                  </li>
-                  <li>
-                    <input type="checkbox" /> 停車場
-                  </li>
-                  <li>
-                    <input type="checkbox" /> 咖啡廳
-                  </li>
-                  <li>
-                    <input type="checkbox" /> 餐廳
-                  </li>
-                  <li>
-                    <input type="checkbox" /> 24小時前台
-                  </li>
-                  <li>
-                    <input type="checkbox" /> 行李寄存
-                  </li>
-                  <li>
-                    <input type="checkbox" /> 機場接送
-                  </li>
-                </ul>
-              </div>
+          {filteredHotels.length === 0 ? (
+            <div className="text-center py-12 text-gray-300">
+              <p className="text-lg mb-4">沒有符合條件的飯店</p>
+              <button
+                onClick={() =>
+                  handleFilter({ priceMin: MIN_PRICE, priceMax: MAX_PRICE })
+                }
+                className="text-[#DCBB87] underline"
+              >
+                清除篩選條件
+              </button>
             </div>
-          </div>
-        </aside>
+          ) : (
+            filteredHotels.map((hotel) => (
+              <HotelResultCard key={hotel.id} hotel={hotel} />
+            ))
+          )}
 
-        {/* 右側飯店卡片區 */}
-        <main className="flex-1 p-4 md:p-8 space-y-6 overflow-y-auto">
-          {hotels.map((hotel) => (
-            <div
-              key={hotel.id}
-              className="flex flex-col md:flex-row bg-white/90 rounded-2xl overflow-hidden shadow-lg backdrop-blur-md hover:shadow-2xl transition-all"
-            >
-              {/* 飯店圖片 */}
-              <div className="relative md:w-1/3">
-                <Image
-                  src={hotel.image}
-                  alt={hotel.name}
-                  width={400}
-                  height={260}
-                  className="object-cover h-full w-full"
-                />
-                <div className="absolute top-3 left-3 bg-black/70 text-white text-sm px-2 py-1 rounded-full">
-                  ⭐ {hotel.rating}
-                </div>
-              </div>
-
-              {/* 飯店資訊 */}
-              <div className="flex flex-col justify-between p-6 md:w-2/3">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {hotel.name}
-                  </h3>
-                  <p className="text-gray-500 text-sm mb-3">{hotel.location}</p>
-                  <p className="text-gray-700 text-sm mb-4">
-                    房型：經濟雙床房
-                    <br />
-                    位於成田機場第二航廈內，交通便利。
-                  </p>
-                  <div className="flex flex-wrap gap-3 text-gray-600">
-                    <Image
-                      src="/icons/wifi.svg"
-                      alt="WiFi"
-                      width={24}
-                      height={24}
-                    />
-                    <Image
-                      src="/icons/parking.svg"
-                      alt="Parking"
-                      width={24}
-                      height={24}
-                    />
-                    <Image
-                      src="/icons/coffee.svg"
-                      alt="Coffee"
-                      width={24}
-                      height={24}
-                    />
-                    <Image
-                      src="/icons/restaurant.svg"
-                      alt="Restaurant"
-                      width={24}
-                      height={24}
-                    />
-                    <Image
-                      src="/icons/concierge.svg"
-                      alt="Concierge"
-                      width={24}
-                      height={24}
-                    />
-                    <Image
-                      src="/icons/luggage.svg"
-                      alt="Luggage"
-                      width={24}
-                      height={24}
-                    />
-                    <Image
-                      src="/icons/shuttle.svg"
-                      alt="Shuttle"
-                      width={24}
-                      height={24}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center mt-6">
-                  <div className="text-xl font-bold text-gray-900">
-                    ¥{hotel.price.toLocaleString()}
-                  </div>
-                  <button className="bg-[#DCBB87] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#c9a76e] transition-all">
-                    預訂
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* 上一步 / 下一步 */}
           <div className="flex justify-between mt-8 pb-6">
-            <button className="bg-black/60 text-white px-6 py-2 rounded-full hover:bg-black transition-all">
+            <button className="border border-[#D4A574] text-[#D4A574] px-6 py-2 rounded-full hover:bg-[#D4A574] hover:text-white transition-all font-semibold">
               上一步
             </button>
-            <button className="bg-black/60 text-white px-6 py-2 rounded-full hover:bg-black transition-all">
+            <button className="border border-[#D4A574] text-[#D4A574] px-6 py-2 rounded-full hover:bg-[#D4A574] hover:text-white transition-all font-semibold">
               下一步
             </button>
           </div>

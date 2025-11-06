@@ -1,15 +1,29 @@
-// components/FilterSidebar.tsx
 'use client';
 
-import { Car, Coffee, Star, Wifi, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import {
+  Car,
+  Clock,
+  Coffee,
+  Package,
+  Truck,
+  Utensils,
+  Wifi,
+} from 'lucide-react';
+import Image from 'next/image';
+import { useState } from 'react';
+import {
+  AmenityKey,
+  MAX_PRICE,
+  MIN_PRICE,
+  PRICE_STEP,
+} from '../interfaces/constants';
 
 interface FilterSidebarProps {
   onFilter: (filters: {
-    priceMin?: number;
-    priceMax?: number;
-    rating?: number;
-    amenities?: string[];
+    priceMin: number;
+    priceMax: number;
+    rating?: number[];
+    amenities?: AmenityKey[];
   }) => void;
   isMobileOpen: boolean;
   onClose: () => void;
@@ -20,186 +34,199 @@ export default function FilterSidebar({
   isMobileOpen,
   onClose,
 }: FilterSidebarProps) {
-  const [priceMin, setPriceMin] = useState(0);
-  const [priceMax, setPriceMax] = useState(50000);
-  const [selectedRating, setSelectedRating] = useState<number | null>(null);
-  const [amenities, setAmenities] = useState<string[]>([]);
+  const [priceMin, setPriceMin] = useState(MIN_PRICE);
+  const [priceMax, setPriceMax] = useState(MAX_PRICE);
+  const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
+  const [amenities, setAmenities] = useState<AmenityKey[]>([]);
 
   const ratings = [4.5, 4, 3.5, 3];
-  const amenityList = [
+
+  const amenityList: { key: AmenityKey; label: string; icon: JSX.Element }[] = [
     { key: 'wifi', label: 'WiFi', icon: <Wifi size={16} /> },
     { key: 'parking', label: '停車場', icon: <Car size={16} /> },
     { key: 'cafe', label: '咖啡廳', icon: <Coffee size={16} /> },
-    { key: 'restaurant', label: '餐廳', icon: <Coffee size={16} /> },
-    { key: 'shuttleService', label: '接駁車', icon: <Car size={16} /> },
-    { key: 'frontDesk24h', label: '24小時櫃台', icon: <Star size={16} /> },
-    {
-      key: 'luggageStorage',
-      label: '行李寄存',
-      icon: <div className="w-4 h-4 border rounded" />,
-    },
+    { key: 'restaurant', label: '餐廳', icon: <Utensils size={16} /> },
+    { key: 'shuttleService', label: '機場接送', icon: <Truck size={16} /> },
+    { key: 'frontDesk24h', label: '24小時前台', icon: <Clock size={16} /> },
+    { key: 'luggageStorage', label: '行李寄存', icon: <Package size={16} /> },
   ];
 
-  // 即時觸發篩選（可選：改為點擊套用）
-  useEffect(() => {
-    onFilter({
-      priceMin: priceMin > 0 ? priceMin : undefined,
-      priceMax: priceMax < 50000 ? priceMax : undefined,
-      rating: selectedRating !== null ? selectedRating : undefined,
-      amenities: amenities.length > 0 ? amenities : undefined,
-    });
-  }, [priceMin, priceMax, selectedRating, amenities, onFilter]);
+  const toggleRating = (rate: number) => {
+    setSelectedRatings((prev) =>
+      prev.includes(rate) ? prev.filter((r) => r !== rate) : [...prev, rate]
+    );
+  };
 
-  const resetFilters = () => {
-    setPriceMin(0);
-    setPriceMax(50000);
-    setSelectedRating(null);
+  const clearAll = () => {
+    setPriceMin(MIN_PRICE);
+    setPriceMax(MAX_PRICE);
+    setSelectedRatings([]);
     setAmenities([]);
   };
 
+  const applyFilters = () => {
+    onFilter({
+      priceMin,
+      priceMax,
+      rating: selectedRatings.length > 0 ? selectedRatings : undefined,
+      amenities: amenities.length > 0 ? amenities : undefined,
+    });
+    onClose();
+  };
+
+  const minPercent = ((priceMin - MIN_PRICE) / (MAX_PRICE - MIN_PRICE)) * 100;
+  const maxPercent = ((priceMax - MIN_PRICE) / (MAX_PRICE - MIN_PRICE)) * 100;
+
   return (
     <>
-      {/* 手機遮罩 */}
       {isMobileOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={onClose}
         />
       )}
-
-      {/* 側邊欄本體 */}
-      <div
+      <aside
         className={`
           fixed lg:static inset-y-0 left-0 w-80 bg-white rounded-2xl shadow-xl border border-gray-200 p-6 space-y-6 z-50
-          transform transition-transform duration-300 ease-in-out
+          transform transition-transform duration-300 ease-in-out overflow-y-auto
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
-        {/* 標題列 */}
+        <div className="mb-4 rounded-xl overflow-hidden cursor-pointer relative">
+          <Image
+            src="/images/hotel/map.jpeg"
+            alt="地圖找房"
+            width={280}
+            height={160}
+            className="object-cover"
+          />
+          <div className="absolute inset-0 flex justify-center items-center bg-black/30 text-white font-semibold text-lg">
+            地圖找房
+          </div>
+        </div>
+
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-bold text-gray-800">篩選條件</h3>
           <button
-            onClick={onClose}
-            className="lg:hidden text-gray-500 hover:text-gray-700"
+            onClick={clearAll}
+            className="text-sm text-gray-500 hover:text-gray-900"
           >
-            <X size={24} />
+            清除全部
           </button>
         </div>
 
-        {/* 價格範圍 */}
-        <div className="space-y-3">
-          <h4 className="font-semibold text-gray-700">價格範圍</h4>
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>¥ {priceMin.toLocaleString()}</span>
-            <span>¥ {priceMax.toLocaleString()}</span>
-          </div>
-          <div className="space-y-2">
+        <div>
+          <h4 className="font-semibold mb-2 text-gray-700">價格範圍（每晚）</h4>
+          <div className="relative h-10 flex items-center">
+            <div className="absolute w-full h-1 bg-gray-200 rounded" />
+            <div
+              className="absolute h-1 bg-[#DCBB87] rounded"
+              style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}
+            />
             <input
               type="range"
-              min="0"
-              max="50000"
-              step="1000"
+              min={MIN_PRICE}
+              max={priceMax}
+              step={PRICE_STEP}
               value={priceMin}
-              onChange={(e) => setPriceMin(Number(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+              onChange={(e) =>
+                setPriceMin(
+                  Math.min(Number(e.target.value), priceMax - PRICE_STEP)
+                )
+              }
+              className="absolute w-full h-6 bg-transparent appearance-none z-20 pointer-events-auto cursor-pointer
+                [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 
+                [&::-webkit-slider-thumb]:bg-[#DCBB87] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md
+                [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:bg-[#DCBB87] 
+                [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0"
             />
             <input
               type="range"
-              min="0"
-              max="50000"
-              step="1000"
+              min={priceMin + PRICE_STEP}
+              max={MAX_PRICE}
+              step={PRICE_STEP}
               value={priceMax}
-              onChange={(e) => setPriceMax(Number(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+              onChange={(e) =>
+                setPriceMax(
+                  Math.max(Number(e.target.value), priceMin + PRICE_STEP)
+                )
+              }
+              className="absolute w-full h-6 bg-transparent appearance-none z-10 pointer-events-auto cursor-pointer
+                [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 
+                [&::-webkit-slider-thumb]:bg-[#DCBB87] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md
+                [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:bg-[#DCBB87] 
+                [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0"
             />
-          </div>
-        </div>
-
-        {/* 星級評分 */}
-        <div className="space-y-3">
-          <h4 className="font-semibold text-gray-700">最低評分</h4>
-          <div className="space-y-2">
-            {ratings.map((r) => (
-              <label key={r} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="rating"
-                  checked={selectedRating === r}
-                  onChange={() => setSelectedRating(r)}
-                  className="w-4 h-4 text-blue-600"
-                />
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={16}
-                      fill={i < Math.floor(r) ? '#FFD700' : 'none'}
-                      stroke="#FFD700"
-                      className="drop-shadow-sm"
-                    />
-                  ))}
-                  <span className="text-sm text-gray-700">{r} 星以上</span>
-                </div>
-              </label>
-            ))}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="rating"
-                checked={selectedRating === null}
-                onChange={() => setSelectedRating(null)}
-                className="w-4 h-4 text-blue-600"
-              />
-              <span className="text-sm text-gray-700">全部評分</span>
-            </label>
-          </div>
-        </div>
-
-        {/* 設施 */}
-        <div className="space-y-3">
-          <h4 className="font-semibold text-gray-700">設施</h4>
-          <div className="space-y-2">
-            {amenityList.map(({ key, label, icon }) => (
-              <label
-                key={key}
-                className="flex items-center gap-2 cursor-pointer"
+            <div className="absolute top-0 w-full h-0 pointer-events-none">
+              <div
+                className="absolute bg-[#DCBB87] text-white text-xs px-2 py-1 rounded-md -translate-x-1/2"
+                style={{ left: `${minPercent}%`, bottom: '100%' }}
               >
-                <input
-                  type="checkbox"
-                  checked={amenities.includes(key)}
-                  onChange={(e) => {
-                    setAmenities((prev) =>
-                      e.target.checked
-                        ? [...prev, key]
-                        : prev.filter((a) => a !== key)
-                    );
-                  }}
-                  className="w-4 h-4 text-blue-600 rounded"
-                />
-                <span className="text-sm text-gray-700 flex items-center gap-1.5">
-                  {icon} {label}
-                </span>
-              </label>
-            ))}
+                ¥{priceMin.toLocaleString()}
+              </div>
+              <div
+                className="absolute bg-[#DCBB87] text-white text-xs px-2 py-1 rounded-md -translate-x-1/2"
+                style={{ left: `${maxPercent}%`, bottom: '100%' }}
+              >
+                ¥{priceMax.toLocaleString()}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 按鈕群 */}
-        <div className="flex gap-3 pt-4">
-          <button
-            onClick={resetFilters}
-            className="flex-1 border border-gray-300 text-gray-700 font-medium py-2 rounded-lg hover:bg-gray-50 transition"
-          >
-            清除
-          </button>
-          <button
-            onClick={onClose}
-            className="flex-1 bg-[#D4A574] hover:bg-[#C69563] text-white font-bold py-2 rounded-lg transition"
-          >
-            套用
-          </button>
+        <div>
+          <h4 className="font-semibold mb-2 text-gray-700">最低評分</h4>
+          <ul className="space-y-1 text-gray-700 text-sm">
+            {ratings.map((r) => (
+              <li key={r}>
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={selectedRatings.includes(r)}
+                    onChange={() => toggleRating(r)}
+                    className="w-4 h-4 text-[#DCBB87] rounded focus:ring-[#DCBB87]"
+                  />
+                  {r}星以上
+                </label>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
+
+        <div>
+          <h4 className="font-semibold mb-2 text-gray-700">設施</h4>
+          <ul className="space-y-1 text-gray-700 text-sm">
+            {amenityList.map(({ key, label, icon }) => (
+              <li key={key}>
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={amenities.includes(key)}
+                    onChange={(e) => {
+                      setAmenities((prev) =>
+                        e.target.checked
+                          ? [...prev, key]
+                          : prev.filter((a) => a !== key)
+                      );
+                    }}
+                    className="w-4 h-4 text-[#DCBB87] rounded focus:ring-[#DCBB87]"
+                  />
+                  <span className="flex items-center gap-1">
+                    {icon} {label}
+                  </span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <button
+          onClick={applyFilters}
+          className="lg:hidden w-full py-3 bg-[#DCBB87] rounded-lg font-semibold text-white hover:bg-[#C49D67] transition"
+        >
+          套用篩選
+        </button>
+      </aside>
     </>
   );
 }
