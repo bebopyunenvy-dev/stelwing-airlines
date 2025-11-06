@@ -1,11 +1,7 @@
-import type { Metadata } from 'next';
+'use client';
+import HeaderWithCart from '../HeaderWithCart'; // ✅ 改這裡！
 import { DFStoreProvider } from './context/DFStoreContext';
 import './style.css';
-
-export const metadata: Metadata = {
-  title: 'Stelwing Duty Free',
-  description: 'Stelwing Airlines 免稅店專區',
-};
 
 export default function DutyFreeLayout({
   children,
@@ -13,10 +9,11 @@ export default function DutyFreeLayout({
   children: React.ReactNode;
 }) {
   return (
-    // ❌ 不要放 <html> 或 <body>
     <DFStoreProvider>
-      {/* ✅ 把 dutyfree theme 套在頂層 div */}
-      <div id="dutyfree-theme" className="relative" style={{ all: 'unset' }}>
+      <div id="dutyfree-theme" className="relative">
+        {/* ✅ DutyFree Header 改成帶購物車同步的版本 */}
+        <HeaderWithCart />
+
         <main className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
           {children}
         </main>

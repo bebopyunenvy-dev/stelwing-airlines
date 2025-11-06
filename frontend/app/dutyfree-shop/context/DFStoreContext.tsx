@@ -27,7 +27,7 @@ interface DFStoreContextType {
   cart: CartItem[];
   isLoggedIn: boolean;
   setIsLoggedIn: (value: boolean) => void;
-  logout: () => void; // ✅ 新增：登出方法
+  logout: () => void; // 新增：登出方法
   discount: number;
   promoCode: string;
   discountPercent: number;
@@ -37,6 +37,7 @@ interface DFStoreContextType {
   removeFromCart: (id: string) => void;
   updateCartQuantity: (id: string, quantity: number) => void;
   applyPromoCode: (code: string) => void;
+  clearCart: () => void; //  新增：清空購物車
 }
 
 // ===============================
@@ -279,6 +280,13 @@ export function DFStoreProvider({ children }: { children: React.ReactNode }) {
     toast.info('您已登出');
   };
 
+  // 清空購物車
+  const clearCart = () => {
+    setCart([]);
+    cartStorage.clear();
+    toast.info('購物車已清空');
+  };
+
   // -------------------------------
   // Context 提供值
   // -------------------------------
@@ -289,7 +297,7 @@ export function DFStoreProvider({ children }: { children: React.ReactNode }) {
         cart,
         isLoggedIn,
         setIsLoggedIn,
-        logout, // 新增
+        logout,
         discount,
         promoCode,
         discountPercent,
@@ -299,6 +307,7 @@ export function DFStoreProvider({ children }: { children: React.ReactNode }) {
         removeFromCart,
         updateCartQuantity,
         applyPromoCode,
+        clearCart,
       }}
     >
       {children}

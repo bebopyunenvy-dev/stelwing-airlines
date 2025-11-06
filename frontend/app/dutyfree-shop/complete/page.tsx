@@ -10,16 +10,22 @@ import { useDFStore } from '../context/DFStoreContext';
 import { ordersStorage } from '../utils/storage';
 
 /**
- *  修正版：不會再出現 `never` 沒有屬性 id
- * 原因：React Hook 狀態推斷時需要明確型別，cart 是 context 內型別 → 額外手動定義
+ *  最終修正版：
+ * 1. 訂單會正常寫入 localStorage
+ * 2. 結帳完成後購物車清空（clearCart）
+ * 3. Header 紅點即時歸 0
  */
 
 export default function CompletePage() {
   const router = useRouter();
-  const { cart, discount, discountPercent, removeFromCart, setCheckoutItem } =
-    useDFStore();
+  const {
+    cart,
+    discount,
+    discountPercent,
+    clearCart, // ✅ 改這裡
+    setCheckoutItem,
+  } = useDFStore();
 
-  //  明確定義 cartSnapshot 型別（依 cart 推斷）
   const [cartSnapshot, setCartSnapshot] = useState<
     {
       id: string;
@@ -34,19 +40,19 @@ export default function CompletePage() {
   const [pickupModalOpen, setPickupModalOpen] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
 
-  //  1. 初始化訂單編號
+  //  初始化訂單編號
   useEffect(() => {
     const year = new Date().getFullYear();
     const random = Math.floor(Math.random() * 9000) + 1000;
     setOrderNumber(`DF${year}-${random}`);
   }, []);
 
-  //  2. 寫入訂單邏輯
+  // 寫入訂單邏輯 + 清空購物車
   useEffect(() => {
     if (!orderNumber || !cart || cart.length === 0) return;
     if (cartSnapshot.length > 0) return;
 
-    //  快照建立
+    // 建立快照
     const snapshot = cart.map((item) => ({
       id: item.id,
       name: item.name,
@@ -58,14 +64,14 @@ export default function CompletePage() {
 
     setCartSnapshot(snapshot);
 
-    //  計算金額
+    // 計算金額
     const subtotal = snapshot.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
     const total = discountPercent ? subtotal - discount : subtotal;
 
-    //  訂單物件
+    // 訂單物件
     const newOrder = {
       id: orderNumber,
       date: new Date().toLocaleDateString('zh-TW'),
@@ -76,23 +82,24 @@ export default function CompletePage() {
       products: snapshot,
     };
 
-    //  寫入 localStorage
+    // 寫入 localStorage
     const existingOrders = ordersStorage.load();
     const isDuplicate = existingOrders.some((o) => o.id === orderNumber);
     if (!isDuplicate) {
       ordersStorage.save([newOrder, ...existingOrders]);
-      console.log('已儲存訂單：', newOrder);
+      console.log('✅ 已儲存訂單：', newOrder);
     }
 
-    //  清空購物車
+    // 清空購物車（延遲 1.5 秒確保訂單寫入完成）
     const timer = setTimeout(() => {
-      snapshot.forEach((item) => removeFromCart(item.id));
+      clearCart();
       setCheckoutItem(null);
     }, 1500);
+
     return () => clearTimeout(timer);
   }, [orderNumber, cart, discount, discountPercent]);
 
-  //  3. 載入中畫面
+  // 載入中畫面
   if (!orderNumber) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500">
@@ -101,7 +108,7 @@ export default function CompletePage() {
     );
   }
 
-  //  4. 完成畫面
+  // 完成畫面
   const subtotal = cartSnapshot.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -114,7 +121,7 @@ export default function CompletePage() {
         <DFCheckoutStepper currentStep={3} />
 
         <div className="bg-white rounded-lg p-6 md:p-12 text-center">
-          {/* ✅ 成功圖示 */}
+          {/* 成功圖示 */}
           <div className="w-16 h-16 bg-[var(--df-state-success)] rounded-full flex items-center justify-center mx-auto mb-6">
             <Check className="w-8 h-8 text-white" />
           </div>
@@ -123,7 +130,7 @@ export default function CompletePage() {
           <p className="text-gray-600 mb-2">感謝您的訂購</p>
           <p className="text-gray-600 mb-6">訂單號碼：{orderNumber}</p>
 
-          {/* ✅ 訂購商品 */}
+          {/* 訂購商品縮圖 */}
           {cartSnapshot.length > 0 && (
             <div className="mb-6">
               <h3 className="font-semibold mb-4">訂購商品</h3>
@@ -144,7 +151,7 @@ export default function CompletePage() {
             </div>
           )}
 
-          {/* ✅ 訂單金額 */}
+          {/* 訂單金額 */}
           <div className="max-w-md mx-auto p-4 bg-[var(--df-surface-alt)] rounded-lg mb-6">
             <div className="flex justify-between mb-2">
               <span className="text-gray-600">訂單小計</span>
@@ -162,7 +169,7 @@ export default function CompletePage() {
             </div>
           </div>
 
-          {/* ✅ 按鈕 */}
+          {/* 按鈕 */}
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <Button onClick={() => setPickupModalOpen(true)} variant="outline">
               查看取貨資訊
@@ -177,7 +184,7 @@ export default function CompletePage() {
         </div>
       </div>
 
-      {/* ✅ 彈窗 */}
+      {/* 彈窗 */}
       <DFPickupModal
         open={pickupModalOpen}
         onClose={() => setPickupModalOpen(false)}
