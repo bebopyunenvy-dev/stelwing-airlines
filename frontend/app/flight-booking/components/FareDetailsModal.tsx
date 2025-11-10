@@ -1,8 +1,12 @@
 'use client';
 
+import { useBookingStore } from '@/src/store/bookingStore';
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
 
+/* =======================
+ * Types
+ * ======================= */
 export type Segment = {
   title: '去程' | '回程';
   flightNo: string;
@@ -26,7 +30,10 @@ type Props = {
   currency?: string;
 };
 
-export default function FareDetailsModal({
+/* =======================
+ * Modal 本體（純展示）
+ * ======================= */
+export function FareDetailsModal({
   open,
   onClose,
   outbound,
@@ -101,6 +108,35 @@ export default function FareDetailsModal({
   );
 }
 
+/* =======================
+ * 從 store 綁定的容器（掛在 layout）
+ * ======================= */
+export function FareDetailsFromStore() {
+  const open = useBookingStore((s) => s.detailsOpen);
+  const onClose = useBookingStore((s) => s.closeDetails);
+  const outbound = useBookingStore((s) => s.outbound);
+  const inbound = useBookingStore((s) => s.inbound);
+  const currency = useBookingStore((s) => s.currency);
+  const baseFare = useBookingStore((s) => s.price.baseFare);
+  const extrasTotal = useBookingStore((s) => s.price.extrasTotal);
+
+  const total = (baseFare ?? 0) + (extrasTotal ?? 0);
+
+  return (
+    <FareDetailsModal
+      open={open}
+      onClose={onClose}
+      outbound={outbound ?? undefined}
+      inbound={inbound ?? undefined}
+      total={total}
+      currency={currency ?? 'TWD'}
+    />
+  );
+}
+
+/* =======================
+ * 子項目：單段明細
+ * ======================= */
 function DetailRow({ seg }: { seg: Segment }) {
   return (
     <div className="rounded-xl border border-[color:var(--sw-grey)]/60 p-4">
