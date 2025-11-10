@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 // @ts-expect-error 我不寫就跳錯我只好加啊氣死
 import { DateTime } from 'luxon';
-import CreatePlanModal from '../components/createPlanModal';
+import CreatePlanForm from '../components/createPlanForm';
+import EditDialog from '../components/editDialog';
 import TripCard from '../components/tripCard';
 // export interface ListPageProps {}
 
@@ -107,11 +108,12 @@ export default function ListPage() {
     displayEndDate: string;
   }
 
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
   const tabs = ['全部', '待啟程', '進行中', '已結束'];
   const [activeTab, setActiveTab] = useState('全部');
   const [trips, setTrips] = useState<Trip[]>([]);
   const [error, setError] = useState(null);
-  const [showCreatePlanModal, setShowCreatePlanModal] = useState(false); //預設彈出新增視窗不顯示
+  const [isOpenCreatePlan, setIsOpenCreatePlan] = useState(false); //彈出視窗 UI 套件版
 
   // #region 關於 Luxon
 
@@ -154,8 +156,7 @@ export default function ListPage() {
   useEffect(() => {
     async function fetchTrips() {
       try {
-        // const res = await fetch('http://localhost:3007/api/plans');
-        const res = await fetch('http://192.168.65.164:3007/api/plans');
+        const res = await fetch(`${API_BASE}/plans`);
         // 如果 res 回傳失敗，建立 Error 物件並將 message 設定為無法取得旅程資料，且跳到 catch 環節 setError
         if (!res.ok) throw new Error('無法取得旅程資料');
         const data = await res.json();
@@ -165,7 +166,7 @@ export default function ListPage() {
       }
     }
     fetchTrips();
-  }, []);
+  }, [API_BASE]);
 
   // data：根據後端 API 傳來的 Data，調整後的前端用 Data
   const tripsForUI: tripForUI[] = trips.map((trip) => ({
@@ -181,6 +182,11 @@ export default function ListPage() {
     activeTab === '全部'
       ? tripsForUI
       : tripsForUI.filter((t) => t.status === activeTab);
+
+  // 功能：新增旅程 form 成功新增後關閉彈出視窗
+  const handleFormSuccess = () => {
+    setIsOpenCreatePlan(false);
+  };
 
   // return 畫面
   return (
@@ -201,7 +207,7 @@ export default function ListPage() {
               <div className="mb-6">
                 <button
                   className="sw-btn sw-btn--gold-square"
-                  onClick={() => setShowCreatePlanModal(true)}
+                  onClick={() => setIsOpenCreatePlan(true)}
                 >
                   <h6>建立新旅程</h6>
                 </button>
@@ -241,10 +247,13 @@ export default function ListPage() {
           </div>
         </section>
         {/* 彈出視窗：新增旅程 */}
-        {showCreatePlanModal && (
-          // 因為 modal 是子元件，React 中子元件不能傳資料給父元件、不能改變父元件狀態，所以由父元件將這個操作函式傳給子元件讓子元件使用
-          <CreatePlanModal onClose={() => setShowCreatePlanModal(false)} />
-        )}
+        <EditDialog
+          open={isOpenCreatePlan}
+          onOpenChange={setIsOpenCreatePlan}
+          title={'新增旅程'}
+        >
+          <CreatePlanForm onSuccess={handleFormSuccess} />
+        </EditDialog>
       </div>
     </>
   );

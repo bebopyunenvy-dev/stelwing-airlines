@@ -119,7 +119,7 @@ router.post("/register", async (req: Request, res: Response) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const newUser = await prisma.Member.create({
+    const newUser = await prisma.member.create({
       data: { email, password: hashed, firstName: name },
     });
 
@@ -139,7 +139,7 @@ router.post("/login", async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
-    const user = await prisma.Member.findUnique({ where: { email } });
+    const user = await prisma.member.findUnique({ where: { email } });
     if (!user) {
       return res.status(401).json({ message: "帳號不存在" });
     }
