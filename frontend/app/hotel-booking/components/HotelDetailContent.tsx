@@ -320,7 +320,7 @@ export default function HotelDetailContent({
             <input
               type="tel"
               id="phone"
-              placeholder="09xx-xxx-xxx"
+              placeholder="09xxxxxxxx"
               value={formData.phone}
               onChange={(e) => onInputChange('phone', e.target.value)}
               className={`w-full p-3 border rounded-md bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition ${

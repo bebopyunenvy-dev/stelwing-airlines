@@ -1,14 +1,15 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import Calendar, { DateRange } from './components/Calendar';
 import HotelCard from './components/HotelCard';
 import SearchBar from './components/SearchBar';
-// 🌟 修正導入路徑，確保使用 interfaces/constants.ts 中的 HotelCardData
 import { HotelCardData } from './interfaces/constants';
 
 export default function Page() {
-  // 數據保持本地定義，並使用 HotelCardData
+  const router = useRouter();
+
   const hotels: HotelCardData[] = [
     {
       id: 1,
@@ -61,6 +62,12 @@ export default function Page() {
     DateRange | undefined
   >(undefined);
 
+  const handleCardClick = (hotel: HotelCardData) => {
+    // 存要定位的飯店 ID
+    localStorage.setItem('scrollToHotelId', hotel.id.toString());
+    router.push('hotel-booking/search');
+  };
+
   return (
     <div className="min-h-screen bg-[url('/images/hotel/bg1.jpeg')] bg-cover bg-center sm:bg-top bg-no-repeat bg-black/70 bg-blend-darken pb-10">
       {/* 搜尋欄 */}
@@ -89,6 +96,7 @@ export default function Page() {
               <div
                 key={hotel.id}
                 className="w-full transition-all duration-300 ease-in-out"
+                onClick={() => handleCardClick(hotel)}
               >
                 <HotelCard hotel={hotel} />
               </div>

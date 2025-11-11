@@ -27,12 +27,11 @@ export default function SearchBar({
     return `${month} ${day}`;
   };
 
-  // 修改這裡：選完日期不自動關閉
   const handleDateSelect = (range: DateRange | undefined) => {
     if (onDateChange) onDateChange(range);
-    // 不再自動關閉日曆
   };
 
+  // 🌟 搜尋按鈕事件：帶參數跳轉
   const handleSearch = () => {
     if (!selectedRange?.from || !selectedRange?.to) {
       alert('請選擇入住與退房日期');
@@ -42,8 +41,9 @@ export default function SearchBar({
     const checkin = selectedRange.from.toISOString().split('T')[0];
     const checkout = selectedRange.to.toISOString().split('T')[0];
 
+    // 🚀 帶參數跳轉
     router.push(
-      `/search?checkin=${checkin}&checkout=${checkout}&adults=${adults}&rooms=${rooms}`
+      `/hotel-booking/search?checkin=${checkin}&checkout=${checkout}&adults=${adults}&rooms=${rooms}`
     );
   };
 
@@ -150,7 +150,7 @@ export default function SearchBar({
             )}
           </div>
 
-          {/* 搜尋按鈕換行 */}
+          {/* 搜尋按鈕 */}
           <div className="w-full flex justify-center mt-2">
             <button
               onClick={handleSearch}

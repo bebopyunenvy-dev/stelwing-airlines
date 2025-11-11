@@ -1,28 +1,28 @@
 'use client';
-
-import { useCallback, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'; // ⭐ 1. 導入 useEffect
 import { DateRange } from '../components/Calendar';
 import FilterSidebar from '../components/FilterSidebar';
 import HotelResultCard from '../components/HotelResultCard';
 import SearchBar from '../components/SearchBar';
-// 🌟 導入常量和類型
 import { AmenityKey, MAX_PRICE, MIN_PRICE } from '../interfaces/constants';
-// 🌟 導入集中管理的飯店數據和介面
 import { allMockHotels } from '../interfaces/mockHotels';
-// ❗ 移除了原本寫在本地的 interface Hotel 和 const hotels 陣列。
 
 export default function HotelPage() {
+  const router = useRouter();
   const [showFilter, setShowFilter] = useState(false);
-
-  // 所有的篩選狀態都由父層 (HotelPage) 管理
   const [priceMin, setPriceMin] = useState(MIN_PRICE);
   const [priceMax, setPriceMax] = useState(MAX_PRICE);
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<AmenityKey[]>([]);
-
   const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(
     undefined
   );
+
+  // ⭐ 用來存放每個 hotel card 的 ref (你原本的程式碼，很棒！)
+  const hotelRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  const searchParams = useSearchParams(); // ⭐ 3. 獲取 URL 搜尋參數
 
   const clearAllFilters = useCallback(() => {
     setPriceMin(MIN_PRICE);
@@ -32,23 +32,18 @@ export default function HotelPage() {
   }, []);
 
   const filteredHotels = useMemo(() => {
-    // 🔒 自動修正 min/max 順序，確保篩選正確
     const min = Math.min(priceMin, priceMax);
     const max = Math.max(priceMin, priceMax);
 
-    // 🌟 使用導入的 allMockHotels 陣列進行篩選
     return allMockHotels.filter((hotel) => {
-      // 1. 價格篩選
       if (hotel.price < min || hotel.price > max) return false;
 
-      // 2. 評分篩選
       if (
         selectedRatings.length > 0 &&
         !selectedRatings.some((r) => hotel.rating >= r)
       )
         return false;
 
-      // 3. 設施篩選 (要求飯店包含所有選定的設施)
       if (
         selectedAmenities.length > 0 &&
         !selectedAmenities.every((a) => hotel.amenities.includes(a))
@@ -57,11 +52,38 @@ export default function HotelPage() {
 
       return true;
     });
-  }, [priceMin, priceMax, selectedRatings, selectedAmenities]); // 依賴於所有篩選狀態
+  }, [priceMin, priceMax, selectedRatings, selectedAmenities]);
+
+  // ⭐ 4. 新增 effect 來處理滾動
+  useEffect(() => {
+    // 嘗試從 URL 獲取 highlight 參數
+    const highlightedHotelId = searchParams.get('highlight');
+
+    if (highlightedHotelId) {
+      // 將 ID 轉為數字
+      const hotelIdNumber = parseInt(highlightedHotelId, 10);
+      // 從 refs 中找到對應的 DOM 元素
+      const hotelElement = hotelRefs.current[hotelIdNumber];
+
+      // 確保 ref 存在並且 filteredHotels 已經渲染完成
+      if (hotelElement) {
+        // 滾動到該元素
+        hotelElement.scrollIntoView({
+          behavior: 'smooth', // 平滑滾動
+          block: 'center', // 滾動到畫面中央
+        });
+
+        // (可選) 這裡你還可以額外添加一個短暫高亮的 CSS class，
+        // 但為了不影響版型，目前只做滾動
+      }
+    }
+    // 依賴 searchParams (當 URL 參數變化時)
+    // 和 filteredHotels (確保飯店列表渲染完成後才執行)
+  }, [searchParams, filteredHotels]);
 
   return (
     <div
-      className="min-h-screen w-full bg-cover bg-center bg-no-repeat relative "
+      className="min-h-screen w-full bg-cover bg-center bg-no-repeat relative"
       style={{ backgroundImage: "url('/images/hotel/bg1.jpeg')" }}
     >
       <div className="flex flex-col w-full h-full bg-black/70 min-h-screen p-4 md:p-8">
@@ -70,14 +92,11 @@ export default function HotelPage() {
           onDateChange={setSelectedRange}
         />
 
-        {/* ⭐ 主要內容區塊：加上最大寬度 max-w-6xl 和水平置中 mx-auto */}
         <div className="flex-1 flex flex-col md:flex-row w-full max-w-6xl mx-auto mt-4 md:mt-6">
-          {/* ⭐ 篩選側邊欄包裹層：保留 w-auto */}
           <div className="w-auto flex-shrink-0 h-full">
             <FilterSidebar
               isMobileOpen={showFilter}
               onClose={() => setShowFilter(false)}
-              // 傳遞狀態值和更新函式給 FilterSidebar
               priceMin={priceMin}
               onPriceMinChange={setPriceMin}
               priceMax={priceMax}
@@ -86,11 +105,10 @@ export default function HotelPage() {
               onSelectedRatingsChange={setSelectedRatings}
               selectedAmenities={selectedAmenities}
               onSelectedAmenitiesChange={setSelectedAmenities}
-              onClearAll={clearAllFilters} // 傳遞清除所有篩選的函式
+              onClearAll={clearAllFilters}
             />
           </div>
 
-          {/* ⭐ 主內容區：確保卡片水平置中，並移除多餘的 space-x-6 */}
           <main className="flex-1 overflow-y-auto space-y-6 px-4 md:px-8 flex flex-col items-center">
             <button
               onClick={() => setShowFilter(true)}
@@ -103,7 +121,7 @@ export default function HotelPage() {
               <div className="text-center py-12 text-gray-300">
                 <p className="text-lg mb-4">沒有符合條件的飯店</p>
                 <button
-                  onClick={clearAllFilters} // 使用新的清除函式
+                  onClick={clearAllFilters}
                   className="text-[#DCBB87] underline"
                 >
                   清除篩選條件
@@ -111,16 +129,24 @@ export default function HotelPage() {
               </div>
             ) : (
               filteredHotels.map((hotel) => (
-                <HotelResultCard key={hotel.id} hotel={hotel} />
+                <div
+                  key={hotel.id}
+                  ref={(el) => {
+                    hotelRefs.current[hotel.id] = el;
+                  }}
+                  className="w-full"
+                >
+                  <HotelResultCard hotel={hotel} />
+                </div>
               ))
             )}
 
             <div className="flex justify-between mt-8 pb-6 w-full max-w-4xl">
-              <button className="border border-[#D4A574] text-[#D4A574] px-6 py-2 rounded-full hover:bg-[#D4A574] hover:text-white transition-all font-semibold">
+              <button
+                onClick={() => router.push('/hotel-booking')}
+                className="border border-[#D4A574] text-[#D4A574] px-6 py-2 rounded-full hover:bg-[#D4A574] hover:text-white transition-all font-semibold"
+              >
                 上一步
-              </button>
-              <button className="border border-[#D4A574] text-[#D4A574] px-6 py-2 rounded-full hover:bg-[#D4A574] hover:text-white transition-all font-semibold">
-                下一步
               </button>
             </div>
           </main>
