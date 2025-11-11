@@ -20,8 +20,8 @@ export function useAlertDialog() {
 
   // 當我的程式下 showAlert()，顯示訊息彈出視窗
   const showAlert = useCallback(
-    // 它會將 alert 視窗
-    ({ title, description, confirmText, onConfirm }: AlertOptions) => {
+    // 它會將 alert 視窗的狀態設定為：open true、標題內容用我們設定的、確認的操作使用
+    ({ title, description, confirmText = '確認', onConfirm }: AlertOptions) => {
       setAlert({
         open: true,
         title,
@@ -36,6 +36,7 @@ export function useAlertDialog() {
     []
   );
 
+  // 當我的程式下 closeAlert()，關閉訊息視窗
   const closeAlert = useCallback(() => {
     setAlert((prev) => ({ ...prev, open: false }));
   }, []);
