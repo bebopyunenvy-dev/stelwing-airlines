@@ -1,6 +1,7 @@
 'use client';
+
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'; // ⭐ 1. 導入 useEffect
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DateRange } from '../components/Calendar';
 import FilterSidebar from '../components/FilterSidebar';
 import HotelResultCard from '../components/HotelResultCard';
@@ -10,6 +11,7 @@ import { allMockHotels } from '../interfaces/mockHotels';
 
 export default function HotelPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showFilter, setShowFilter] = useState(false);
   const [priceMin, setPriceMin] = useState(MIN_PRICE);
   const [priceMax, setPriceMax] = useState(MAX_PRICE);
@@ -19,10 +21,7 @@ export default function HotelPage() {
     undefined
   );
 
-  // ⭐ 用來存放每個 hotel card 的 ref (你原本的程式碼，很棒！)
   const hotelRefs = useRef<Record<number, HTMLDivElement | null>>({});
-
-  const searchParams = useSearchParams(); // ⭐ 3. 獲取 URL 搜尋參數
 
   const clearAllFilters = useCallback(() => {
     setPriceMin(MIN_PRICE);
@@ -34,52 +33,44 @@ export default function HotelPage() {
   const filteredHotels = useMemo(() => {
     const min = Math.min(priceMin, priceMax);
     const max = Math.max(priceMin, priceMax);
-
     return allMockHotels.filter((hotel) => {
       if (hotel.price < min || hotel.price > max) return false;
-
       if (
         selectedRatings.length > 0 &&
         !selectedRatings.some((r) => hotel.rating >= r)
       )
         return false;
-
       if (
         selectedAmenities.length > 0 &&
         !selectedAmenities.every((a) => hotel.amenities.includes(a))
       )
         return false;
-
       return true;
     });
   }, [priceMin, priceMax, selectedRatings, selectedAmenities]);
 
-  // ⭐ 4. 新增 effect 來處理滾動
+  // 自動滾動到 highlight 的飯店
   useEffect(() => {
-    // 嘗試從 URL 獲取 highlight 參數
     const highlightedHotelId = searchParams.get('highlight');
-
     if (highlightedHotelId) {
-      // 將 ID 轉為數字
-      const hotelIdNumber = parseInt(highlightedHotelId, 10);
-      // 從 refs 中找到對應的 DOM 元素
-      const hotelElement = hotelRefs.current[hotelIdNumber];
-
-      // 確保 ref 存在並且 filteredHotels 已經渲染完成
-      if (hotelElement) {
-        // 滾動到該元素
-        hotelElement.scrollIntoView({
-          behavior: 'smooth', // 平滑滾動
-          block: 'center', // 滾動到畫面中央
-        });
-
-        // (可選) 這裡你還可以額外添加一個短暫高亮的 CSS class，
-        // 但為了不影響版型，目前只做滾動
+      const id = parseInt(highlightedHotelId, 10);
+      const el = hotelRefs.current[id];
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-4', 'ring-[#DCBB87]', 'ring-offset-4');
+        setTimeout(
+          () =>
+            el.classList.remove('ring-4', 'ring-[#DCBB87]', 'ring-offset-4'),
+          3000
+        );
       }
     }
-    // 依賴 searchParams (當 URL 參數變化時)
-    // 和 filteredHotels (確保飯店列表渲染完成後才執行)
   }, [searchParams, filteredHotels]);
+
+  const goToDetail = (hotelId: number) => {
+    localStorage.setItem('booking_selectedHotelId', hotelId.toString());
+    router.push(`/hotel-booking/${hotelId}?${searchParams.toString()}`);
+  };
 
   return (
     <div
@@ -136,7 +127,12 @@ export default function HotelPage() {
                   }}
                   className="w-full"
                 >
-                  <HotelResultCard hotel={hotel} />
+                  <div
+                    onClick={() => goToDetail(hotel.id)}
+                    className="cursor-pointer"
+                  >
+                    <HotelResultCard hotel={hotel} />
+                  </div>
                 </div>
               ))
             )}
@@ -146,7 +142,7 @@ export default function HotelPage() {
                 onClick={() => router.push('/hotel-booking')}
                 className="border border-[#D4A574] text-[#D4A574] px-6 py-2 rounded-full hover:bg-[#D4A574] hover:text-white transition-all font-semibold"
               >
-                上一步
+                返回首頁
               </button>
             </div>
           </main>

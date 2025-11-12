@@ -12,16 +12,10 @@ export default function PaymentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[url('/images/hotel/bg2.jpeg')] bg-cover bg-center sm:bg-top bg-no-repeat bg-black/70 bg-blend-darken pb-10">
-      <div className="flex justify-center items-center min-h-screen px-6">
-        <div className="w-full max-w-6xl">
-          <OrderPage
-            pageTitle="付款資訊"
-            buttonText="確認付款"
-            onSubmit={handlePayment}
-          />
-        </div>
-      </div>
-    </div>
+    <OrderPage
+      pageTitle="付款資訊"
+      buttonText="確認付款"
+      onSubmit={handlePayment}
+    />
   );
 }
