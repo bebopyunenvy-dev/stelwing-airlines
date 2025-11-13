@@ -1,9 +1,9 @@
 'use client';
 
-import dayGridPlugin from '@fullcalendar/daygrid'; // a plugin!
+import dayGridPlugin from '@fullcalendar/daygrid';
 import listPlugin from '@fullcalendar/list';
 import FullCalendar from '@fullcalendar/react';
-import timeGridPlugin from '@fullcalendar/timegrid'; // a plugin!
+import timeGridPlugin from '@fullcalendar/timegrid';
 
 // export interface Test01PageProps {}
 
@@ -174,49 +174,49 @@ export default function App() {
 
   return (
     <>
-        {/* Calendar */}      
-        <div className="p-4 flex justify-center">
-          <div className="w-1/2">
-            <FullCalendar
-              plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
-              initialView="dayGridMonth"
-              initialDate="2025-12-22"
-              selectable={true}
-              selectMirror={true}
-              unselectAuto={true}
-              // height="100%"
-              stickyHeaderDates={true}
-              headerToolbar={{
-                start: 'title',
-                center: 'prev,next today',
-                end: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
-              }}
-              buttonText={{
-                today: '今天',
-                month: '月曆',
-                week: '週曆',
-                day: '日曆',
-                list: '列表',
-              }}
-              events={events12}
-              eventColor="#DCBB87"
-              eventClick={(info) => {
-                // 阻止預設的導向行為（例如連到網址）
-                info.jsEvent.preventDefault();
+      {/* Calendar */}
+      <div className="p-4 flex justify-center">
+        <div className="w-1/2">
+          <FullCalendar
+            plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
+            initialView="dayGridMonth"
+            initialDate="2025-12-22"
+            selectable={true}
+            selectMirror={true}
+            unselectAuto={true}
+            // height="100%"
+            stickyHeaderDates={true}
+            headerToolbar={{
+              start: 'title',
+              center: 'prev,next today',
+              end: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+            }}
+            buttonText={{
+              today: '今天',
+              month: '月曆',
+              week: '週曆',
+              day: '日曆',
+              list: '列表',
+            }}
+            events={events12}
+            eventColor="#DCBB87"
+            eventClick={(info) => {
+              // 阻止預設的導向行為（例如連到網址）
+              info.jsEvent.preventDefault();
 
-                // 這裡可以取到被點擊的事件資料
-                console.log(info.event.title);
-                console.log(info.event.start);
-                console.log(info.event.end);
+              // 這裡可以取到被點擊的事件資料
+              console.log(info.event.title);
+              console.log(info.event.start);
+              console.log(info.event.end);
 
-                // 你可以這樣開啟彈窗或導頁
-                alert(
-                  `行程：${info.event.title}\n日期：${info.event.start?.toLocaleDateString()}`
-                );
-              }}
-            />
-          </div>
-        </div>      
+              // 你可以這樣開啟彈窗或導頁
+              alert(
+                `行程：${info.event.title}\n日期：${info.event.start?.toLocaleDateString()}`
+              );
+            }}
+          />
+        </div>
+      </div>
     </>
   );
 }

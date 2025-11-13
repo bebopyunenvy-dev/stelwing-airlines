@@ -6,6 +6,8 @@ import { DateTime } from 'luxon';
 import CreatePlanForm from '../components/createPlanForm';
 import EditDialog from '../components/editDialog';
 import TripCard from '../components/tripCard';
+import type { Trip } from '../types';
+import { apiFetch } from '../utils/apiFetch';
 // export interface ListPageProps {}
 
 export default function ListPage() {
@@ -87,22 +89,7 @@ export default function ListPage() {
     },
   ];
 
-  interface Trip {
-    id: string;
-    userId: string;
-    title: string;
-    destination: string;
-    startDate: string;
-    startTimezone: string;
-    endDate: string;
-    endTimezone: string;
-    note: string;
-    coverImage: string;
-    isDeleted: number;
-    createdAt: string;
-    updatedAt: string;
-  }
-  interface tripForUI extends Trip {
+  interface TripForUI extends Trip {
     status: string;
     displayStartDate: string;
     displayEndDate: string;
@@ -156,21 +143,25 @@ export default function ListPage() {
   useEffect(() => {
     async function fetchTrips() {
       try {
-        // const res = await fetch(`${API_BASE}/plans`);
-        const res = await fetch('http://localhost:3007/api/plans');
-        // 如果 res 回傳失敗，建立 Error 物件並將 message 設定為無法取得旅程資料，且跳到 catch 環節 setError
-        if (!res.ok) throw new Error('無法取得旅程資料');
-        const data = await res.json();
+        // 呼叫共用 apiFetch
+        // const data = await apiFetch<Trip[]>('http://localhost:3007/api/plans', {
+        const data = await apiFetch<Trip[]>(`${API_BASE}/plans`, {
+          method: 'GET',
+        });
+
+        // apiFetch 成功回傳的就是後端 data 部分
         setTrips(data);
       } catch (err: any) {
-        setError(err.message);
+        // apiFetch 拋出的錯誤會進 catch
+        setError(err.message || '無法取得旅程資料');
       }
     }
+
     fetchTrips();
   }, [API_BASE]);
 
   // data：根據後端 API 傳來的 Data，調整後的前端用 Data
-  const tripsForUI: tripForUI[] = trips.map((trip) => ({
+  const tripsForUI: TripForUI[] = trips.map((trip) => ({
     ...trip,
     status: calculateStatus(trip), //前端用：判斷旅程是否進行中的欄位
     displayStartDate: convertToTimezone(trip.startDate, trip.startTimezone),

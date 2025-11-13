@@ -19,10 +19,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <ConditionalHeader />
 
           <main className="flex-1 flex flex-col">{children}</main>
-
-          {/* ✅ Footer 全站共用 */}
-          <Footer />
         </div>
+        {/* ✅ Footer 全站共用 */}
+        <Footer />
       </body>
     </html>
   );

@@ -1,11 +1,6 @@
 'use client';
 
 import { MoveRight } from 'lucide-react';
-import { useCallback, useState } from 'react';
-import { useAlertDialog } from '../components/alertDialog/useAlertDialog';
-import { apiFetch } from '../utils/apiFetch';
-import AlertDialogBox from './alertDialog/alertDialogBox';
-import ConfirmDialog from './confirmDialog';
 
 export interface Trip {
   id: string; // 必填：用於 key
@@ -28,7 +23,7 @@ export interface Trip {
 }
 
 // TripCardProps 直接傳整個 trip
-export interface TripCardProps {
+export interface TripCardShortProps {
   trip: Trip;
 }
 
@@ -44,48 +39,31 @@ const STATUS_TEXT_COLORS: Record<string, string> = {
   已結束: '--sw-white', // 藍
 };
 
-export default function TripCard({ trip }: TripCardProps) {
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
-  const { alert, showAlert } = useAlertDialog();
-  const [isOpenDeletePlan, setIsOpenDeletePlan] = useState(false);
-
-  const handleDelete = useCallback(async () => {
-    try {
-      // const data = await fetch(`http://localhost:3007/api/plans/${trip.id}`, {
-      const data = await apiFetch(`${API_BASE}/plans/${trip.id}`, {
-        method: 'DELETE',
-      });
-
-      console.log(data);
-
-      showAlert({
-        title: '刪除成功',
-        description: '點擊確認回到旅程列表',
-        confirmText: '確認',
-        onConfirm: () => setIsOpenDeletePlan(false),
-      });
-    } catch (err: any) {
-      showAlert({
-        title: '刪除失敗',
-        description: err.message || '請稍後再試',
-        confirmText: '確認',
-        onConfirm: () => setIsOpenDeletePlan(false),
-      });
-    }
-  }, [API_BASE, trip.id, showAlert]);
-
+export default function TripCard({ trip }: TripCardShortProps) {
   return (
     <>
       <div className="rounded-lg bg-ticket py-4 flex">
-        {/* 第 1 塊：飛機窗圖片 */}
-        <div className="px-4">
+        {/* 第 1 塊：飛機窗圖片 + 狀態 */}
+        <div className="px-4 flex flex-col items-center justify-between gap-4">
+          {/* 飛機窗圖片 */}
           <div className="bg-(--sw-primary) w-20 h-30 rounded-full"></div>
+          {/* 狀態 */}
+          <div className="flex items-center">
+            <div
+              className="py-2 px-2 rounded-lg"
+              style={{
+                backgroundColor: `var(${STATUS_BACKGROUND_COLORS[trip.status]})`,
+                color: `var(${STATUS_TEXT_COLORS[trip.status]})`,
+              }}
+            >
+              <h6 className="sw-h6">{trip.status}</h6>
+            </div>
+          </div>
         </div>
         {/* 第 2 塊：行程文字內容 */}
         <div className="flex-1 px-4 flex flex-col">
-          {/* 時間與標題 */}
-          <div className="flex-1 flex items-start">
-            {/* 時間 */}
+          {/* 時間 */}
+          <div className="flex items-start">
             <div className="flex-1 flex gap-2">
               {/* 開始 */}
               <div className="flex-1">
@@ -101,10 +79,11 @@ export default function TripCard({ trip }: TripCardProps) {
                 <p className="text-[#8b929a] text-xs">{trip.endTimezone}</p>
               </div>
             </div>
-            {/* 標題 */}
-            <div className="flex-1">
-              <h6 className="sw-h6  ml-10">{trip.title}</h6>
-            </div>
+          </div>
+
+          {/* 標題 */}
+          <div className="flex-1">
+            <h6 className="sw-h6 my-4">{trip.title}</h6>
           </div>
 
           {/* 地點 */}
@@ -128,48 +107,7 @@ export default function TripCard({ trip }: TripCardProps) {
           </div>
         </div>
         {/* 第 3 塊：行程狀態 */}
-        <div
-          className="px-4 flex items-center
-                    border-l border-dashed border-(--sw-primary)
-                    "
-        >
-          <div
-            className="py-2 px-8 rounded-lg"
-            style={{
-              backgroundColor: `var(${STATUS_BACKGROUND_COLORS[trip.status]})`,
-              color: `var(${STATUS_TEXT_COLORS[trip.status]})`,
-            }}
-          >
-            <h6 className="sw-h6">{trip.status}</h6>
-          </div>
-        </div>
-        {/* 第 4 塊：按鈕操作 */}
-        <div
-          className="px-4 flex items-center gap-2 
-                    border-l border-dashed border-(--sw-primary)"
-        >
-          <button className="sw-btn border border-solid border-(--sw-grey)">
-            <h6 className="sw-h6">查看詳細行程</h6>
-          </button>
-          <button
-            className="sw-btn border border-solid border-(--sw-grey)"
-            onClick={() => setIsOpenDeletePlan(true)}
-          >
-            <h6 className="sw-h6">刪除整趟旅程</h6>
-          </button>
-        </div>
       </div>
-      {/* 彈出視窗 / UI 套件：確認是否刪除 */}
-      <ConfirmDialog
-        open={isOpenDeletePlan}
-        onOpenChange={setIsOpenDeletePlan}
-        title={'確定要刪除這趟旅程嗎？'}
-        description={'整趟旅程及已建立的每日行程細項皆會刪除'}
-        confirmText={'確認刪除'}
-        onConfirm={handleDelete}
-      />
-      {/* 彈出視窗 / 整包套件：刪除結果訊息 */}
-      {alert.open && <AlertDialogBox alert={alert} />}
     </>
   );
 }

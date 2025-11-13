@@ -2,9 +2,9 @@
 
 import { MoveRight } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { useAlertDialog } from '../components/alertDialog/useAlertDialog';
 import { apiFetch } from '../utils/apiFetch';
 import AlertDialogBox from './alertDialog/alertDialogBox';
+import { useAlertDialog } from './alertDialog/useAlertDialog';
 import ConfirmDialog from './confirmDialog';
 
 export interface Trip {
@@ -28,7 +28,7 @@ export interface Trip {
 }
 
 // TripCardProps 直接傳整個 trip
-export interface TripCardProps {
+export interface TripCardShortProps {
   trip: Trip;
 }
 
@@ -44,7 +44,7 @@ const STATUS_TEXT_COLORS: Record<string, string> = {
   已結束: '--sw-white', // 藍
 };
 
-export default function TripCard({ trip }: TripCardProps) {
+export default function TripCard({ trip }: TripCardShortProps) {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
   const { alert, showAlert } = useAlertDialog();
   const [isOpenDeletePlan, setIsOpenDeletePlan] = useState(false);

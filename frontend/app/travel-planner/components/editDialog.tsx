@@ -30,9 +30,9 @@ export default function FormDialog({
         {/* Portal：入口網頁，所有彈出相關內容 */}
         <Dialog.Portal>
           {/* Overlay：背景遮罩 */}
-          <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+          <Dialog.Overlay className="fixed inset-0 bg-black/50 z-500" />
           {/* Content：彈出視窗 */}
-          <Dialog.Content className="sw-dialog fixed w-[90vx] max-w-[600px] h-[90vh] max-h-[600px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-ticket pl-6 pr-3 py-6 rounded-lg shadow-lg flex flex-col">
+          <Dialog.Content className="sw-dialog fixed w-[90vx] max-w-[600px] h-[90vh] max-h-[600px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-ticket pl-6 pr-3 py-6 rounded-lg shadow-lg flex flex-col z-550">
             {title && (
               <Dialog.Title className="sw-h5 mb-3">{title}</Dialog.Title>
             )}
