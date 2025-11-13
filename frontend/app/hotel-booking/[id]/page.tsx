@@ -3,41 +3,44 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import * as React from 'react';
+import { HotelBookingStepper } from '../components/HotelBookingStepper';
 import HotelDetailBookingCard from '../components/HotelDetailBookingCard';
 import HotelDetailContent from '../components/HotelDetailContent';
 import { HotelDetailData } from '../interfaces/HotelDetailData';
 import { convertHotelToDetailData } from '../interfaces/hotelUtils';
 import { allMockHotels } from '../interfaces/mockHotels';
+import { calculateNights, formatDateLocal } from '../utils/dateUtils';
 
 const fetchHotelData = (id: string): HotelDetailData | null => {
   const hotel = allMockHotels.find((h) => h.id === parseInt(id));
   return hotel ? convertHotelToDetailData(hotel) : null;
 };
 
-const formatDateLocal = (date: Date) => {
-  const tzOffset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - tzOffset).toISOString().split('T')[0];
-};
-
 export default function HotelDetailPage() {
   const router = useRouter();
   const params = useParams();
   const hotelId = Array.isArray(params?.id) ? params.id[0] : params?.id || '';
-
   const hotel = fetchHotelData(hotelId);
 
+  // 從 localStorage 讀取「首頁」選擇的初始值
   const savedSearch =
     typeof window !== 'undefined'
       ? JSON.parse(localStorage.getItem('booking_search') || '{}')
       : {};
 
+  // 初始日期：用首頁選的，若無則預設今天 + 3 天
+  const initialCheckIn = savedSearch.checkin || formatDateLocal(new Date());
+  const initialCheckOut =
+    savedSearch.checkout ||
+    formatDateLocal(new Date(Date.now() + 3 * 24 * 60 * 60 * 1000));
+
+  // 使用 state 管理可修改的日期
   const [formData, setFormData] = React.useState({
-    checkIn: savedSearch.checkin || formatDateLocal(new Date()),
-    checkOut:
-      savedSearch.checkout ||
-      formatDateLocal(new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)),
-    nights: 3,
+    checkIn: initialCheckIn,
+    checkOut: initialCheckOut,
+    nights: calculateNights(initialCheckIn, initialCheckOut),
     guests: savedSearch.guests || 2,
+    rooms: savedSearch.rooms || 1,
     name: '',
     phone: '',
     email: '',
@@ -51,8 +54,25 @@ export default function HotelDetailPage() {
   if (!hotel)
     return <div className="text-center text-white p-10">飯店不存在</div>;
 
+  // 允許使用者修改日期，並即時更新 nights
   const handleInputChange = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    const newFormData = { ...formData, [field]: value };
+
+    if (field === 'checkIn' || field === 'checkOut') {
+      const checkIn = field === 'checkIn' ? value : formData.checkIn;
+      const checkOut = field === 'checkOut' ? value : formData.checkOut;
+
+      // 確保 checkOut 不早於 checkIn
+      if (new Date(checkOut) < new Date(checkIn)) {
+        newFormData.checkOut = checkIn;
+      }
+
+      newFormData.nights = calculateNights(checkIn, newFormData.checkOut);
+    }
+
+    setFormData(newFormData);
+
+    // 清除對應錯誤
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -76,16 +96,9 @@ export default function HotelDetailPage() {
   };
 
   const handleSubmit = () => {
-    if (!validateForm()) {
-      const firstErrorField = Object.keys(errors)[0];
-      if (firstErrorField) {
-        document
-          .getElementById(firstErrorField)
-          ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-      return;
-    }
+    if (!validateForm()) return;
 
+    // 送出前更新 booking_final（包含使用者修改後的日期）
     localStorage.setItem(
       'booking_final',
       JSON.stringify({
@@ -124,13 +137,18 @@ export default function HotelDetailPage() {
           &gt; <span className="text-white font-medium">{hotel.name}</span>
         </nav>
 
-        <div className="w-full max-w-6xl mx-auto bg-white/90 backdrop-blur-sm rounded-lg shadow-2xl p-6 md:p-8 flex flex-col lg:flex-row gap-8 mb-8">
+        <HotelBookingStepper currentStep={1} />
+
+        <div className="w-full max-w-6xl mx-auto bg-white/90 backdrop-blur-sm rounded-lg shadow-2xl p-6 md:p-8 flex flex-col lg:flex-row gap-8 mt-6">
+          {/* 左側：可修改日期 + 即時更新晚數 */}
           <HotelDetailContent
             hotel={hotel}
             formData={formData}
             errors={errors}
             onInputChange={handleInputChange}
           />
+
+          {/* 右側：顯示即時總價 */}
           <HotelDetailBookingCard
             hotel={hotel}
             formData={formData}
@@ -140,7 +158,7 @@ export default function HotelDetailPage() {
           />
         </div>
 
-        <div className="text-center">
+        <div className="text-center mt-4">
           <button
             onClick={() => router.back()}
             className="text-[#D4A574] underline text-lg"

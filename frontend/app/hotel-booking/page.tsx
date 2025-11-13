@@ -6,6 +6,7 @@ import Calendar, { DateRange } from './components/Calendar';
 import HotelCard from './components/HotelCard';
 import SearchBar from './components/SearchBar';
 import { HotelCardData } from './interfaces/HotelCardData';
+import { calculateNights } from './utils/dateUtils'; // 共用晚數函數
 
 // 修正時區差一天
 const formatDateLocal = (date: Date) => {
@@ -108,37 +109,28 @@ export default function Page() {
     },
   ];
 
-  // 初始化 selectedRange 從 localStorage
+  // ⭐ 初始化 client-side selectedRange 避免 SSR mismatch
   const [selectedRange, setSelectedRange] = React.useState<
     DateRange | undefined
-  >(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('booking_search');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return parsed.checkin && parsed.checkout
-          ? { from: new Date(parsed.checkin), to: new Date(parsed.checkout) }
-          : undefined;
-      }
-    }
-    return undefined;
-  });
+  >(undefined);
+  const [guests, setGuests] = React.useState(2);
+  const [rooms, setRooms] = React.useState(1);
 
-  const [guests, setGuests] = React.useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('booking_search');
-      return saved ? JSON.parse(saved).guests || 2 : 2;
-    }
-    return 2;
-  });
-
-  const [rooms, setRooms] = React.useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('booking_search');
-      return saved ? JSON.parse(saved).rooms || 1 : 1;
-    }
-    return 1;
-  });
+  // React.useEffect(() => {
+  //   if (typeof window !== 'undefined') {
+  //     const saved = localStorage.getItem('booking_search');
+  //     if (saved) {
+  //       const parsed = JSON.parse(saved);
+  //       setSelectedRange(
+  //         parsed.checkin && parsed.checkout
+  //           ? { from: new Date(parsed.checkin), to: new Date(parsed.checkout) }
+  //           : undefined
+  //       );
+  //       setGuests(parsed.guests || 2);
+  //       setRooms(parsed.rooms || 1);
+  //     }
+  //   }
+  // }, []);
 
   const updateLocalStorage = (
     updates: Partial<{
@@ -148,6 +140,7 @@ export default function Page() {
       rooms: number;
     }>
   ) => {
+    if (typeof window === 'undefined') return;
     const existing = JSON.parse(localStorage.getItem('booking_search') || '{}');
     localStorage.setItem(
       'booking_search',
@@ -182,11 +175,10 @@ export default function Page() {
     router.push('/hotel-booking/search');
   };
 
-  // 計算入住晚數
+  // ⭐ 計算晚數（11/13 → 11/15 = 2晚）
   const getNights = () => {
     if (!selectedRange?.from || !selectedRange?.to) return 1;
-    const diff = selectedRange.to.getTime() - selectedRange.from.getTime();
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return calculateNights(selectedRange.from, selectedRange.to);
   };
 
   return (

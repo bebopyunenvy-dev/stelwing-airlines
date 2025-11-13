@@ -1,29 +1,21 @@
 'use client';
 
 import {
-  Briefcase,
   BusFront,
   Car,
-  Check,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   Coffee,
   Heart,
   Luggage,
-  Mail,
   MapPin,
-  MapPinned,
-  Phone,
   Star,
   User,
   Utensils,
   Wifi,
-  X,
 } from 'lucide-react';
 import * as React from 'react';
 import { HotelDetailData } from '../interfaces/HotelDetailData';
-import { AmenityKey, amenityLabels } from '../interfaces/constants';
+import { AmenityKey } from '../interfaces/constants';
 
 interface HotelDetailContentProps {
   hotel: HotelDetailData;
@@ -33,6 +25,10 @@ interface HotelDetailContentProps {
     email: string;
     roomType: string;
     smokingPreference: string;
+    nights: number;
+    guests: number;
+    rooms: number;
+    price?: number; // 可以選擇性更新房型價格
   };
   errors: Record<string, string>;
   onInputChange: (field: string, value: any) => void;
@@ -59,7 +55,6 @@ export default function HotelDetailContent({
   const [isGalleryOpen, setIsGalleryOpen] = React.useState(false);
   const [isFavorite, setIsFavorite] = React.useState(false);
 
-  // 評分渲染
   const renderRating = (rating: number) => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
@@ -176,247 +171,186 @@ export default function HotelDetailContent({
         </div>
       </div>
 
-      {/* 燈箱 */}
-      {isGalleryOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center">
-          <button
-            onClick={() => setIsGalleryOpen(false)}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 transition p-2"
-            aria-label="關閉"
-          >
-            <X size={32} />
-          </button>
-          <button
-            onClick={prevImage}
-            className="absolute left-4 text-white hover:text-gray-300 transition p-2"
-            aria-label="上一張"
-          >
-            <ChevronLeft size={48} />
-          </button>
-          <button
-            onClick={nextImage}
-            className="absolute right-4 text-white hover:text-gray-300 transition p-2"
-            aria-label="下一張"
-          >
-            <ChevronRight size={48} />
-          </button>
-          <img
-            src={hotel.images[currentImageIndex]}
-            alt={`飯店圖片 ${currentImageIndex + 1}`}
-            className="max-h-[90vh] max-w-[90vw] object-contain"
-          />
-          <div className="absolute bottom-4 text-white text-lg">
-            {currentImageIndex + 1} / {hotel.images.length}
-          </div>
-        </div>
-      )}
-
-      {/* 飯店簡介 */}
-      <div className="mb-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">
-          飯店簡介
-        </h3>
-        <p className="text-gray-600 leading-relaxed">{hotel.description}</p>
-      </div>
-
-      {/* 主要設施 - 純顯示、Lucide icon、固定大小 */}
-      <div className="mb-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">
-          主要設施
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {hotel.amenityKeys.map((key) => (
-            <div
-              key={key}
-              className="flex items-center space-x-2 text-gray-700 bg-gray-50 p-2 rounded-lg"
-            >
-              {amenityIcons[key] || (
-                <Briefcase size={16} className="text-gray-600" />
+      {/* 登記者資料 & 特殊需求 */}
+      <div className="space-y-8">
+        <div className="mb-8">
+          <h3 className="text-2xl font-bold text-gray-800 border-b pb-2 mb-4 flex items-center gap-2">
+            <User size={24} />
+            主要登記者資料
+          </h3>
+          <div className="space-y-4 bg-gray-50 p-6 rounded-lg">
+            {/* 姓名 */}
+            <div>
+              <label className="text-sm font-medium block mb-1" htmlFor="name">
+                姓名 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="name"
+                placeholder="請輸入姓名"
+                value={formData.name}
+                onChange={(e) => onInputChange('name', e.target.value)}
+                className={`w-full p-3 border rounded-md bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {errors.name && (
+                <p className="text-red-500 text-xs mt-1">{errors.name}</p>
               )}
-              <span className="text-sm">{amenityLabels[key]}</span>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* 聯絡資訊 */}
-      <div className="mb-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">
-          聯絡資訊
-        </h3>
-        <div className="text-gray-600 space-y-3">
-          <div className="flex items-start space-x-3">
-            <MapPinned size={20} className="mt-1 flex-shrink-0 text-gray-500" />
+            {/* 電話 */}
             <div>
-              <strong className="text-gray-700">地址：</strong>
-              {hotel.address}
+              <label className="text-sm font-medium block mb-1" htmlFor="phone">
+                連絡電話 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                placeholder="09xxxxxxxx"
+                value={formData.phone}
+                onChange={(e) => onInputChange('phone', e.target.value)}
+                className={`w-full p-3 border rounded-md bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition ${
+                  errors.phone ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {errors.phone && (
+                <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+              )}
             </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Phone size={20} className="flex-shrink-0 text-gray-500" />
-            <div>
-              <strong className="text-gray-700">電話：</strong>
-              <a
-                href={`tel:${hotel.contact}`}
-                className="hover:text-[#DCBB87] transition"
-              >
-                {hotel.contact}
-              </a>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Mail size={20} className="flex-shrink-0 text-gray-500" />
-            <div>
-              <strong className="text-gray-700">電子郵件：</strong>
-              <a
-                href={`mailto:${hotel.email}`}
-                className="hover:text-[#DCBB87] transition"
-              >
-                {hotel.email}
-              </a>
-            </div>
-          </div>
-          {hotel.busFree && (
-            <div className="flex items-center space-x-3 text-green-600 font-semibold bg-green-50 p-3 rounded-lg">
-              <Check size={20} />
-              <span>提供免費接駁巴士</span>
-            </div>
-          )}
-        </div>
-      </div>
 
-      {/* 登記者資料 */}
-      <div className="mb-8">
-        <h3 className="text-2xl font-bold text-gray-800 border-b pb-2 mb-4 flex items-center gap-2">
-          <User size={24} />
-          主要登記者資料
-        </h3>
+            {/* Email */}
+            <div>
+              <label className="text-sm font-medium block mb-1" htmlFor="email">
+                電子郵件 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                id="email"
+                placeholder="example@email.com"
+                value={formData.email}
+                onChange={(e) => onInputChange('email', e.target.value)}
+                className={`w-full p-3 border rounded-md bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition ${
+                  errors.email ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 房型 / 晚數 / 人數 / 房間數 / 吸菸需求 */}
         <div className="space-y-4 bg-gray-50 p-6 rounded-lg">
-          {/* 姓名 */}
+          {/* 房型需求 */}
           <div>
-            <label className="text-sm font-medium block mb-1" htmlFor="name">
-              姓名 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="name"
-              placeholder="請輸入姓名"
-              value={formData.name}
-              onChange={(e) => onInputChange('name', e.target.value)}
-              className={`w-full p-3 border rounded-md bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition ${
-                errors.name ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {errors.name && (
-              <p className="text-red-500 text-xs mt-1">{errors.name}</p>
-            )}
-          </div>
-
-          {/* 電話 */}
-          <div>
-            <label className="text-sm font-medium block mb-1" htmlFor="phone">
-              連絡電話 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              placeholder="09xxxxxxxx"
-              value={formData.phone}
-              onChange={(e) => onInputChange('phone', e.target.value)}
-              className={`w-full p-3 border rounded-md bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition ${
-                errors.phone ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {errors.phone && (
-              <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
-            )}
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="text-sm font-medium block mb-1" htmlFor="email">
-              電子郵件 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              id="email"
-              placeholder="example@email.com"
-              value={formData.email}
-              onChange={(e) => onInputChange('email', e.target.value)}
-              className={`w-full p-3 border rounded-md bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition ${
-                errors.email ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {errors.email && (
-              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-            )}
-          </div>
-
-          {/* 特殊需求區 */}
-          <div className="border-t border-gray-200 pt-4 space-y-4 mt-4">
-            <h4 className="font-semibold text-sm text-gray-800">特殊需求</h4>
-
-            {/* 吸菸需求 */}
-            <div>
-              <label className="text-sm font-medium block mb-2">吸菸需求</label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => onInputChange('smokingPreference', '禁菸房')}
-                  className={`flex-1 py-2 px-3 rounded-md border text-sm transition ${
-                    formData.smokingPreference === '禁菸房'
-                      ? 'bg-[#DCBB87] text-[#303D49] border-[#DCBB87] font-semibold'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-[#DCBB87]'
-                  }`}
-                >
-                  🚭 禁菸房
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onInputChange('smokingPreference', '吸菸房')}
-                  className={`flex-1 py-2 px-3 rounded-md border text-sm transition ${
-                    formData.smokingPreference === '吸菸房'
-                      ? 'bg-[#DCBB87] text-[#303D49] border-[#DCBB87] font-semibold'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-[#DCBB87]'
-                  }`}
-                >
-                  🚬 吸菸房
-                </button>
-              </div>
+            <label className="text-sm font-medium block mb-2">床型需求</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => onInputChange('roomType', 'King Size Bed')}
+                className={`flex-1 py-2 px-3 rounded-md border text-sm transition ${
+                  formData.roomType === 'King Size Bed'
+                    ? 'bg-[#DCBB87] text-[#303D49] border-[#DCBB87] font-semibold'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-[#DCBB87]'
+                }`}
+              >
+                🛏️ 大床房
+              </button>
+              <button
+                type="button"
+                onClick={() => onInputChange('roomType', 'Twin Beds')}
+                className={`flex-1 py-2 px-3 rounded-md border text-sm transition ${
+                  formData.roomType === 'Twin Beds'
+                    ? 'bg-[#DCBB87] text-[#303D49] border-[#DCBB87] font-semibold'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-[#DCBB87]'
+                }`}
+              >
+                🛏️🛏️ 雙床房
+              </button>
             </div>
+          </div>
 
-            {/* 床型需求 */}
-            <div>
-              <label className="text-sm font-medium block mb-2">床型需求</label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => onInputChange('roomType', 'King Size Bed')}
-                  className={`flex-1 py-2 px-3 rounded-md border text-sm transition ${
-                    formData.roomType === 'King Size Bed'
-                      ? 'bg-[#DCBB87] text-[#303D49] border-[#DCBB87] font-semibold'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-[#DCBB87]'
-                  }`}
-                >
-                  🛏️ 大床房
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onInputChange('roomType', 'Twin Beds')}
-                  className={`flex-1 py-2 px-3 rounded-md border text-sm transition ${
-                    formData.roomType === 'Twin Beds'
-                      ? 'bg-[#DCBB87] text-[#303D49] border-[#DCBB87] font-semibold'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-[#DCBB87]'
-                  }`}
-                >
-                  🛏️🛏️ 雙床房
-                </button>
-              </div>
+          {/* 吸菸需求 */}
+          <div>
+            <label className="text-sm font-medium block mb-2">吸菸需求</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => onInputChange('smokingPreference', '禁菸房')}
+                className={`flex-1 py-2 px-3 rounded-md border text-sm transition ${
+                  formData.smokingPreference === '禁菸房'
+                    ? 'bg-[#DCBB87] text-[#303D49] border-[#DCBB87] font-semibold'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-[#DCBB87]'
+                }`}
+              >
+                🚭 禁菸房
+              </button>
+              <button
+                type="button"
+                onClick={() => onInputChange('smokingPreference', '吸菸房')}
+                className={`flex-1 py-2 px-3 rounded-md border text-sm transition ${
+                  formData.smokingPreference === '吸菸房'
+                    ? 'bg-[#DCBB87] text-[#303D49] border-[#DCBB87] font-semibold'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-[#DCBB87]'
+                }`}
+              >
+                🚬 吸菸房
+              </button>
             </div>
+          </div>
 
-            <p className="text-xs text-gray-500 italic">
-              ℹ️ 提醒: 實際房型需以現場安排為主
-            </p>
+          {/* 晚數 / 人數 / 房間數 */}
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <label className="text-sm font-medium block mb-1">住宿晚數</label>
+              <select
+                value={formData.nights}
+                onChange={(e) =>
+                  onInputChange('nights', parseInt(e.target.value))
+                }
+                className="w-full p-2 border border-gray-300 rounded-lg bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition"
+              >
+                {[...Array(30)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {i + 1} 晚
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1">人數</label>
+              <select
+                value={formData.guests}
+                onChange={(e) =>
+                  onInputChange('guests', parseInt(e.target.value))
+                }
+                className="w-full p-2 border border-gray-300 rounded-lg bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition"
+              >
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <option key={n} value={n}>
+                    {n} 人
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1">房間數</label>
+              <select
+                value={formData.rooms}
+                onChange={(e) =>
+                  onInputChange('rooms', parseInt(e.target.value))
+                }
+                className="w-full p-2 border border-gray-300 rounded-lg bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition"
+              >
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <option key={n} value={n}>
+                    {n} 間
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
       </div>

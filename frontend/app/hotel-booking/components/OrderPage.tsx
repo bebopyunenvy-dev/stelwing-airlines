@@ -2,7 +2,7 @@
 
 import { Calendar, Moon, Users } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { mockHotelDetailData } from '../interfaces/HotelDetailData';
 
 interface OrderPageProps {
@@ -23,13 +23,47 @@ export interface FormDataType {
   cvc?: string;
 }
 
+export interface DetailType {
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  guests: number;
+  rooms: number;
+  name: string;
+  phone: string;
+  email: string;
+  roomType: string;
+  smokingPreference: string;
+  hotelId: number;
+  hotelName: string;
+  price: number;
+  image: string;
+}
+
 export default function OrderPage({
   pageTitle,
   buttonText,
   onSubmit,
 }: OrderPageProps) {
   const hotel = mockHotelDetailData;
-
+  /*
+{
+    "checkIn": "2025-11-19",
+    "checkOut": "2025-11-22",
+    "nights": 3,
+    "guests": 2,
+    "rooms": 1,
+    "name": "yun",
+    "phone": "0980123123",
+    "email": "yun@gmail.com",
+    "roomType": "King Size Bed",
+    "smokingPreference": "禁菸房",
+    "hotelId": 1,
+    "hotelName": "東京成田機場旅館",
+    "price": 3500,
+    "image": "/images/hotel/room1.jpeg"
+}
+*/
   const [formData, setFormData] = useState<FormDataType>({
     checkIn: '2025-11-20',
     checkOut: '2025-11-22',
@@ -42,7 +76,34 @@ export default function OrderPage({
     cvc: '',
   });
 
-  const totalPrice = hotel.price;
+  const [detail, setDetail] = useState<DetailType>({
+    checkIn: '2025-11-19',
+    checkOut: '2025-11-22',
+    nights: 3,
+    guests: 2,
+    rooms: 1,
+    name: 'yun',
+    phone: '0980123123',
+    email: 'yun@gmail.com',
+    roomType: 'King Size Bed',
+    smokingPreference: '禁菸房',
+    hotelId: 1,
+    hotelName: '東京成田機場旅館',
+    price: 3500,
+    image: '/images/hotel/room1.jpeg',
+  });
+
+  const totalPrice = detail.price * detail.rooms * detail.nights;
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('booking_final');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setDetail(parsed);
+      }
+    }
+  }, []);
 
   return (
     <div className="min-h-screen py-12 px-6 flex flex-col lg:flex-row justify-center gap-10">
@@ -197,8 +258,8 @@ export default function OrderPage({
       {/* 右邊 - 訂單摘要 */}
       <aside className="bg-white rounded-lg shadow-md p-8 w-full lg:w-1/3 border border-gray-200 h-fit">
         <Image
-          src={hotel.images?.[1] || '/images/hotel/default.jpeg'}
-          alt={hotel.name}
+          src={detail.image || '/images/hotel/default.jpeg'}
+          alt={detail.name}
           width={400}
           height={160}
           className="w-full h-40 object-cover rounded-lg mb-4"
@@ -207,39 +268,39 @@ export default function OrderPage({
         <div className="space-y-3 text-gray-700 text-sm">
           <div className="flex justify-between">
             <span>飯店名稱</span>
-            <span className="font-medium">{hotel.name}</span>
+            <span className="font-medium">{detail.name}</span>
           </div>
           <div className="flex justify-between">
             <span>房型</span>
-            <span>{hotel.roomType}</span>
+            <span>{detail.roomType}</span>
           </div>
           <div className="flex justify-between">
             <span className="flex items-center gap-1">
               <Calendar size={14} />
               入住
             </span>
-            <span>{formData.checkIn}</span>
+            <span>{detail.checkIn}</span>
           </div>
           <div className="flex justify-between">
             <span className="flex items-center gap-1">
               <Calendar size={14} />
               退房
             </span>
-            <span>{formData.checkOut}</span>
+            <span>{detail.checkOut}</span>
           </div>
           <div className="flex justify-between">
             <span className="flex items-center gap-1">
               <Moon size={14} />
               住宿晚數
             </span>
-            <span>{formData.nights} 晚</span>
+            <span>{detail.nights} 晚</span>
           </div>
           <div className="flex justify-between">
             <span className="flex items-center gap-1">
               <Users size={14} />
               人數
             </span>
-            <span>{formData.guests} 人</span>
+            <span>{detail.guests} 人</span>
           </div>
           <div className="border-t border-gray-300 mt-4 pt-4 flex justify-between text-lg font-bold text-gray-900">
             <span>總金額</span>

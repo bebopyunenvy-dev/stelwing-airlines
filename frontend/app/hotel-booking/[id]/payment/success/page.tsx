@@ -3,6 +3,7 @@
 import { Calendar, Moon, Users } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { HotelBookingStepper } from '../../../components/HotelBookingStepper';
 import { mockHotelDetailData } from '../../../interfaces/HotelDetailData';
 import { convertHotelToDetailData } from '../../../interfaces/hotelUtils';
 import { allMockHotels } from '../../../interfaces/mockHotels';
@@ -14,22 +15,29 @@ export default function PaymentSuccessPage() {
     typeof window !== 'undefined'
       ? JSON.parse(localStorage.getItem('booking_final') || '{}')
       : {};
-  const hotel = bookingData.hotelId
-    ? convertHotelToDetailData(
-        allMockHotels.find((h) => h.id === bookingData.hotelId)
-      )
+
+  const hotelRaw = allMockHotels.find((h) => h.id === bookingData.hotelId);
+  const hotel = hotelRaw
+    ? convertHotelToDetailData(hotelRaw)
     : mockHotelDetailData;
+
   const formData = {
     checkIn: bookingData.checkIn || '2025-11-20',
     checkOut: bookingData.checkOut || '2025-11-22',
     nights: bookingData.nights || 2,
     guests: bookingData.guests || 2,
   };
+
   const totalPrice = (hotel?.price || 0) * (formData.nights || 1);
 
   return (
-    <div className="min-h-screen bg-[url('/images/hotel/bg2.jpeg')] bg-cover bg-center sm:bg-top bg-no-repeat bg-black/50 bg-blend-darken flex flex-col items-center justify-center px-6 py-12">
-      <div className="bg-white/90 backdrop-blur-sm p-8 rounded-xl shadow-lg w-full max-w-md text-center">
+    <div className="min-h-screen bg-[url('/images/hotel/bg2.jpeg')] bg-cover bg-center sm:bg-top bg-no-repeat bg-black/50 bg-blend-darken flex flex-col items-center px-6 py-12">
+      {/* 步驟條 */}
+      <div className="w-full max-w-6xl">
+        <HotelBookingStepper currentStep={3} />
+      </div>
+
+      <div className="bg-white/90 backdrop-blur-sm p-8 rounded-xl shadow-lg w-full max-w-md text-center mt-8">
         <h2 className="text-2xl font-bold text-green-600 mb-4">預訂成功！</h2>
         <p className="text-gray-700 mb-6">
           感謝您的預訂，確認信件將寄送至您的信箱。

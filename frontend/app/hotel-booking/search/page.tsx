@@ -118,6 +118,7 @@ export default function HotelPage() {
     updateLocalStorage({ rooms: newRooms });
   };
 
+  // ✅ 永久高亮
   useEffect(() => {
     const highlightedHotelId =
       searchParams.get('scrollToHotelId') ||
@@ -128,11 +129,7 @@ export default function HotelPage() {
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         el.classList.add('ring-4', 'ring-[#DCBB87]', 'ring-offset-4');
-        setTimeout(
-          () =>
-            el.classList.remove('ring-4', 'ring-[#DCBB87]', 'ring-offset-4'),
-          3000
-        );
+        // ❌ 移除 setTimeout，不再自動取消 highlight
       }
     }
   }, [searchParams, filteredHotels]);

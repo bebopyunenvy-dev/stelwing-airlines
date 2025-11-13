@@ -10,6 +10,9 @@ interface HotelDetailBookingCardProps {
     checkOut: string;
     nights: number;
     guests: number;
+    rooms: number;
+    roomType: string; // 必須加上！
+    smokingPreference?: string;
   };
   onInputChange: (field: string, value: any) => void;
   onSubmit: () => void;
@@ -23,7 +26,7 @@ export default function HotelDetailBookingCard({
   onSubmit,
   isSubmitting,
 }: HotelDetailBookingCardProps) {
-  const totalPrice = hotel.price * formData.nights;
+  const totalPrice = hotel.price * formData.nights * formData.rooms;
 
   return (
     <aside className="lg:w-80 flex-shrink-0">
@@ -80,7 +83,7 @@ export default function HotelDetailBookingCard({
               }
               className="w-full p-2 border border-gray-300 rounded-lg bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition"
             >
-              {[...Array(10)].map((_, i) => (
+              {[...Array(30)].map((_, i) => (
                 <option key={i + 1} value={i + 1}>
                   {i + 1} 晚
                 </option>
@@ -108,25 +111,64 @@ export default function HotelDetailBookingCard({
               ))}
             </select>
           </div>
+
+          {/* 房間數 */}
+          <div>
+            <label className="text-sm font-medium block mb-1 flex items-center gap-2">
+              <Users size={16} className="text-gray-500" />
+              房間數
+            </label>
+            <select
+              value={formData.rooms}
+              onChange={(e) => onInputChange('rooms', parseInt(e.target.value))}
+              className="w-full p-2 border border-gray-300 rounded-lg bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition"
+            >
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <option key={n} value={n}>
+                  {n} 間
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {/* 價格明細 */}
-        <div className="mt-6 border-t pt-4 space-y-2 text-sm">
-          <div className="flex justify-between text-gray-600">
-            <span>每晚價格</span>
-            <span>${hotel.price.toLocaleString()}</span>
+        {/* 右側訂單摘要 - 完全聯動 */}
+        <div className="mt-6 border-t pt-4 space-y-2 text-sm text-gray-700">
+          <div className="flex justify-between">
+            <span>飯店名稱</span>
+            <span className="font-medium">{hotel.name}</span>
           </div>
-          <div className="flex justify-between text-gray-600">
+          <div className="flex justify-between">
+            <span>房型</span>
+            <span>{formData.roomType}</span> {/* 這裡聯動！ */}
+          </div>
+          <div className="flex justify-between">
+            <span>入住</span>
+            <span>{formData.checkIn}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>退房</span>
+            <span>{formData.checkOut}</span>
+          </div>
+          <div className="flex justify-between">
             <span>住宿晚數</span>
-            <span>{formData.nights} 晚</span>
+            <span className="font-semibold text-[#DCBB87]">
+              {formData.nights} 晚
+            </span>
           </div>
-          <div className="flex justify-between text-gray-600">
-            <span>服務費</span>
-            <span>已含</span>
+          <div className="flex justify-between">
+            <span>人數</span>
+            <span>{formData.guests} 人</span>
           </div>
-          <div className="flex justify-between font-bold text-lg text-gray-800 border-t pt-2">
-            <span>總計</span>
-            <span>${totalPrice.toLocaleString()}</span>
+          <div className="flex justify-between">
+            <span>房間數</span>
+            <span>{formData.rooms} 間</span>
+          </div>
+          <div className="border-t pt-2 flex justify-between font-bold text-lg">
+            <span>總金額</span>
+            <span className="text-[#DCBB87]">
+              ${totalPrice.toLocaleString()}
+            </span>
           </div>
         </div>
 
@@ -143,9 +185,8 @@ export default function HotelDetailBookingCard({
           點擊確認預訂即表示您同意我們的服務條款
         </p>
 
-        {/* 免費取消政策 */}
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-gray-700">
-          <p className="font-semibold mb-1">✓ 免費取消</p>
+          <p className="font-semibold mb-1">Free cancellation</p>
           <p>入住前 24 小時可免費取消</p>
         </div>
       </div>
