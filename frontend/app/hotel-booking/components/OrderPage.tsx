@@ -18,6 +18,8 @@ export interface FormDataType {
   guests: number;
   firstName?: string;
   lastName?: string;
+  // ✅ 新增付款方式欄位
+  paymentMethod: 'creditCard' | 'linePay';
   cardNumber?: string;
   expiry?: string;
   cvc?: string;
@@ -46,24 +48,12 @@ export default function OrderPage({
   onSubmit,
 }: OrderPageProps) {
   const hotel = mockHotelDetailData;
-  /*
-{
-    "checkIn": "2025-11-19",
-    "checkOut": "2025-11-22",
-    "nights": 3,
-    "guests": 2,
-    "rooms": 1,
-    "name": "yun",
-    "phone": "0980123123",
-    "email": "yun@gmail.com",
-    "roomType": "King Size Bed",
-    "smokingPreference": "禁菸房",
-    "hotelId": 1,
-    "hotelName": "東京成田機場旅館",
-    "price": 3500,
-    "image": "/images/hotel/room1.jpeg"
-}
-*/
+
+  // ✅ 追蹤選定的付款方式
+  const [paymentMethod, setPaymentMethod] = useState<'creditCard' | 'linePay'>(
+    'creditCard'
+  );
+
   const [formData, setFormData] = useState<FormDataType>({
     checkIn: '2025-11-20',
     checkOut: '2025-11-22',
@@ -71,6 +61,8 @@ export default function OrderPage({
     guests: 2,
     firstName: '',
     lastName: '',
+    // ✅ 預設付款方式
+    paymentMethod: 'creditCard',
     cardNumber: '',
     expiry: '',
     cvc: '',
@@ -105,6 +97,11 @@ export default function OrderPage({
     }
   }, []);
 
+  const handleFormSubmit = () => {
+    // 確保提交的 formData 包含當前的 paymentMethod
+    onSubmit({ ...formData, paymentMethod });
+  };
+
   return (
     <div className="min-h-screen py-12 px-6 flex flex-col lg:flex-row justify-center gap-10">
       {/* 左邊 - 表單 */}
@@ -113,55 +110,158 @@ export default function OrderPage({
           {pageTitle}
         </h2>
 
-        {/* 如果有信用卡欄位 (付款頁才需要) */}
-        {formData.cardNumber !== undefined && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  姓
-                </label>
-                <input
-                  type="text"
-                  value={formData.lastName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lastName: e.target.value })
-                  }
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#DCBB87] focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  名
-                </label>
-                <input
-                  type="text"
-                  value={formData.firstName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, firstName: e.target.value })
-                  }
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#DCBB87] focus:outline-none"
-                />
-              </div>
+        {/* ================================================= */}
+        {/* ✅ 付款方式選擇區塊 (模仿截圖) */}
+        {/* ================================================= */}
+        {pageTitle === '付款資訊' && (
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-gray-700 mb-4">
+              付款方式
+            </h3>
+
+            <div className="space-y-4">
+              {/* 1. 信用卡付款 */}
+              <label className="flex items-center justify-between p-4 border border-gray-300 rounded-lg cursor-pointer transition-all hover:shadow-md has-[:checked]:border-[#1F2E3C]">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="creditCard"
+                    checked={paymentMethod === 'creditCard'}
+                    onChange={() => setPaymentMethod('creditCard')}
+                    className="form-radio h-5 w-5 text-[#1F2E3C] border-gray-300 focus:ring-[#1F2E3C]"
+                  />
+                  <span className="text-lg font-medium text-gray-800">
+                    信用卡付款
+                  </span>
+                </div>
+                {/* 信用卡圖示 */}
+                <div className="text-gray-500">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="lucide lucide-credit-card"
+                  >
+                    <rect width="20" height="14" x="2" y="5" rx="2" />
+                    <line x1="2" x2="22" y1="10" y2="10" />
+                  </svg>
+                </div>
+              </label>
+
+              {/* 2. LinePay */}
+              <label className="flex items-center justify-between p-4 border border-gray-300 rounded-lg cursor-pointer transition-all hover:shadow-md has-[:checked]:border-green-600">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="linePay"
+                    checked={paymentMethod === 'linePay'}
+                    onChange={() => setPaymentMethod('linePay')}
+                    className="form-radio h-5 w-5 text-green-600 border-gray-300 focus:ring-green-600"
+                  />
+                  <span className="text-lg font-medium text-gray-800">
+                    LinePay
+                  </span>
+                </div>
+                {/* LinePay 圖示 (使用簡單文字代替 Logo) */}
+                <div className="text-green-600 font-bold text-lg">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="lucide lucide-message-circle"
+                  >
+                    <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
+                  </svg>
+                </div>
+              </label>
+            </div>
+          </div>
+        )}
+        {/* ================================================= */}
+        {/* 付款方式選擇區塊結束 */}
+        {/* ================================================= */}
+
+        {/* 聯絡人資訊 (保留但可以優化，使其與付款頁分離) */}
+        {pageTitle !== '付款資訊' && (
+          <h3 className="text-xl font-semibold text-gray-700 mb-4">
+            聯絡人資訊
+          </h3>
+        )}
+
+        {/* 姓/名 (如果 formData 中有這些欄位) */}
+        {formData.lastName !== undefined && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                姓
+              </label>
+              <input
+                type="text"
+                value={formData.lastName}
+                onChange={(e) =>
+                  setFormData({ ...formData, lastName: e.target.value })
+                }
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#DCBB87] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                名
+              </label>
+              <input
+                type="text"
+                value={formData.firstName}
+                onChange={(e) =>
+                  setFormData({ ...formData, firstName: e.target.value })
+                }
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#DCBB87] focus:outline-none"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ================================================= */}
+        {/* ✅ 信用卡詳細資料輸入區塊 (只有在付款頁面且選擇信用卡時顯示) */}
+        {/* ================================================= */}
+        {pageTitle === '付款資訊' && paymentMethod === 'creditCard' && (
+          <div className="space-y-4 mb-6 pt-6">
+            <h3 className="text-xl font-semibold text-gray-700">信用卡資訊</h3>
+            {/* 信用卡號碼 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                信用卡號碼
+              </label>
+              <input
+                type="text"
+                value={formData.cardNumber}
+                onChange={(e) =>
+                  setFormData({ ...formData, cardNumber: e.target.value })
+                }
+                placeholder="1234 1234 1234 1234"
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#DCBB87] focus:outline-none"
+                required={paymentMethod === 'creditCard'}
+              />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* 到期日 & CVC */}
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  信用卡號碼
-                </label>
-                <input
-                  type="text"
-                  value={formData.cardNumber}
-                  onChange={(e) =>
-                    setFormData({ ...formData, cardNumber: e.target.value })
-                  }
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#DCBB87] focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  到期日
+                  有效日期
                 </label>
                 <input
                   type="text"
@@ -169,7 +269,9 @@ export default function OrderPage({
                   onChange={(e) =>
                     setFormData({ ...formData, expiry: e.target.value })
                   }
+                  placeholder="MM/YY"
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#DCBB87] focus:outline-none"
+                  required={paymentMethod === 'creditCard'}
                 />
               </div>
               <div>
@@ -182,80 +284,27 @@ export default function OrderPage({
                   onChange={(e) =>
                     setFormData({ ...formData, cvc: e.target.value })
                   }
+                  placeholder="CVC code"
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#DCBB87] focus:outline-none"
+                  required={paymentMethod === 'creditCard'}
                 />
               </div>
             </div>
-          </>
+          </div>
         )}
-
-        {/* 入住/退房/晚數/人數 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              入住日期
-            </label>
-            <input
-              type="date"
-              value={formData.checkIn}
-              onChange={(e) =>
-                setFormData({ ...formData, checkIn: e.target.value })
-              }
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#DCBB87] focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              退房日期
-            </label>
-            <input
-              type="date"
-              value={formData.checkOut}
-              onChange={(e) =>
-                setFormData({ ...formData, checkOut: e.target.value })
-              }
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#DCBB87] focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              住宿晚數
-            </label>
-            <input
-              type="number"
-              min={1}
-              value={formData.nights}
-              onChange={(e) =>
-                setFormData({ ...formData, nights: Number(e.target.value) })
-              }
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#DCBB87] focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              人數
-            </label>
-            <input
-              type="number"
-              min={1}
-              value={formData.guests}
-              onChange={(e) =>
-                setFormData({ ...formData, guests: Number(e.target.value) })
-              }
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#DCBB87] focus:outline-none"
-            />
-          </div>
-        </div>
-
+        {/* ================================================= */}
+        {/* 信用卡詳細資料區塊結束 */}
+        {/* ================================================= */}
         <button
-          onClick={() => onSubmit(formData)}
+          // 修正提交事件，使用新的處理函式
+          onClick={handleFormSubmit}
           className="w-full mt-8 py-3 bg-[#1F2E3C] text-white font-bold text-lg rounded-lg hover:bg-[#2d3d4c] transition"
         >
           {buttonText}
         </button>
       </div>
 
-      {/* 右邊 - 訂單摘要 */}
+      {/* 右邊 - 訂單摘要 (保持不變) */}
       <aside className="bg-white rounded-lg shadow-md p-8 w-full lg:w-1/3 border border-gray-200 h-fit">
         <Image
           src={detail.image || '/images/hotel/default.jpeg'}

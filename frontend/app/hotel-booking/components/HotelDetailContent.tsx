@@ -300,58 +300,6 @@ export default function HotelDetailContent({
               </button>
             </div>
           </div>
-
-          {/* 晚數 / 人數 / 房間數 */}
-          <div className="grid grid-cols-3 gap-2">
-            <div>
-              <label className="text-sm font-medium block mb-1">住宿晚數</label>
-              <select
-                value={formData.nights}
-                onChange={(e) =>
-                  onInputChange('nights', parseInt(e.target.value))
-                }
-                className="w-full p-2 border border-gray-300 rounded-lg bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition"
-              >
-                {[...Array(30)].map((_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {i + 1} 晚
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium block mb-1">人數</label>
-              <select
-                value={formData.guests}
-                onChange={(e) =>
-                  onInputChange('guests', parseInt(e.target.value))
-                }
-                className="w-full p-2 border border-gray-300 rounded-lg bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition"
-              >
-                {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <option key={n} value={n}>
-                    {n} 人
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium block mb-1">房間數</label>
-              <select
-                value={formData.rooms}
-                onChange={(e) =>
-                  onInputChange('rooms', parseInt(e.target.value))
-                }
-                className="w-full p-2 border border-gray-300 rounded-lg bg-white focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] transition"
-              >
-                {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <option key={n} value={n}>
-                    {n} 間
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
         </div>
       </div>
 
