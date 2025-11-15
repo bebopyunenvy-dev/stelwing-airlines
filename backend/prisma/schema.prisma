@@ -34,7 +34,7 @@ model Member {
   passportExpiry DateTime? @map("passport_expiry")
   password       String    @map("password") @db.VarChar(255)
 
-  // ✅ 11/11修改這裡：關聯名稱統一成「MemberAvatarChoice」，方便後端查詢
+  // ✅ 11/11若晴修改這裡：關聯名稱統一成「MemberAvatarChoice」，方便後端查詢
   avatarChoice Int?          @map("avatar_choice")
   avatar       AvatarOption? @relation("MemberAvatarChoice", fields: [avatarChoice], references: [avatarId])
 

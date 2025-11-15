@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import MemberTabs from "./components/MemberTabs";
+import Breadcrumb from "@/app/components/Breadcrumb";
+
 
 export default function MemberCenterLayout({
   children,
@@ -68,13 +70,12 @@ export default function MemberCenterLayout({
     <div className="min-h-screen bg-[#F5F5F5]">
         <div className="mx-auto max-w-[1312px] w-full px-4 sm:px-6 lg:px-[64px] py-10">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-[#666666] mb-6">
-          <Link href="/" className="hover:text-[#DCBB87] transition-colors">
-            首頁
-          </Link>
-          <ChevronRight size={16} />
-          <span className="text-[#1F2E3C]">會員中心</span>
-        </div>
+        <Breadcrumb
+          items={[
+            { label: "首頁", href: "/" },
+            { label: "會員中心" },
+          ]}
+        />
 
         {/* Page Title */}
         <h1 className="text-[24px] text-[#1F2E3C] mb-8">會員中心</h1>

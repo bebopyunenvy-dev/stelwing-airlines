@@ -183,16 +183,20 @@ router.post("/login", async (req: Request, res: Response) => {
       return res.status(401).json({ message: "密碼錯誤" });
     }
 
-    // ✅ 把 BigInt 轉成普通 number 或 string
-const token = jwt.sign(
-  {
-    memberId: Number(user.memberId), // 轉成 number
-    email: user.email,
-  },
-  JWT_SECRET,
-  { expiresIn: "3h" }
-);
+    // 🟡 新增：更新最後登入時間
+    await prisma.member.update({
+      where: { memberId: user.memberId },
+      data: { lastLogin: new Date() }
+    });
 
+    const token = jwt.sign(
+      {
+        memberId: Number(user.memberId),
+        email: user.email,
+      },
+      JWT_SECRET,
+      { expiresIn: "3h" }
+    );
 
     res.json({ message: "登入成功", token });
   } catch (err) {
@@ -200,6 +204,7 @@ const token = jwt.sign(
     res.status(500).json({ message: "伺服器錯誤" });
   }
 });
+
 
 // ✅ 3️⃣ 驗證 token
 router.get("/verify", async (req: Request, res: Response) => {
@@ -216,12 +221,27 @@ router.get("/verify", async (req: Request, res: Response) => {
     const member = await prisma.member.findUnique({
       where: { memberId: BigInt(decoded.memberId) },
       select: {
-        memberId: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        membershipLevel: true,
+      memberId: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      gender: true,
+      birthDate: true,
+      phoneNumber: true,
+      address: true,
+      createdAt: true,   // 註冊日期
+      lastLogin: true,   // 最後登入
+      membershipLevel: true,
+      mileage: true,
+      avatarChoice: true,
+      avatar: {
+        select: {
+          avatarId: true,
+          imagePath: true,
+          label: true,
+        },
       },
+    },
     });
 
     if (!member) {
@@ -230,17 +250,25 @@ router.get("/verify", async (req: Request, res: Response) => {
 
     res.json({ ok: true, member });
   } catch (err) {
+    console.error("❌ Verify 錯誤:", err);
     res.status(401).json({ ok: false, message: "token 無效或過期" });
   }
 });
 
-// ✅ 取得頭像圖庫（給前端選擇使用）
+// =======================
+// 取得頭像圖庫（後端 API）
+// =======================
 router.get("/avatars", async (req: Request, res: Response) => {
   try {
     const avatars = await prisma.avatarOption.findMany({
       where: { isActive: true },
-      select: { avatarId: true, imagePath: true, label: true },
+      select: {
+        avatarId: true,
+        imagePath: true,
+        label: true,
+      },
     });
+
     res.json({ ok: true, avatars });
   } catch (err) {
     console.error("❌ Fetch avatars error:", err);
@@ -334,6 +362,48 @@ router.put("/update-password", async (req: Request, res: Response) => {
     res.status(500).json({ ok: false, message: "伺服器錯誤" });
   }
 });
+
+// ✅【新增】更新會員頭像 API
+router.put("/update-avatar", async (req: Request, res: Response) => {
+  try {
+    const { memberId, avatarChoice } = req.body;
+
+    if (!memberId || !avatarChoice) {
+      return res
+        .status(400)
+        .json({ ok: false, message: "缺少必要參數（memberId 或 avatarChoice）" });
+    }
+
+    // ✅ 更新會員資料（avatarChoice）
+    const updatedMember = await prisma.member.update({
+      where: { memberId: BigInt(memberId) }, // ⚠️ Prisma BigInt 要轉換
+      data: { avatarChoice: Number(avatarChoice) },
+      include: {
+        avatarOption: true, // 一併回傳關聯的頭像資料
+      },
+    });
+
+    // ✅ 回傳更新後的會員資料
+    return res.json({
+      ok: true,
+      message: "頭像更新成功",
+      member: {
+        memberId: updatedMember.memberId,
+        avatarChoice: updatedMember.avatarChoice,
+        avatar: updatedMember.avatarOption
+          ? {
+              imagePath: updatedMember.avatarOption.imagePath,
+              label: updatedMember.avatarOption.label,
+            }
+          : null,
+      },
+    });
+  } catch (error) {
+    console.error("❌ 更新頭像錯誤:", error);
+    res.status(500).json({ ok: false, message: "伺服器內部錯誤" });
+  }
+});
+
 
 // ✅ ⚠️ 最外層匯出，一定要在所有大括號都關完之後！
 export default router;

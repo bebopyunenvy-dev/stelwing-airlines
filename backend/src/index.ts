@@ -7,9 +7,9 @@ import "dotenv/config";
 // 載入各種路由
 import { requireAuth } from "./middleware/jwt.js";
 import apiRouter from "./routes/index.js";
-//若晴測試會員
-import authRoutes from "./routes/auth.routes.js";
-import memberRoutes from "./routes/member.routes.js"; 
+// //若晴測試會員
+// import authRoutes from "./routes/auth.routes.js";
+// import memberRoutes from "./routes/member.routes.js"; 
 // 周邊工具安裝：zod 驗證、session 們
 import { z } from "zod";
 import session from "express-session";
@@ -27,6 +27,8 @@ app.use(express.static("public"));
 app.use(express.json());
 // 解析 URL-encoded body 的中間件
 app.use(express.urlencoded({ extended: true }));
+// 11/11若晴新增 會員頭像圖庫
+app.use("/avatars", express.static("public/avatars"));
 // 允許所有來源訪問
 app.use(
   cors({
@@ -57,10 +59,10 @@ app.get("/", (req: Request, res: Response) => {
   res.send("歡迎來到 Express + TS !");
 });
 
-//若晴測試中
-// 登入／註冊／驗證 路由
-app.use("/api/auth", authRoutes);
-app.use("/api/member", memberRoutes);
+// //若晴測試中
+// // 登入／註冊／驗證 路由
+// app.use("/api/auth", authRoutes);
+// app.use("/api/member", memberRoutes);
 
 // 測試 Prisma 與 Create
 app.use("/api", apiRouter);
