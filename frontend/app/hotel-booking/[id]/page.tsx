@@ -158,10 +158,10 @@ export default function HotelDetailPage() {
           />
         </div>
 
-        <div className="text-center mt-4">
+        <div className="text-start mt-4">
           <button
             onClick={() => router.back()}
-            className="text-[#D4A574] underline text-lg"
+            className="border border-[#D4A574] hover:bg-[#C69563] text-white font-semibold px-8 py-1 rounded-full transition-all hover:shadow-lg active:scale-95"
           >
             上一步
           </button>

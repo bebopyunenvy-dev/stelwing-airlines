@@ -36,15 +36,20 @@ export default function HotelDetailBookingCard({
 
   // 格式化價格的輔助函式，解決水合作用問題
   const renderFormattedPrice = () => {
-    // SSR 階段: 渲染原始價格字串，不進行 locale 格式化
+    // 伺服器渲染 (SSR) 階段: 渲染原始價格字串 (例如 $10500)，不進行地區格式化
     const rawPriceString = `$${totalPrice.toString()}`;
 
-    // CSR 階段 (mounted = true): 使用 locale 格式化，確保顯示美觀
+    // 客戶端渲染 (CSR) 階段 (mounted = true): 使用明確的 Intl.NumberFormat 格式化，確保輸出固定且美觀
     if (mounted) {
-      return `$${totalPrice.toLocaleString()}`;
+      // 使用明確的 'en-US' locale 和 'USD' 貨幣，確保無論客戶端地區設定如何，輸出格式一致
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0, // 移除小數點
+      }).format(totalPrice);
     }
 
-    // SSR 階段 (mounted = false): 渲染不變的原始價格，避免不一致
+    // SSR 階段 (mounted = false): 渲染不變的原始價格，避免水合作用不一致
     return rawPriceString;
   };
 
