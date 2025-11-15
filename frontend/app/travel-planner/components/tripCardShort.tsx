@@ -1,40 +1,35 @@
 'use client';
 
 import { MoveRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
-import { useTripContext } from '../../../src/context/TripContext';
-import { useAlertDialog } from '../components/alertDialog/useAlertDialog';
-import type { Trip, TripForUI } from '../types';
 import { apiFetch } from '../utils/apiFetch';
-import { transformTripForUI } from '../utils/tripUtils';
 import AlertDialogBox from './alertDialog/alertDialogBox';
+import { useAlertDialog } from './alertDialog/useAlertDialog';
 import ConfirmDialog from './confirmDialog';
 
-// export interface Trip {
-//   id: string; // 必填：用於 key
-//   userId: string; // 必填：可以追蹤誰的行程
-//   title: string; // 必填：行程標題
-//   destination: string | null; // 選填或 null：行程目的地
-//   startDate: string; // 必填：開始日期
-//   startTimezone: string; // 必填：開始日期時區
-//   displayStartDate: string; //程式給：轉時區的開始日期
-//   endDate: string; // 必填：結束日期
-//   endTimezone: string; // 必填：結束日期時區
-//   displayEndDate: string; //程式給：轉時區的結束日期
-//   note: string | null; // 選填或 null：備註
-//   coverImage: string | null; // 選填或 null：封面圖片
-//   status: string; //程式帶：旅程進行狀態
-//   collaborators?: any[]; // 選填：合作人列表
-//   isDeleted?: number; // 選填：是否刪除
-//   createdAt?: string; // 選填
-//   updatedAt?: string; // 選填
-// }
+export interface Trip {
+  id: string; // 必填：用於 key
+  userId: string; // 必填：可以追蹤誰的行程
+  title: string; // 必填：行程標題
+  destination: string | null; // 選填或 null：行程目的地
+  startDate: string; // 必填：開始日期
+  startTimezone: string; // 必填：開始日期時區
+  displayStartDate: string; //程式給：轉時區的開始日期
+  endDate: string; // 必填：結束日期
+  endTimezone: string; // 必填：結束日期時區
+  displayEndDate: string; //程式給：轉時區的結束日期
+  note: string | null; // 選填或 null：備註
+  coverImage: string | null; // 選填或 null：封面圖片
+  status: string; //程式帶：旅程進行狀態
+  collaborators?: any[]; // 選填：合作人列表
+  isDeleted?: number; // 選填：是否刪除
+  createdAt?: string; // 選填
+  updatedAt?: string; // 選填
+}
 
 // TripCardProps 直接傳整個 trip
-export interface TripCardProps {
-  trip: TripForUI;
-  onDeleteSuccess: (id: string) => void;
+export interface TripCardShortProps {
+  trip: Trip;
 }
 
 const STATUS_BACKGROUND_COLORS: Record<string, string> = {
@@ -49,51 +44,19 @@ const STATUS_TEXT_COLORS: Record<string, string> = {
   已結束: '--sw-white', // 藍
 };
 
-export default function TripCard({ trip, onDeleteSuccess }: TripCardProps) {
+export default function TripCard({ trip }: TripCardShortProps) {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
   const { alert, showAlert } = useAlertDialog();
-  const [loading, setLoading] = useState(false);
   const [isOpenDeletePlan, setIsOpenDeletePlan] = useState(false);
-  const router = useRouter();
-  const { setCurrentTrip } = useTripContext();
 
-  // 功能：查看詳細旅程
-  const handleViewDetail = async () => {
-    try {
-      // 呼叫後端驗證該旅程是否屬於當前使用者
-      const data = await apiFetch<Trip>(
-        `http://localhost:3007/api/plans/${trip.id}`,
-        {
-          // const data = await apiFetch<Trip>(`${API_BASE}/plans/${trip.id}`, {
-          method: 'GET',
-        }
-      );
-
-      const tripForUI = transformTripForUI(data);
-      console.log(tripForUI);
-      setCurrentTrip(tripForUI);
-
-      // 通過驗證 → 跳轉到動態路由
-      router.push(`/travel-planner/${trip.id}`);
-    } catch (err: any) {
-      // 驗證不通過 → 顯示彈窗訊息
-      showAlert({
-        title: '無法查看',
-        description: err.message || '請稍後再試',
-        confirmText: '確認',
-      });
-    }
-  };
-
-  // 功能：處理刪除旅程
   const handleDelete = useCallback(async () => {
     try {
-      const data = await fetch(`http://localhost:3007/api/plans/${trip.id}`, {
-        // const data = await apiFetch(`${API_BASE}/plans/${trip.id}`, {
+      // const data = await fetch(`http://localhost:3007/api/plans/${trip.id}`, {
+      const data = await apiFetch(`${API_BASE}/plans/${trip.id}`, {
         method: 'DELETE',
       });
 
-      onDeleteSuccess(trip.id);
+      console.log(data);
 
       showAlert({
         title: '刪除成功',
@@ -109,11 +72,10 @@ export default function TripCard({ trip, onDeleteSuccess }: TripCardProps) {
         onConfirm: () => setIsOpenDeletePlan(false),
       });
     }
-  }, [API_BASE, trip.id, showAlert, onDeleteSuccess]);
+  }, [API_BASE, trip.id, showAlert]);
 
   return (
     <>
-      {/* 主體：旅程卡片 */}
       <div className="rounded-lg bg-ticket py-4 flex">
         {/* 第 1 塊：飛機窗圖片 */}
         <div className="px-4">
@@ -186,19 +148,14 @@ export default function TripCard({ trip, onDeleteSuccess }: TripCardProps) {
           className="px-4 flex items-center gap-2 
                     border-l border-dashed border-(--sw-primary)"
         >
-          <button
-            className="sw-btn border border-solid border-(--sw-grey)"
-            onClick={handleViewDetail}
-          >
+          <button className="sw-btn border border-solid border-(--sw-grey)">
             <h6 className="sw-h6">查看詳細行程</h6>
           </button>
-
           <button
-            onClick={handleViewDetail}
-            disabled={loading}
-            className="sw-btn"
+            className="sw-btn border border-solid border-(--sw-grey)"
+            onClick={() => setIsOpenDeletePlan(true)}
           >
-            {loading ? '驗證中...' : '查看詳細行程'}
+            <h6 className="sw-h6">刪除整趟旅程</h6>
           </button>
         </div>
       </div>

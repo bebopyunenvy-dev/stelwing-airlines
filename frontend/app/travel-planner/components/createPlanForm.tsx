@@ -4,6 +4,10 @@ import { useState } from 'react';
 import { timezones } from '../src/data/timezone';
 // @ts-expect-error 我不寫就跳錯我只好加啊氣死
 import { DateTime } from 'luxon';
+import { useAlertDialog } from '../components/alertDialog/useAlertDialog';
+import { Trip } from '../types';
+import { apiFetch } from '../utils/apiFetch';
+import AlertDialogBox from './alertDialog/alertDialogBox';
 
 // export interface CreatePlanFormProps {}
 // {}: CreatePlanFormProps
@@ -11,9 +15,10 @@ import { DateTime } from 'luxon';
 export default function CreatePlanForm({
   onSuccess,
 }: {
-  onSuccess: () => void;
+  onSuccess: (newTripId: string) => void;
 }) {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+  const { alert, showAlert } = useAlertDialog();
   const [formData, setFormData] = useState({
     title: '',
     destination: '',
@@ -67,26 +72,26 @@ export default function CreatePlanForm({
         endDate: endDateTime.toUTC().toISO(),
       };
 
-      const res = await fetch(`${API_BASE}/plans`, {
+      const data = await apiFetch<Trip>(`http://localhost:3007/api/plans`, {
+        // const data = await apiFetch(`${API_BASE}/plans`, {
         method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-        },
         body: JSON.stringify(adjustedData),
+        headers: { 'Content-Type': 'application/json' },
       });
 
-      if (!res.ok) {
-        throw new Error(`HTTP 錯誤：${res.status}`);
-      }
-
-      const data = await res.json();
-      console.log('後端回傳結果', data);
-      onSuccess();
-    } catch (error) {
-      console.log('新增失敗', error);
+      showAlert({
+        title: '新增成功',
+        description: '點擊確認跳轉行程規劃頁面',
+        confirmText: '確認',
+        onConfirm: () => onSuccess(data.id),
+      });
+    } catch (err: any) {
+      showAlert({
+        title: '新增失敗',
+        description: err.message || '請稍後再試',
+        confirmText: '確認',
+      });
     }
-
-    console.log('送出的表單資料:', formData);
   };
 
   return (
@@ -202,6 +207,8 @@ export default function CreatePlanForm({
           </button>
         </div>
       </form>
+      {/* 彈出視窗 / 整包套件：刪除結果訊息 */}
+      {alert.open && <AlertDialogBox alert={alert} />}
     </>
   );
 }
