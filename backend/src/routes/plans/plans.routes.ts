@@ -76,7 +76,7 @@ router.get("/", async (req: Request, res: Response) => {
 
       res.status(500).json(errorResponse);
     }
-})
+});
 
 // | POST | /api/plans | 新增旅程 |
 router.post("/", async (req: Request, res: Response) => {
@@ -126,7 +126,7 @@ router.post("/", async (req: Request, res: Response) => {
 
     res.status(500).json(errorResponse);
   }
-})
+});
 
 // | GET | /api/plans/:planId | 讀取單一旅程 |
 router.get('/:planId', async (req, res) => {
