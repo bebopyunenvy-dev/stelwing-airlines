@@ -100,7 +100,7 @@ export default function FarePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F7F7]">
+    <div>
       <FlightInfoBar />
       <main className="mx-auto w-full max-w-6xl px-4 py-8">
         <h2 className="text-xl font-extrabold mb-6">
