@@ -5,14 +5,15 @@ import listPlugin from '@fullcalendar/list';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import TripCardSortSample from '../components/tripCardShortSample';
 import TripItemCard from '../components/tripItemCard';
 
-// export interface SamplePageProps {}
-// {  }: SamplePageProps
+// export interface TripDetailPageProps {}
+// {  }: TripDetailPageProps
 
-export default function SamplePage() {
+export default function TripDetailPage() {
   const mockTrip = {
     id: '1',
     userId: '1',
@@ -194,6 +195,8 @@ export default function SamplePage() {
       end: '2025-12-26T17:00:00',
     },
   ];
+  const params = useParams();
+  const { tripId } = params;
 
   const [isOpenItemCard, setIsOpenItemCard] = useState(false);
 

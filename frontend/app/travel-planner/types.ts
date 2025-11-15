@@ -14,3 +14,9 @@ export type Trip = {
   createdAt: string;
   updatedAt: string;
 };
+
+export interface TripForUI extends Trip {
+  status: string;
+  displayStartDate: string;
+  displayEndDate: string;
+}

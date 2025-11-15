@@ -2,13 +2,13 @@
 
 import { Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
-// @ts-expect-error 我不寫就跳錯我只好加啊氣死
-import { DateTime } from 'luxon';
+
 import CreatePlanForm from '../components/createPlanForm';
 import EditDialog from '../components/editDialog';
 import TripCard from '../components/tripCard';
-import type { Trip } from '../types';
+import type { Trip, TripForUI } from '../types';
 import { apiFetch } from '../utils/apiFetch';
+import { transformTripsForUI } from '../utils/tripUtils';
 
 // export interface ListPageProps {}
 
@@ -91,55 +91,12 @@ export default function ListPage() {
   //   },
   // ];
 
-  interface TripForUI extends Trip {
-    status: string;
-    displayStartDate: string;
-    displayEndDate: string;
-  }
-
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
   const tabs = ['全部', '待啟程', '進行中', '已結束'];
   const [activeTab, setActiveTab] = useState('全部');
   const [trips, setTrips] = useState<Trip[]>([]);
   const [error, setError] = useState(null);
   const [isOpenCreatePlan, setIsOpenCreatePlan] = useState(false); //彈出視窗 UI 套件版
-
-  // #region 關於 Luxon
-
-  // Luxon 的 DateTime 物件是「時間點 + 時區」的組合
-  // DateTime.fromISO(時間的 ISOstring, {zone: '時區'})：將 ISOSstring 轉成帶有時區資料的 DateTime 物件
-  // DateTime.setZone：把這個時間物件移去別的時區顯示，同一時間、不同時區顯示
-  // DateTime.toUTC：把這個時間物件轉成 UTC (+0) 時區會顯示的時間
-  // DateTime.toISO：把這個時間物件轉成帶有時區資訊的 ISO 字串
-  // DateTime.utc：建立一個 utc 的時間物件
-
-  // #endregion
-  // function：搭配時區轉換 UTC 時間呈現時間
-  function convertToTimezone(isoString: string, timezone: string): string {
-    const utcDateTime = DateTime.fromISO(isoString, { zone: 'utc' });
-    const localTime = utcDateTime.setZone(timezone);
-    const formatLocalTime = localTime.toFormat('yyyy-MM-dd');
-
-    return formatLocalTime;
-  }
-
-  // function：取得旅程狀態：待啟程、進行中、已結束
-  function calculateStatus(trip: any): string {
-    const nowUTC = DateTime.utc();
-    const startDateUTC = DateTime.fromISO(trip.startDate);
-    const endDateUTC = DateTime.fromISO(trip.endDate);
-
-    let status;
-    if (nowUTC < startDateUTC) {
-      status = '待啟程';
-    } else if (nowUTC < endDateUTC) {
-      status = '進行中';
-    } else {
-      status = '已結束';
-    }
-
-    return status;
-  }
 
   // data：fetch 後端取得資料
   useEffect(() => {
@@ -163,12 +120,7 @@ export default function ListPage() {
   }, [API_BASE]);
 
   // data：根據後端 API 傳來的 Data，調整後的前端用 Data
-  const tripsForUI: TripForUI[] = trips.map((trip) => ({
-    ...trip,
-    status: calculateStatus(trip), //前端用：判斷旅程是否進行中的欄位
-    displayStartDate: convertToTimezone(trip.startDate, trip.startTimezone),
-    displayEndDate: convertToTimezone(trip.endDate, trip.endTimezone),
-  }));
+  const tripsForUI: TripForUI[] = transformTripsForUI(trips);
 
   // data：Tab 分頁切換篩選出要列出的項目
   const filteredTrips =

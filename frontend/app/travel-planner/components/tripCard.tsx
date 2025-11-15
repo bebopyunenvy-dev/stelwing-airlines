@@ -1,6 +1,7 @@
 'use client';
 
 import { MoveRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { useAlertDialog } from '../components/alertDialog/useAlertDialog';
 import { apiFetch } from '../utils/apiFetch';
@@ -48,7 +49,32 @@ const STATUS_TEXT_COLORS: Record<string, string> = {
 export default function TripCard({ trip, onDeleteSuccess }: TripCardProps) {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
   const { alert, showAlert } = useAlertDialog();
+  const [loading, setLoading] = useState(false);
   const [isOpenDeletePlan, setIsOpenDeletePlan] = useState(false);
+  const router = useRouter();
+
+  // 功能：查看詳細旅程
+  const handleViewDetail = async () => {
+    setLoading(true);
+    try {
+      // 呼叫後端驗證該旅程是否屬於當前使用者
+      const data = await apiFetch(`${API_BASE}/plans/${trip.id}/items`, {
+        method: 'GET',
+      });
+
+      // 通過驗證 → 跳轉到動態路由
+      router.push(`/travel-planner/${trip.id}`);
+    } catch (err: any) {
+      // 驗證不通過 → 顯示彈窗訊息
+      showAlert({
+        title: '無法查看',
+        description: err.message || '請稍後再試',
+        confirmText: '確認',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 功能：處理刪除旅程
   const handleDelete = useCallback(async () => {
@@ -151,14 +177,19 @@ export default function TripCard({ trip, onDeleteSuccess }: TripCardProps) {
           className="px-4 flex items-center gap-2 
                     border-l border-dashed border-(--sw-primary)"
         >
-          <button className="sw-btn border border-solid border-(--sw-grey)">
-            <h6 className="sw-h6">查看詳細行程</h6>
-          </button>
           <button
             className="sw-btn border border-solid border-(--sw-grey)"
-            onClick={() => setIsOpenDeletePlan(true)}
+            onClick={handleViewDetail}
           >
-            <h6 className="sw-h6">刪除整趟旅程</h6>
+            <h6 className="sw-h6">查看詳細行程</h6>
+          </button>
+
+          <button
+            onClick={handleViewDetail}
+            disabled={loading}
+            className="sw-btn"
+          >
+            {loading ? '驗證中...' : '查看詳細行程'}
           </button>
         </div>
       </div>
