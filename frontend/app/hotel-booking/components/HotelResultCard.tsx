@@ -32,9 +32,15 @@ interface HotelResultCardProps {
     roomType?: string;
     notes?: string;
   };
+  onBookClick: () => void;
+  isBooking?: boolean;
 }
 
-export default function HotelResultCard({ hotel }: HotelResultCardProps) {
+export default function HotelResultCard({
+  hotel,
+  onBookClick,
+  isBooking = false,
+}: HotelResultCardProps) {
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -67,17 +73,8 @@ export default function HotelResultCard({ hotel }: HotelResultCardProps) {
     shuttleService: <Truck size={16} />,
   };
 
-  // 統一跳轉邏輯，與 HotelPage 一致
-  const handleClick = () => {
-    localStorage.setItem('booking_selectedHotelId', hotel.id.toString());
-    router.push(`/hotel-booking/${hotel.id}`);
-  };
-
   return (
-    <div
-      onClick={handleClick}
-      className="flex w-full max-w-4xl items-center px-4 bg-white rounded-lg shadow-md hover:shadow-xl transition cursor-pointer overflow-hidden"
-    >
+    <div className="flex w-full max-w-4xl items-center px-4 bg-white rounded-lg shadow-md hover:shadow-xl transition cursor-pointer overflow-hidden">
       {/* 左側飯店圖 */}
       <div className="relative w-50 h-40 flex-shrink-0">
         {hotel.image ? (
@@ -112,7 +109,7 @@ export default function HotelResultCard({ hotel }: HotelResultCardProps) {
           <Heart
             size={16}
             fill={isFavorite ? 'currentColor' : 'none'}
-            stroke={isFavorite ? 'none' : 'currentColor'}
+            stroke={isFavorite ? 'none' : undefined}
           />
         </button>
 
@@ -158,14 +155,46 @@ export default function HotelResultCard({ hotel }: HotelResultCardProps) {
             ${hotel.price.toLocaleString()}
           </div>
           <div className="text-xs text-gray-500 mb-0.5">/night</div>
+
+          {/* 預訂按鈕：loading + 延遲 */}
           <button
             onClick={(e) => {
               e.stopPropagation();
-              handleClick(); // 呼叫相同跳轉函數
+              onBookClick();
             }}
-            className="px-4 py-1 bg-[#1E2A33] text-[#DCBB87] font-semibold rounded-md hover:bg-[#303D49] transition"
+            disabled={isBooking}
+            className={`
+              px-4 py-1 font-semibold rounded-md transition-all duration-300 flex items-center gap-2
+              ${
+                isBooking
+                  ? 'bg-gray-400 cursor-not-allowed text-white'
+                  : 'bg-[#1E2A33] text-[#DCBB87] hover:bg-[#303D49]'
+              }
+            `}
           >
-            預訂
+            {isBooking ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+                處理中
+              </>
+            ) : (
+              '預訂'
+            )}
           </button>
         </div>
       </div>

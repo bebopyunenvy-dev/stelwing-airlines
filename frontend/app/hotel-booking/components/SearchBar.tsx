@@ -8,28 +8,34 @@ import Calendar, { DateRange } from './Calendar';
 interface SearchBarProps {
   selectedRange?: DateRange;
   onDateChange?: (range: DateRange | undefined) => void;
-  guests?: number;
-  onGuestsChange?: (g: number) => void;
-  rooms?: number;
-  onRoomsChange?: (r: number) => void;
+  guests?: number; // 新增：從外部接收人數
+  onGuestsChange?: (g: number) => void; // 新增：人數改變的回調
+  rooms?: number; // 新增：從外部接收房間數
+  onRoomsChange?: (r: number) => void; // 新增：房間數改變的回調
 }
 
 export default function SearchBar({
   selectedRange,
   onDateChange,
-  guests: propGuests = 2,
+  guests: propGuests = 2, // 默認值
   onGuestsChange,
-  rooms: propRooms = 1,
+  rooms: propRooms = 1, // 默認值
   onRoomsChange,
 }: SearchBarProps) {
   const router = useRouter();
   const [showCalendar, setShowCalendar] = useState(false);
   const [showGuestPicker, setShowGuestPicker] = useState(false);
-  const [adults, setAdults] = useState(propGuests);
-  const [rooms, setRooms] = useState(propRooms);
+  const [adults, setAdults] = useState(propGuests); // 從 props 初始化
+  const [rooms, setRooms] = useState(propRooms); // 從 props 初始化
 
-  useEffect(() => setAdults(propGuests), [propGuests]);
-  useEffect(() => setRooms(propRooms), [propRooms]);
+  // 當 props 改變時，更新內部狀態
+  useEffect(() => {
+    setAdults(propGuests);
+  }, [propGuests]);
+
+  useEffect(() => {
+    setRooms(propRooms);
+  }, [propRooms]);
 
   const formatDate = (date: Date | undefined, placeholder: string) => {
     if (!date) return placeholder;
@@ -38,20 +44,13 @@ export default function SearchBar({
     return `${month} ${day}`;
   };
 
-  // 🌟 將 Date 轉成本地 YYYY-MM-DD 字串
-  const formatDateToLocalString = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   const handleDateSelect = (range: DateRange | undefined) => {
     if (onDateChange) onDateChange(range);
+    // 當日期改變時，保存到 localStorage
     if (range?.from && range?.to) {
       const searchData = {
-        checkin: formatDateToLocalString(range.from),
-        checkout: formatDateToLocalString(range.to),
+        checkin: range.from.toISOString().split('T')[0],
+        checkout: range.to.toISOString().split('T')[0],
         guests: adults,
         rooms,
       };
@@ -59,18 +58,23 @@ export default function SearchBar({
     }
   };
 
+  // 修改人數改變邏輯：調用回調並保存
   const handleAdultsChange = (newAdults: number) => {
     setAdults(newAdults);
     if (onGuestsChange) onGuestsChange(newAdults);
+    // 保存到 localStorage
     updateLocalStorage({ guests: newAdults });
   };
 
+  // 修改房間數改變邏輯：調用回調並保存
   const handleRoomsChange = (newRooms: number) => {
     setRooms(newRooms);
     if (onRoomsChange) onRoomsChange(newRooms);
+    // 保存到 localStorage
     updateLocalStorage({ rooms: newRooms });
   };
 
+  // 通用更新 localStorage 函數
   const updateLocalStorage = (
     updates: Partial<{
       checkin: string;
@@ -86,15 +90,17 @@ export default function SearchBar({
     );
   };
 
+  // 🌟 搜尋按鈕事件：帶參數跳轉，並確保 localStorage 已更新
   const handleSearch = () => {
     if (!selectedRange?.from || !selectedRange?.to) {
       alert('請選擇入住與退房日期');
       return;
     }
 
-    const checkin = formatDateToLocalString(selectedRange.from);
-    const checkout = formatDateToLocalString(selectedRange.to);
+    const checkin = selectedRange.from.toISOString().split('T')[0];
+    const checkout = selectedRange.to.toISOString().split('T')[0];
 
+    // 保存完整搜尋條件到 localStorage
     const searchData = {
       checkin,
       checkout,
@@ -103,6 +109,7 @@ export default function SearchBar({
     };
     localStorage.setItem('booking_search', JSON.stringify(searchData));
 
+    // 🚀 帶參數跳轉
     router.push(
       `/hotel-booking/search?checkin=${checkin}&checkout=${checkout}&adults=${adults}&rooms=${rooms}`
     );
@@ -116,8 +123,11 @@ export default function SearchBar({
             提尋機場內及周邊 1 公里內的優質住宿
           </h1>
 
+          {/* 搜尋欄 */}
           <div className="flex flex-wrap justify-center gap-3 py-4 relative">
+            {/* 日期區 */}
             <div className="flex items-center bg-white rounded-lg gap-0 overflow-hidden">
+              {/* Check in */}
               <button
                 className="bg-white text-gray-800 px-6 w-[180px] py-[10px] flex items-center justify-start gap-3 hover:bg-gray-50 transition-colors"
                 onClick={() => setShowCalendar(true)}
@@ -130,6 +140,7 @@ export default function SearchBar({
 
               <div className="w-[1px] h-6 bg-gray-400 mx-0.5"></div>
 
+              {/* Check out */}
               <button
                 className="bg-white text-gray-800 px-6 w-[180px] py-[10px] flex items-center justify-start gap-3 hover:bg-gray-50 transition-colors"
                 onClick={() => setShowCalendar(true)}
@@ -141,6 +152,7 @@ export default function SearchBar({
               </button>
             </div>
 
+            {/* 人數/房間 */}
             <button
               className="bg-white text-gray-800 px-6 py-[10px] rounded-lg flex items-center gap-3 hover:bg-gray-50 transition-colors min-w-[180px]"
               onClick={() => setShowGuestPicker(!showGuestPicker)}
@@ -151,8 +163,10 @@ export default function SearchBar({
               </span>
             </button>
 
+            {/* 人數選擇器彈窗 */}
             {showGuestPicker && (
               <div className="absolute top-[70px] right-0 bg-white text-gray-800 rounded-lg shadow-lg p-4 z-50 w-[220px]">
+                {/* 成人 */}
                 <div className="flex justify-between items-center mb-2">
                   <span>成人</span>
                   <div className="flex items-center gap-2">
@@ -174,6 +188,7 @@ export default function SearchBar({
                   </div>
                 </div>
 
+                {/* 房間 */}
                 <div className="flex justify-between items-center mb-2">
                   <span>房間</span>
                   <div className="flex items-center gap-2">
@@ -205,6 +220,7 @@ export default function SearchBar({
             )}
           </div>
 
+          {/* 搜尋按鈕 */}
           <div className="w-full flex justify-center mt-2">
             <button
               onClick={handleSearch}
@@ -216,6 +232,7 @@ export default function SearchBar({
         </div>
       </div>
 
+      {/* 日曆彈窗 */}
       {showCalendar && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2">
           <div

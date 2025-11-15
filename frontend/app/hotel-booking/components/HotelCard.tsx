@@ -77,8 +77,8 @@ export default function HotelCard({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <h3 className="text-white font-bold text-lg drop-shadow-lg text-center h-25 leading-snug flex items-start justify-center">
+        <div className="space-y-12">
+          <h3 className="text-white font-bold text-lg drop-shadow-lg text-center h-25 leading-snug flex justify-center">
             {hotel.name}
           </h3>
 

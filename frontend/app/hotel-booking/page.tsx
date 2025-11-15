@@ -6,12 +6,14 @@ import Calendar, { DateRange } from './components/Calendar';
 import HotelCard from './components/HotelCard';
 import SearchBar from './components/SearchBar';
 import { HotelCardData } from './interfaces/HotelCardData';
-import { calculateNights } from './utils/dateUtils'; // 共用晚數函數
+import { calculateNights } from './utils/dateUtils';
 
 // 修正時區差一天
 const formatDateLocal = (date: Date) => {
-  const tzOffset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - tzOffset).toISOString().split('T')[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 export default function Page() {
@@ -109,28 +111,21 @@ export default function Page() {
     },
   ];
 
-  // ⭐ 初始化 client-side selectedRange 避免 SSR mismatch
+  // 從 localStorage 讀取上次搜尋的日期
   const [selectedRange, setSelectedRange] = React.useState<
     DateRange | undefined
-  >(undefined);
+  >(() => {
+    if (typeof window === 'undefined') return undefined;
+    const saved = localStorage.getItem('booking_search');
+    if (!saved) return undefined;
+    const parsed = JSON.parse(saved);
+    return parsed.checkin && parsed.checkout
+      ? { from: new Date(parsed.checkin), to: new Date(parsed.checkout) }
+      : undefined;
+  });
+
   const [guests, setGuests] = React.useState(2);
   const [rooms, setRooms] = React.useState(1);
-
-  // React.useEffect(() => {
-  //   if (typeof window !== 'undefined') {
-  //     const saved = localStorage.getItem('booking_search');
-  //     if (saved) {
-  //       const parsed = JSON.parse(saved);
-  //       setSelectedRange(
-  //         parsed.checkin && parsed.checkout
-  //           ? { from: new Date(parsed.checkin), to: new Date(parsed.checkout) }
-  //           : undefined
-  //       );
-  //       setGuests(parsed.guests || 2);
-  //       setRooms(parsed.rooms || 1);
-  //     }
-  //   }
-  // }, []);
 
   const updateLocalStorage = (
     updates: Partial<{
@@ -153,7 +148,7 @@ export default function Page() {
     if (range?.from && range?.to) {
       updateLocalStorage({
         checkin: formatDateLocal(range.from),
-        checkout: formatDateLocal(range.to),
+        checkout: formatDateLocal(range.to), // 正確使用 formatDateLocal
         guests,
         rooms,
       });
@@ -175,7 +170,7 @@ export default function Page() {
     router.push('/hotel-booking/search');
   };
 
-  // ⭐ 計算晚數（11/13 → 11/15 = 2晚）
+  // 計算晚數（11/13 → 11/15 = 2晚）
   const getNights = () => {
     if (!selectedRange?.from || !selectedRange?.to) return 1;
     return calculateNights(selectedRange.from, selectedRange.to);

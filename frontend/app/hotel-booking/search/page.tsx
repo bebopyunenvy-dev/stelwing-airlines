@@ -10,18 +10,25 @@ import { AmenityKey, MAX_PRICE, MIN_PRICE } from '../interfaces/constants';
 import { allMockHotels } from '../interfaces/mockHotels';
 
 const formatDateLocal = (date: Date) => {
-  const tzOffset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - tzOffset).toISOString().split('T')[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 export default function HotelPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const [showFilter, setShowFilter] = useState(false);
   const [priceMin, setPriceMin] = useState(MIN_PRICE);
   const [priceMax, setPriceMax] = useState(MAX_PRICE);
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<AmenityKey[]>([]);
+
+  // 新增：loading 狀態
+  const [bookingHotelId, setBookingHotelId] = useState<number | null>(null);
+
   const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(
     () => {
       if (typeof window !== 'undefined') {
@@ -54,6 +61,17 @@ export default function HotelPage() {
   });
 
   const hotelRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const [highlightedHotelId, setHighlightedHotelId] = useState<number | null>(
+    null
+  );
+
+  // 初始化高亮
+  useEffect(() => {
+    const initialId =
+      parseInt(searchParams.get('scrollToHotelId') || '') ||
+      parseInt(localStorage.getItem('scrollToHotelId') || '');
+    if (!isNaN(initialId)) setHighlightedHotelId(initialId);
+  }, [searchParams]);
 
   const clearAllFilters = useCallback(() => {
     setPriceMin(MIN_PRICE);
@@ -118,25 +136,38 @@ export default function HotelPage() {
     updateLocalStorage({ rooms: newRooms });
   };
 
-  // ✅ 永久高亮
+  // 高亮效果 (純 Tailwind)
   useEffect(() => {
-    const highlightedHotelId =
-      searchParams.get('scrollToHotelId') ||
-      localStorage.getItem('scrollToHotelId');
-    if (highlightedHotelId) {
-      const id = parseInt(highlightedHotelId, 10);
-      const el = hotelRefs.current[id];
+    if (highlightedHotelId !== null) {
+      const el = hotelRefs.current[highlightedHotelId];
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('ring-4', 'ring-[#DCBB87]', 'ring-offset-4');
-        // ❌ 移除 setTimeout，不再自動取消 highlight
+
+        // 移除之前高亮
+        Object.values(hotelRefs.current).forEach((e) => {
+          if (e) {
+            e.classList.remove('border-4', 'border-[#DCBB87]', 'rounded-lg');
+          }
+        });
+
+        // 設置高亮
+        el.classList.add('border-4', 'border-[#DCBB87]', 'rounded-lg');
       }
     }
-  }, [searchParams, filteredHotels]);
+  }, [highlightedHotelId, filteredHotels]);
 
-  const goToDetail = (hotelId: number) => {
+  // 點擊「預訂」或「卡片」→ 高亮 + loading + 延遲 800ms → 原本路由
+  const goToDetail = async (hotelId: number) => {
+    setHighlightedHotelId(hotelId); // 觸發高亮
+    setBookingHotelId(hotelId); // 觸發 loading
     localStorage.setItem('booking_selectedHotelId', hotelId.toString());
+
+    // 延遲 800ms
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    // 保留你原本的路由：/hotel-booking/${hotelId}
     router.push(`/hotel-booking/${hotelId}?${searchParams.toString()}`);
+    setBookingHotelId(null); // 清除 loading
   };
 
   return (
@@ -195,7 +226,11 @@ export default function HotelPage() {
                     onClick={() => goToDetail(hotel.id)}
                     className="cursor-pointer"
                   >
-                    <HotelResultCard hotel={hotel} />
+                    <HotelResultCard
+                      hotel={hotel}
+                      onBookClick={() => goToDetail(hotel.id)}
+                      isBooking={bookingHotelId === hotel.id}
+                    />
                   </div>
                 </div>
               ))
