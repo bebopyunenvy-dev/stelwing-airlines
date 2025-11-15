@@ -59,7 +59,7 @@ export default function PaymentSuccessPage() {
       </div>
 
       <div className="bg-white/90 backdrop-blur-sm p-8 rounded-xl shadow-lg w-full max-w-md text-center mt-8">
-        <h2 className="text-2xl font-bold text-green-600 mb-4">預訂成功！</h2>
+        <h2 className="text-2xl font-bold text-[#D4A574] mb-4">預訂成功！</h2>
         <p className="text-gray-700 mb-6">
           感謝您的預訂，確認信件將寄送至您的信箱。
         </p>
