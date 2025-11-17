@@ -65,6 +65,7 @@ export default function Header({
   return (
     <header className="bg-[var(--sw-primary)] text-white sticky top-0 z-50">
       <div className="mx-auto w-full h-16 px-16 flex items-center justify-between gap-[48px]">
+        
         {/* =============== 左側區 Logo + Nav =============== */}
         <div className="flex items-center gap-12">
           <Link href="/">
@@ -97,6 +98,7 @@ export default function Header({
 
         {/* =============== 右側功能區 =============== */}
         <div className="flex items-center gap-6">
+
           {/* ⭐ Duty-free 購物車 */}
           {isDutyfree && (
             <div className="relative">
@@ -147,10 +149,7 @@ export default function Header({
                                 x{item.quantity}
                               </p>
                               <p className="text-sm font-medium text-(--sw-accent)">
-                                TWD{" "}
-                                {(
-                                  item.price * item.quantity
-                                ).toLocaleString()}
+                                TWD { (item.price * item.quantity).toLocaleString() }
                               </p>
                             </div>
 
@@ -192,47 +191,67 @@ export default function Header({
           </button>
 
           {/* ⭐⭐ 會員登入 / 頭像選單 */}
+          {/* ==========================
+               ✔ 修正區塊（含 CRUD 註解）
+             ========================== */}
           {isLoggedIn ? (
-            <div className="relative group">
-              <button className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#DCBB87] hover:opacity-90 transition">
-                <img
-                  src={avatar}
-                  alt="avatar"
-                  className="w-full h-full object-cover"
-                />
-              </button>
-
-              {/* 下拉 */}
-              <div className="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white text-[#1F2E3C] rounded-lg shadow-lg overflow-hidden border border-gray-200">
-                <Link
-                  href="/member-center"
-                  className="block px-4 py-3 hover:bg-[#DCBB87]/20"
-                >
-                  會員中心
-                </Link>
-
-                <Link
-                  href="/member-center/flight"
-                  className="block px-4 py-3 hover:bg-[#DCBB87]/20"
-                >
-                  訂單總覽
-                </Link>
-
-                <button
-                  onClick={logout}
-                  className="w-full text-left px-4 py-3 hover:bg-[#DCBB87]/20 text-red-600"
-                >
-                  登出
+            <>
+              {/* (R) Read：顯示目前登入者頭像 */}
+              <div className="relative group">
+                <button className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#DCBB87] hover:opacity-90 transition">
+                  <img
+                    src={avatar}
+                    alt="avatar"
+                    className="w-full h-full object-cover"
+                  />
                 </button>
+
+                {/* 下拉選單：保持 hover 不中斷 */}
+                <div
+                  className="
+                    absolute right-0 mt-2 w-48 
+                    bg-white text-[#1F2E3C] rounded-lg shadow-lg border border-gray-200
+                    opacity-0 group-hover:opacity-100
+                    pointer-events-none group-hover:pointer-events-auto
+                    transition-opacity duration-150
+                  "
+                >
+                  {/* (R) Read：前往會員中心 */}
+                  <Link
+                    href="/member-center"
+                    className="block px-4 py-3 hover:bg-[#DCBB87]/20"
+                  >
+                    會員中心
+                  </Link>
+
+                  {/* (R) Read：查看訂單 */}
+                  <Link
+                    href="/member-center/flight"
+                    className="block px-4 py-3 hover:bg-[#DCBB87]/20"
+                  >
+                    訂單總覽
+                  </Link>
+
+                  {/* (D) Delete：登出（刪除 token） */}
+                  <button
+                    onClick={logout}
+                    className="w-full text-left px-4 py-3 hover:bg-[#DCBB87]/20 text-[#C5A872]"
+                  >
+                    登出
+                  </button>
+                </div>
               </div>
-            </div>
+            </>
           ) : (
-            <Link
-              href="/member-center/login"
-              className="hidden md:inline-flex items-center gap-2 h-10 px-4 rounded-full bg-[#DCBB87] hover:bg-[#BAA06D] text-[#1F2E3C] font-medium transition"
-            >
-              <Plane className="w-4 h-4" /> 登入
-            </Link>
+            <>
+              {/* (C) Create：前往登入頁 */}
+              <Link
+                href="/member-center/login"
+                className="hidden md:inline-flex items-center gap-2 h-10 px-4 rounded-full bg-[#DCBB87] hover:bg-[#BAA06D] text-[#1F2E3C] font-medium transition"
+              >
+                <Plane className="w-4 h-4" /> 登入
+              </Link>
+            </>
           )}
 
           {/* 📱 手機版漢堡 */}
@@ -243,6 +262,7 @@ export default function Header({
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
+
         </div>
       </div>
 
@@ -270,13 +290,14 @@ export default function Header({
           ) : (
             <Button
               onClick={logout}
-              className="w-[80%] mt-4 bg-red-500 hover:bg-red-600 text-white"
+              className="w-[80%] mt-4 bg-[#C5A872] hover:bg-[#C5A872] text-white"
             >
               登出
             </Button>
           )}
         </div>
       )}
+
     </header>
   );
 }

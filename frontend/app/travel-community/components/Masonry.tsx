@@ -3,8 +3,8 @@
 
 import PostCard, { Post } from "./PostCard";
 
-// ⚠ 把你的圖片放到 /public/travel-community/ 下，檔名用你壓縮檔的即可
-const posts: Post[] = [
+// 🔹 Demo 用假資料（主頁 & 詳細頁共用）
+export const mockPosts: Post[] = [
   {
     id: 1,
     title: "臺北市立動物園探訪",
@@ -72,6 +72,7 @@ const posts: Post[] = [
   },
 ];
 
+// 🔹 瀑布流：用 columns-* 做多欄
 export default function Masonry() {
   return (
     <div
@@ -83,7 +84,7 @@ export default function Masonry() {
         gap-5
       "
     >
-      {posts.map((p) => (
+      {mockPosts.map((p) => (
         <PostCard key={p.id} post={p} />
       ))}
     </div>

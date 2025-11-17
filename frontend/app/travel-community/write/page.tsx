@@ -1,3 +1,4 @@
+// app/travel-community/write/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -12,11 +13,13 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Breadcrumb from "@/app/components/Breadcrumb"; // ⭐ 新增：引入麵包屑元件
+import Breadcrumb from "@/app/components/Breadcrumb";
 
 export default function TravelWritePage() {
   const router = useRouter();
-  const [tab, setTab] = useState<"travelogue" | "video" | "photo">("travelogue");
+  const [tab, setTab] = useState<"travelogue" | "video" | "photo">(
+    "travelogue",
+  );
 
   // 共用狀態
   const [title, setTitle] = useState("");
@@ -42,14 +45,21 @@ export default function TravelWritePage() {
     }
   };
 
+  // 🔹 送出：目前只做 demo，顯示提示後導回旅遊分享主頁
   const handleSubmit = () => {
-    alert(`已送出 ${tab === "travelogue" ? "遊記" : tab === "video" ? "影片" : "隨手拍"}！`);
+    const typeLabel =
+      tab === "travelogue" ? "遊記" : tab === "video" ? "影片" : "隨手拍";
+
+    alert(`已送出 ${typeLabel}！目前為 Demo 模式，尚未串接後端資料庫。`);
+
+    // 之後可以改成等待 API 完成再導頁
+    router.push("/travel-community");
   };
 
   return (
-   <div className="min-h-screen bg-[#F5F5F5] text-[#1F2E3C]">
-      {/* ⭐ 麵包屑容器改成會員中心的寬度 & 高度 */}
-    <div className="max-w-[1312px] w-full mx-auto px-4 sm:px-6 lg:px-[64px] pt-10">
+    <div className="min-h-screen bg-[#F5F5F5] text-[#1F2E3C]">
+      {/* 麵包屑 */}
+      <div className="max-w-[1312px] w-full mx-auto px-4 sm:px-6 lg:px-[64px] pt-10">
         <Breadcrumb
           items={[
             { label: "首頁", href: "/" },
@@ -59,9 +69,9 @@ export default function TravelWritePage() {
         />
       </div>
 
-      {/* ⭐⭐⭐ 原本整個左欄＋右欄保持不變，只是往下排 */}
+      {/* 左側側欄 + 右側表單區 */}
       <div className="flex mt-6">
-        {/* Sidebar（不變） */}
+        {/* Sidebar */}
         <aside className="w-[240px] bg-white border-r border-[#BA9A60] flex flex-col p-6 gap-8">
           <div className="text-[#1F2E3C] font-bold text-lg flex items-center gap-2">
             <Book className="text-[#DCBB87]" size={20} />
@@ -74,10 +84,10 @@ export default function TravelWritePage() {
           </nav>
         </aside>
 
-        {/* Main Content（不變） */}
+        {/* Main Content */}
         <main className="flex-1 flex justify-center py-10">
           <div className="w-[1024px] bg-white border border-[#DCBB87] rounded-lg p-10 shadow-sm relative">
-            {/* 返回按鈕（不變） */}
+            {/* 返回按鈕 */}
             <button
               onClick={() => router.push("/travel-community")}
               className="absolute right-10 top-10 flex items-center gap-2 text-sm text-[#1F2E3C]/70 hover:text-[#DCBB87]"
@@ -94,7 +104,7 @@ export default function TravelWritePage() {
                 : "隨手拍分享"}
             </h1>
 
-            {/* Tabs（不變） */}
+            {/* Tabs */}
             <div className="flex gap-4 mb-8">
               {[
                 { key: "travelogue", label: "遊記", icon: <Book size={16} /> },
@@ -115,11 +125,12 @@ export default function TravelWritePage() {
               ))}
             </div>
 
-            {/* ============ 以下全部保留你原本的內容 ============ */}
-
+            {/* ===== 標題 & 標籤（遊記／影片用） ===== */}
             {(tab === "travelogue" || tab === "video") && (
               <div className="mb-6">
-                <label className="block text-sm mb-2 text-[#1F2E3C]/80">標題</label>
+                <label className="block text-sm mb-2 text-[#1F2E3C]/80">
+                  標題
+                </label>
                 <input
                   type="text"
                   value={title}
@@ -165,11 +176,13 @@ export default function TravelWritePage() {
               </div>
             )}
 
-            {/* 遊記內容（不變） */}
+            {/* ===== 遊記：內容 + 圖片 ===== */}
             {tab === "travelogue" && (
               <>
                 <div className="mb-6">
-                  <label className="block text-sm mb-2 text-[#1F2E3C]/80">文章內容</label>
+                  <label className="block text-sm mb-2 text-[#1F2E3C]/80">
+                    文章內容
+                  </label>
                   <textarea
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
@@ -207,11 +220,13 @@ export default function TravelWritePage() {
               </>
             )}
 
-            {/* 影片（不變） */}
+            {/* ===== 影片 ===== */}
             {tab === "video" && (
               <>
                 <div className="mb-6">
-                  <label className="block text-sm mb-2 text-[#1F2E3C]/80">影片連結 (YouTube)</label>
+                  <label className="block text-sm mb-2 text-[#1F2E3C]/80">
+                    影片連結 (YouTube)
+                  </label>
                   <input
                     type="url"
                     value={videoUrl}
@@ -232,11 +247,13 @@ export default function TravelWritePage() {
               </>
             )}
 
-            {/* 隨手拍（不變） */}
+            {/* ===== 隨手拍 ===== */}
             {tab === "photo" && (
               <>
                 <div className="mb-6">
-                  <label className="block text-sm mb-2 text-[#1F2E3C]/80">想說些什麼？</label>
+                  <label className="block text-sm mb-2 text-[#1F2E3C]/80">
+                    想說些什麼？
+                  </label>
                   <textarea
                     value={photoCaption}
                     onChange={(e) => setPhotoCaption(e.target.value)}
@@ -246,7 +263,9 @@ export default function TravelWritePage() {
                 </div>
 
                 <div className="mb-6">
-                  <label className="block text-sm mb-2 text-[#1F2E3C]/80">上傳圖片</label>
+                  <label className="block text-sm mb-2 text-[#1F2E3C]/80">
+                    上傳圖片
+                  </label>
                   <input
                     type="file"
                     accept="image/*"
@@ -271,7 +290,7 @@ export default function TravelWritePage() {
               </>
             )}
 
-            {/* 按鈕（不變） */}
+            {/* 按鈕列 */}
             <div className="flex justify-end gap-4 mt-10">
               <button className="flex items-center gap-2 border border-[#DCBB87] text-[#1F2E3C] px-6 py-2 rounded-md hover:bg-[#DCBB87]/10">
                 <Eye size={16} /> 預覽

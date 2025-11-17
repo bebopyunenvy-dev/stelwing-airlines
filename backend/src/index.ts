@@ -27,8 +27,6 @@ app.use(express.static("public"));
 app.use(express.json());
 // 解析 URL-encoded body 的中間件
 app.use(express.urlencoded({ extended: true }));
-// 11/11若晴新增 會員頭像圖庫
-app.use("/avatars", express.static("public/avatars"));
 // 允許所有來源訪問
 app.use(
   cors({
