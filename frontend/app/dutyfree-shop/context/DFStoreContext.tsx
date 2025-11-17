@@ -291,8 +291,8 @@ export function DFStoreProvider({ children }: { children: React.ReactNode }) {
       image: '/images/dutyfree/lv1.png',
       images: [
         '/images/dutyfree/lv1.png',
-        '/images/dutyfree/lv1.jpg',
-        '/images/dutyfree/lv1.jpg',
+        '/images/dutyfree/lv1.png',
+        '/images/dutyfree/lv1.png',
         '/images/dutyfree/lv1.png',
       ],
       category: '時尚精品',
