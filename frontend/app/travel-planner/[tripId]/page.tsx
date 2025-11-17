@@ -49,8 +49,15 @@ export default function TripDetailPage() {
       try {
         if (showLoading) setLoading(true);
 
+        const token = localStorage.getItem('token');
         const data = await apiFetch<Trip>(
-          `http://localhost:3007/api/plans/${tripId}`
+          `http://localhost:3007/api/plans/${tripId}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
         if (!ignore) {
@@ -90,8 +97,15 @@ export default function TripDetailPage() {
 
     try {
       setItemsLoading(true);
+      const token = localStorage.getItem('token');
       const data = await apiFetch<TripItem[]>(
-        `http://localhost:3007/api/plans/${tripId}/items`
+        `http://localhost:3007/api/plans/${tripId}/items`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       setItems(data);
       return data; // ← 回傳最新資料

@@ -4,8 +4,10 @@ import type { ApiResponse, ApiErrorResponse } from "../../interfaces/api.js";
 import { prisma } from "../../utils/prisma-only.js";
 import { authMiddleware } from "../../middleware/authMiddleware.js";
 import { serializeBigInt } from "../../utils/serializeBigInt.js";
+import jwt from "jsonwebtoken";
 
 const router = express.Router({ mergeParams: true });
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 
 // #region 「每日行程」需要有的路由
 
@@ -17,6 +19,18 @@ const router = express.Router({ mergeParams: true });
 
 // #endregion
 
+function getMemberIdFromToken(req: Request) {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith("Bearer ")) return null;
+  try {
+    const token = auth.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded.memberId;
+  } catch {
+    return null;
+  }
+}
+
 // | GET | /api/plans/:planId/items | 讀取所有行程項目 |
 router.get("/", async (req: Request, res: Response) => {
     const { planId } = req.params as { planId: string };
@@ -24,7 +38,7 @@ router.get("/", async (req: Request, res: Response) => {
     if (!/^\d+$/.test(planId)) throw new Error('沒有提供有效的旅程 ID');
 
     const planIdNum = BigInt(planId);
-    const userId = 2;
+    const userId = getMemberIdFromToken(req);
 
     try {
         const planItems = await prisma.planItem.findMany({

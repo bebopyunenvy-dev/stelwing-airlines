@@ -6,8 +6,10 @@ import { prisma } from "../../utils/prisma-only.js"
 import { authMiddleware } from "../../middleware/authMiddleware.js";
 import { success } from "zod";
 import { serializeBigInt } from "../../utils/serializeBigInt.js"
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 
 // #region 「旅程資料」需要有的路由
 
@@ -18,6 +20,18 @@ const router = express.Router();
 // | DELETE | /api/plans/:planId | 刪除旅程 |
 
 // #endregion
+
+function getMemberIdFromToken(req: Request) {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith("Bearer ")) return null;
+  try {
+    const token = auth.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded.memberId;
+  } catch {
+    return null;
+  }
+}
 
 async function authorizeTrip(userId: number, paramsPlanId: string) {
     // const userId = 2;
@@ -45,7 +59,7 @@ async function authorizeTrip(userId: number, paramsPlanId: string) {
 
 // | GET | /api/plans | 讀取所有旅程 |
 router.get("/", async (req: Request, res: Response) => {
-    const userId = 2;
+    const userId = getMemberIdFromToken(req);
 
     if (!userId) return res.status(404).json({ message: "沒有提供User ID" }) //之後有 JWT 驗證時拉掉
 

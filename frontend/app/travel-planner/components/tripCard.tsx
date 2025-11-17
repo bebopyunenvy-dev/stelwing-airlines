@@ -196,7 +196,7 @@ export default function TripCard({ trip, onDeleteSuccess }: TripCardProps) {
 
           <button
             className="sw-btn border border-solid border-(--sw-grey)"
-            onClick={handleDelete}
+            onClick={() => setIsOpenDeletePlan(true)}
           >
             <h6 className="sw-h6">刪除整趟旅程</h6>
           </button>
