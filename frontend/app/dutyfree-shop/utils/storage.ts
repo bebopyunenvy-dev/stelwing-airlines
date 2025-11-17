@@ -1,3 +1,34 @@
+/**
+ * STELWING - localStorage 工具函數（完整整合版）
+ * ✅ 新增：ordersStorage 支援儲存完整 products 陣列 + 型別安全
+ */
+
+// ===============================
+// 型別定義
+// ===============================
+export interface OrderProduct {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  quantity: number;
+  image?: string;
+  sub?: string;
+}
+
+export interface Order {
+  id: string;
+  date: string;
+  status: string;
+  total: number;
+  items: number;
+  paymentMethod: string;
+  products: OrderProduct[];
+}
+
+// ===============================
+// 🔹 儲存 Key 常數
+// ===============================
 const STORAGE_KEYS = {
   CART: 'stelwing_cart',
   IS_LOGGED_IN: 'stelwing_is_logged_in',
@@ -8,15 +39,14 @@ const STORAGE_KEYS = {
   USER_INFO: 'stelwing_user_info',
 } as const;
 
-// ======================================================
-// 通用 LocalStorage 操作
-// ======================================================
+// ===============================
+// 🔹 通用 localStorage 工具
+// ===============================
 function setItem<T>(key: string, value: T): void {
   try {
-    const serialized = JSON.stringify(value);
-    localStorage.setItem(key, serialized);
+    localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
-    console.error(`Error saving to localStorage (${key}):`, error);
+    console.error(`Error saving ${key}:`, error);
   }
 }
 
@@ -25,7 +55,7 @@ function getItem<T>(key: string, defaultValue: T): T {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : defaultValue;
   } catch (error) {
-    console.error(`Error reading from localStorage (${key}):`, error);
+    console.error(`Error reading ${key}:`, error);
     return defaultValue;
   }
 }
@@ -34,20 +64,17 @@ function removeItem(key: string): void {
   try {
     localStorage.removeItem(key);
   } catch (error) {
-    console.error(`Error removing from localStorage (${key}):`, error);
+    console.error(`Error removing ${key}:`, error);
   }
 }
 
 function clearAll(): void {
-  try {
-    Object.values(STORAGE_KEYS).forEach((key) => {
-      localStorage.removeItem(key);
-    });
-  } catch (error) {
-    console.error('Error clearing localStorage:', error);
-  }
+  Object.values(STORAGE_KEYS).forEach(removeItem);
 }
 
+// ===============================
+// 🔹 模組封裝
+// ===============================
 export const storage = {
   set: setItem,
   get: getItem,
@@ -55,70 +82,28 @@ export const storage = {
   clear: clearAll,
 };
 
-// ======================================================
-// 購物車資料
-// ======================================================
+// 購物車
 export const cartStorage = {
   save: (cart: any[]) => storage.set(STORAGE_KEYS.CART, cart),
   load: () => storage.get(STORAGE_KEYS.CART, []),
   clear: () => storage.remove(STORAGE_KEYS.CART),
 };
 
-// ======================================================
-// 登入狀態（使用 sessionStorage）
-// ======================================================
+// 登入
 export const authStorage = {
-  /**
-   * 儲存登入狀態（sessionStorage）
-   * 關閉瀏覽器或分頁就會自動登出
-   */
-  saveLoginState: (isLoggedIn: boolean) => {
-    try {
-      sessionStorage.setItem(
-        STORAGE_KEYS.IS_LOGGED_IN,
-        JSON.stringify(isLoggedIn)
-      );
-    } catch (error) {
-      console.error('Error saving login state:', error);
-    }
-  },
-
-  /**
-   * 讀取登入狀態
-   */
-  loadLoginState: (): boolean => {
-    try {
-      const data = sessionStorage.getItem(STORAGE_KEYS.IS_LOGGED_IN);
-      return data ? JSON.parse(data) : false;
-    } catch (error) {
-      console.error('Error loading login state:', error);
-      return false;
-    }
-  },
-
-  /**
-   * 使用者資料仍使用 localStorage（方便暫存資訊）
-   */
+  saveLoginState: (isLoggedIn: boolean) =>
+    storage.set(STORAGE_KEYS.IS_LOGGED_IN, isLoggedIn),
+  loadLoginState: () => storage.get(STORAGE_KEYS.IS_LOGGED_IN, false),
   saveUserInfo: (userInfo: any) =>
     storage.set(STORAGE_KEYS.USER_INFO, userInfo),
   loadUserInfo: () => storage.get(STORAGE_KEYS.USER_INFO, null),
-
-  /**
-   * 清除登入與使用者資料
-   */
   clearAuth: () => {
-    try {
-      sessionStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
-      storage.remove(STORAGE_KEYS.USER_INFO);
-    } catch (error) {
-      console.error('Error clearing auth:', error);
-    }
+    storage.remove(STORAGE_KEYS.IS_LOGGED_IN);
+    storage.remove(STORAGE_KEYS.USER_INFO);
   },
 };
 
-// ======================================================
-// 折扣碼
-// ======================================================
+// 折扣
 export const promoStorage = {
   save: (promoCode: string, discount: number, discountPercent: number) => {
     storage.set(STORAGE_KEYS.PROMO_CODE, promoCode);
@@ -137,11 +122,9 @@ export const promoStorage = {
   },
 };
 
-// ======================================================
-// 訂單資料
-// ======================================================
+// ✅ 訂單（含商品清單，型別安全）
 export const ordersStorage = {
-  save: (orders: any[]) => storage.set(STORAGE_KEYS.ORDERS, orders),
-  load: () => storage.get(STORAGE_KEYS.ORDERS, []),
+  save: (orders: Order[]) => storage.set(STORAGE_KEYS.ORDERS, orders),
+  load: (): Order[] => storage.get(STORAGE_KEYS.ORDERS, []),
   clear: () => storage.remove(STORAGE_KEYS.ORDERS),
 };

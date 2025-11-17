@@ -2,28 +2,11 @@ import { DFPickupModal } from '../components/DFPickupModal';
 import { DFStatusTag } from '../components/DFStatusTag';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { Button } from '../components/ui/button';
-
-interface CartItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  quantity: number;
-}
-
-interface Order {
-  id: string;
-  date: string;
-  status: string;
-  total: number;
-  items: number;
-  paymentMethod: string;
-}
+import type { Order, OrderProduct } from '../utils/storage';
 
 interface DFOrderDetailPageProps {
   order: Order;
-  cart: CartItem[];
+  cart: OrderProduct[];
   pickupModalOpen: boolean;
   onNavigateHome: () => void;
   onNavigateAccount: () => void;
@@ -173,9 +156,7 @@ export function DFOrderDetailPage({
                           </div>
                           <div>
                             <p className="font-medium">{item.name}</p>
-                            <p className="text-sm text-gray-500">
-                              {item.description}
-                            </p>
+                            <p className="text-sm text-gray-500">{item.sub}</p>
                           </div>
                         </div>
                       </td>

@@ -1,106 +1,182 @@
 'use client';
 import { Check } from 'lucide-react';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { DFCheckoutStepper } from '../components/DFCheckoutStepper';
 import { DFPickupModal } from '../components/DFPickupModal';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { Button } from '../components/ui/button';
+import { useDFStore } from '../context/DFStoreContext';
+import { OrderProduct, ordersStorage } from '../utils/storage';
 
-interface CartItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  quantity: number;
-}
+/**
+ *  最終修正版：
+ * 1. 訂單會正常寫入 localStorage
+ * 2. 結帳完成後購物車清空（clearCart）
+ * 3. Header 紅點即時歸 0
+ */
 
-interface DFCompletePageProps {
-  cart: CartItem[];
-  total: number;
-  orderNumber: string;
-  pickupModalOpen: boolean;
-  onOpenPickupModal: () => void;
-  onClosePickupModal: () => void;
-  onNavigateAccount: () => void;
-}
+export default function CompletePage() {
+  const router = useRouter();
+  const {
+    cart,
+    discount,
+    discountPercent,
+    clearCart, // ✅ 改這裡
+    setCheckoutItem,
+  } = useDFStore();
 
-export function DFCompletePage({
-  cart,
-  total,
-  orderNumber,
-  pickupModalOpen,
-  onOpenPickupModal,
-  onClosePickupModal,
-  onNavigateAccount,
-}: DFCompletePageProps) {
+  const [cartSnapshot, setCartSnapshot] = useState<OrderProduct[]>([]);
+
+  const [pickupModalOpen, setPickupModalOpen] = useState(false);
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const hasCapturedCart = useRef(false);
+
+  //  初始化訂單編號
+  useEffect(() => {
+    const year = new Date().getFullYear();
+    const random = Math.floor(Math.random() * 9000) + 1000;
+    setOrderNumber(`DF${year}-${random}`);
+  }, []);
+
+  // 寫入訂單邏輯 + 清空購物車
+  useEffect(() => {
+    if (hasCapturedCart.current) return;
+    if (!orderNumber || !cart || cart.length === 0) return;
+
+    const snapshot: OrderProduct[] = cart.map((item) => ({
+      id: item.id,
+      name: item.name,
+      sub: item.sub,
+      description: item.description,
+      price: item.price,
+      image: item.image,
+      quantity: item.quantity,
+    }));
+
+    setCartSnapshot(snapshot);
+    hasCapturedCart.current = true;
+  }, [orderNumber, cart]);
+
+  useEffect(() => {
+    if (!orderNumber || cartSnapshot.length === 0) return;
+
+    const subtotal = cartSnapshot.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    const total = discountPercent ? subtotal - discount : subtotal;
+
+    const newOrder = {
+      id: orderNumber,
+      date: new Date().toLocaleDateString('zh-TW'),
+      status: 'success',
+      total,
+      items: cartSnapshot.length,
+      paymentMethod: '信用卡付款',
+      products: cartSnapshot,
+    };
+
+    const existingOrders = ordersStorage.load();
+    const isDuplicate = existingOrders.some((o) => o.id === orderNumber);
+    if (!isDuplicate) {
+      ordersStorage.save([newOrder, ...existingOrders]);
+      console.log(' 已儲存訂單：', newOrder);
+    }
+
+    const timer = setTimeout(() => {
+      clearCart();
+      setCheckoutItem(null);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [
+    orderNumber,
+    cartSnapshot,
+    discount,
+    discountPercent,
+    clearCart,
+    setCheckoutItem,
+  ]);
+
+  // 載入中畫面
+  if (!orderNumber) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        正在建立訂單資訊...
+      </div>
+    );
+  }
+
+  // 完成畫面
+  const subtotal = cartSnapshot.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+  const total = discountPercent ? subtotal - discount : subtotal;
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="mx-auto px-4 lg:px-16 max-w-4xl">
         <DFCheckoutStepper currentStep={3} />
 
         <div className="bg-white rounded-lg p-6 md:p-12 text-center">
-          <div className="w-16 h-16 md:w-20 md:h-20 bg-[var(--df-state-success)] rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="w-8 h-8 md:w-10 md:h-10 text-white" />
+          {/* 成功圖示 */}
+          <div className="w-16 h-16 bg-[var(--df-state-success)] rounded-full flex items-center justify-center mx-auto mb-6">
+            <Check className="w-8 h-8 text-white" />
           </div>
 
-          <h1
-            style={{
-              fontSize: 'clamp(1.5rem, 5vw, 2rem)',
-              lineHeight: '1.5',
-              fontWeight: '600',
-            }}
-            className="mb-4"
-          >
-            訂單完成！
-          </h1>
+          <h1 className="text-2xl font-semibold mb-4">訂單完成！</h1>
+          <p className="text-gray-600 mb-2">感謝您的訂購</p>
+          <p className="text-gray-600 mb-6">訂單號碼：{orderNumber}</p>
 
-          <p className="text-gray-600 mb-2 text-sm md:text-base">
-            感謝您的訂購
-          </p>
-          <p className="text-gray-600 mb-6 md:mb-8 text-sm md:text-base">
-            訂單號碼：{orderNumber}
-          </p>
+          {/* 訂購商品縮圖 */}
+          {cartSnapshot.length > 0 && (
+            <div className="mb-6">
+              <h3 className="font-semibold mb-4">訂購商品</h3>
+              <div className="flex flex-wrap justify-center gap-3">
+                {cartSnapshot.map((item) => (
+                  <div
+                    key={item.id}
+                    className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden"
+                  >
+                    <ImageWithFallback
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-          {/* Order Items Thumbnails */}
-          <div className="mb-6 md:mb-8">
-            <h3 className="font-semibold mb-4">訂購商品</h3>
-            <div className="flex flex-wrap justify-center gap-3 md:gap-4">
-              {cart.map((item) => (
-                <div
-                  key={item.id}
-                  className="w-20 h-20 md:w-24 md:h-24 bg-gray-100 rounded-lg overflow-hidden"
-                >
-                  <ImageWithFallback
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
+          {/* 訂單金額 */}
+          <div className="max-w-md mx-auto p-4 bg-[var(--df-surface-alt)] rounded-lg mb-6">
+            <div className="flex justify-between mb-2">
+              <span className="text-gray-600">訂單小計</span>
+              <span>TWD {subtotal.toLocaleString()}</span>
+            </div>
+            {discountPercent > 0 && (
+              <div className="flex justify-between mb-2 text-green-600">
+                <span>折扣（{discountPercent}%）</span>
+                <span>-TWD {discount.toLocaleString()}</span>
+              </div>
+            )}
+            <div className="border-t pt-3 flex justify-between font-semibold">
+              <span>訂單總額</span>
+              <span>TWD {total.toLocaleString()}</span>
             </div>
           </div>
 
-          <div className="max-w-md mx-auto mb-6 md:mb-8 p-4 md:p-6 bg-[var(--df-surface-alt)] rounded-lg">
-            <div className="flex justify-between mb-2 text-sm md:text-base">
-              <span className="text-gray-600">訂單總額</span>
-              <span className="font-semibold">
-                TWD {total.toLocaleString()}
-              </span>
-            </div>
-          </div>
-
+          {/* 按鈕 */}
           <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <Button
-              onClick={onOpenPickupModal}
-              variant="outline"
-              className="gap-2 w-full md:w-auto"
-            >
+            <Button onClick={() => setPickupModalOpen(true)} variant="outline">
               查看取貨資訊
             </Button>
             <Button
-              onClick={onNavigateAccount}
-              className="bg-[var(--df-accent-gold)] hover:bg-[var(--df-accent-gold)]/90 text-white w-full md:w-auto"
+              onClick={() => router.push('/dutyfree-shop/member')}
+              className="bg-[var(--df-accent-gold)] text-white hover:bg-[var(--df-accent-gold)]/90"
             >
               前往會員中心
             </Button>
@@ -108,48 +184,11 @@ export function DFCompletePage({
         </div>
       </div>
 
-      <DFPickupModal open={pickupModalOpen} onClose={onClosePickupModal} />
+      {/* 彈窗 */}
+      <DFPickupModal
+        open={pickupModalOpen}
+        onClose={() => setPickupModalOpen(false)}
+      />
     </div>
-  );
-}
-
-export default function CompletePage() {
-  const [pickupModalOpen, setPickupModalOpen] = useState(false);
-
-  // 假資料
-  const cart = [
-    {
-      id: '1',
-      name: '香氛禮盒',
-      description: '高級香氛組合',
-      price: 1800,
-      image:
-        'https://images.unsplash.com/photo-1591925463023-1ca6b0636780?ixlib=rb-4.1.0&auto=format&fit=crop&w=600&q=80',
-      quantity: 1,
-    },
-    {
-      id: '2',
-      name: '旅行香水',
-      description: '輕巧便攜的香氛噴霧',
-      price: 980,
-      image:
-        'https://images.unsplash.com/photo-1591925463023-1ca6b0636780?ixlib=rb-4.1.0&auto=format&fit=crop&w=600&q=80',
-      quantity: 1,
-    },
-  ];
-
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const orderNumber = 'DF2025-0001';
-
-  return (
-    <DFCompletePage
-      cart={cart}
-      total={total}
-      orderNumber={orderNumber}
-      pickupModalOpen={pickupModalOpen}
-      onOpenPickupModal={() => setPickupModalOpen(true)}
-      onClosePickupModal={() => setPickupModalOpen(false)}
-      onNavigateAccount={() => console.log('前往會員中心')}
-    />
   );
 }

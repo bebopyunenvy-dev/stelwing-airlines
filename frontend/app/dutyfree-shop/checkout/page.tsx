@@ -1,7 +1,7 @@
 'use client';
 import { CreditCard } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DFCheckoutStepper } from '../components/DFCheckoutStepper';
 import { DFOrderSummary } from '../components/DFOrderSummary';
 import { Button } from '../components/ui/button';
@@ -23,14 +23,32 @@ interface CheckoutForm {
   cvc: string;
 }
 
+const LinePayQRCode = () => (
+  <div className="rounded-xl border border-dashed border-[var(--df-accent-gold)] bg-white p-6 text-center shadow-sm">
+    <p className="mb-4 text-sm text-gray-600">
+      請使用 LinePay 掃描下方 QR Code 完成付款
+    </p>
+    <div className="mx-auto h-40 w-40 rounded-lg border-4 border-gray-900 bg-white shadow-inner">
+      <div
+        className="h-full w-full rounded-md"
+        style={{
+          backgroundImage: "url('/images/dutyfree/qrcode.png')",
+          backgroundSize: 'cover',
+        }}
+      />
+    </div>
+  </div>
+);
+
 // ===============================
 // 主頁面
 // ===============================
 export default function CheckoutPage() {
   const router = useRouter();
-  const { checkoutItem, cart } = useDFStore();
+  const { checkoutItem, cart, setCheckoutItem, discount, promoCode } =
+    useDFStore();
 
-  // ✅ 所有 hooks 都放在頂部，不能放在條件 return 之後
+  // ✅ 表單狀態
   const [checkoutForm, setCheckoutForm] = useState<CheckoutForm>({
     firstName: '',
     lastName: '',
@@ -52,8 +70,18 @@ export default function CheckoutPage() {
     expiry: '',
     cvc: '',
   });
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'linepay'>(
+    'card'
+  );
 
-  // ✅ 條件：若沒商品，就顯示提示畫面
+  // ✅ 自動防呆：若購物車多於 1 件商品，代表不是立即購買 → 清空 checkoutItem
+  useEffect(() => {
+    if (cart.length > 1 && checkoutItem) {
+      setCheckoutItem(null);
+    }
+  }, [cart.length, checkoutItem, setCheckoutItem]);
+
+  // ✅ 若沒有任何商品（購物車與單品皆空）
   const noItems = !checkoutItem && cart.length === 0;
   if (noItems) {
     return (
@@ -69,7 +97,7 @@ export default function CheckoutPage() {
     );
   }
 
-  // ✅ 若 checkoutItem 有值，優先顯示單品結帳；否則顯示購物車內容
+  // ✅ 若有 checkoutItem，顯示單品結帳；否則顯示購物車內容
   const cartItems = checkoutItem
     ? [
         {
@@ -87,10 +115,12 @@ export default function CheckoutPage() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const discount = 0;
+  const appliedDiscount =
+    !checkoutItem && discount > 0 ? Math.min(discount, subtotal) : 0;
+  const appliedPromoCode = !checkoutItem && discount > 0 ? promoCode : '';
 
   // ===============================
-  // 表單邏輯
+  // 表單處理
   // ===============================
   const onFormChange = (field: keyof CheckoutForm, value: string) => {
     setCheckoutForm((prev) => ({ ...prev, [field]: value }));
@@ -104,17 +134,19 @@ export default function CheckoutPage() {
   // 提交邏輯
   // ===============================
   const onSubmit = () => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Partial<Record<keyof CheckoutForm, string>> = {};
     if (!checkoutForm.firstName) newErrors.firstName = '請輸入姓氏';
     if (!checkoutForm.lastName) newErrors.lastName = '請輸入名字';
     if (!checkoutForm.phone) newErrors.phone = '請輸入電話';
     if (!checkoutForm.email) newErrors.email = '請輸入 Email';
-    if (!checkoutForm.cardNumber) newErrors.cardNumber = '請輸入信用卡號';
-    if (!checkoutForm.expiry) newErrors.expiry = '請輸入有效日期';
-    if (!checkoutForm.cvc) newErrors.cvc = '請輸入安全碼';
+    if (paymentMethod === 'card') {
+      if (!checkoutForm.cardNumber) newErrors.cardNumber = '請輸入信用卡號';
+      if (!checkoutForm.expiry) newErrors.expiry = '請輸入有效日期';
+      if (!checkoutForm.cvc) newErrors.cvc = '請輸入安全碼';
+    }
 
     if (Object.keys(newErrors).length > 0) {
-      setCheckoutErrors(newErrors as any);
+      setCheckoutErrors(newErrors as Record<keyof CheckoutForm, string>);
       return;
     }
 
@@ -135,14 +167,16 @@ export default function CheckoutPage() {
         <DFCheckoutStepper currentStep={2} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-          {/* Left: 表單區 */}
+          {/* 左側：表單區 */}
           <div className="lg:col-span-2 space-y-6">
             {/* 聯絡資訊 */}
             <div className="bg-white rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-6">聯絡資訊</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <Label>姓</Label>
+                  <Label className="block mb-2 text-sm font-semibold text-[var(--df-text-dark)]">
+                    姓
+                  </Label>
                   <Input
                     placeholder="First name"
                     value={checkoutForm.firstName}
@@ -159,7 +193,9 @@ export default function CheckoutPage() {
                   )}
                 </div>
                 <div>
-                  <Label>名</Label>
+                  <Label className="block mb-2 text-sm font-semibold text-[var(--df-text-dark)]">
+                    名
+                  </Label>
                   <Input
                     placeholder="Last name"
                     value={checkoutForm.lastName}
@@ -178,7 +214,9 @@ export default function CheckoutPage() {
               </div>
 
               <div className="mb-4">
-                <Label>聯絡電話</Label>
+                <Label className="block mb-2 text-sm font-semibold text-[var(--df-text-dark)]">
+                  聯絡電話
+                </Label>
                 <Input
                   placeholder="09xxxxxxxx"
                   value={checkoutForm.phone}
@@ -196,7 +234,9 @@ export default function CheckoutPage() {
               </div>
 
               <div>
-                <Label>EMAIL</Label>
+                <Label className="block mb-2 text-sm font-semibold text-[var(--df-text-dark)]">
+                  EMAIL
+                </Label>
                 <Input
                   type="email"
                   placeholder="Your Email"
@@ -218,8 +258,21 @@ export default function CheckoutPage() {
             {/* 付款方式 */}
             <div className="bg-white rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-6">付款方式</h2>
-              <RadioGroup defaultValue="card">
-                <div className="flex items-center space-x-3 mb-4 p-4 border rounded-lg">
+              <RadioGroup
+                value={paymentMethod}
+                onValueChange={(value) => {
+                  setPaymentMethod(value as 'card' | 'linepay');
+                  if (value === 'linepay') {
+                    setCheckoutErrors((prev) => ({
+                      ...prev,
+                      cardNumber: '',
+                      expiry: '',
+                      cvc: '',
+                    }));
+                  }
+                }}
+              >
+                <div className="mb-4 flex items-center space-x-3 rounded-lg border p-4">
                   <RadioGroupItem value="card" id="card" />
                   <Label
                     htmlFor="card"
@@ -229,7 +282,7 @@ export default function CheckoutPage() {
                     信用卡付款
                   </Label>
                 </div>
-                <div className="flex items-center space-x-3 p-4 border rounded-lg">
+                <div className="flex items-center space-x-3 rounded-lg border p-4">
                   <RadioGroupItem value="linepay" id="linepay" />
                   <Label htmlFor="linepay" className="cursor-pointer flex-1">
                     LinePay
@@ -238,63 +291,77 @@ export default function CheckoutPage() {
               </RadioGroup>
 
               {/* 信用卡資料 */}
-              <div className="mt-6 space-y-4">
-                <div>
-                  <Label>信用卡號</Label>
-                  <Input
-                    placeholder="1234 1234 1234 1234"
-                    value={checkoutForm.cardNumber}
-                    onChange={(e) => {
-                      onFormChange('cardNumber', e.target.value);
-                      onClearError('cardNumber');
-                    }}
-                    className={
-                      checkoutErrors.cardNumber ? 'border-red-500' : ''
-                    }
-                  />
-                  {checkoutErrors.cardNumber && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {checkoutErrors.cardNumber}
-                    </p>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+              {paymentMethod === 'card' ? (
+                <div className="mt-6 space-y-4">
                   <div>
-                    <Label>有效日期</Label>
+                    <Label className="block mb-2 text-sm font-semibold text-[var(--df-text-dark)]">
+                      信用卡號
+                    </Label>
                     <Input
-                      placeholder="MM/YY"
-                      value={checkoutForm.expiry}
+                      placeholder="1234 1234 1234 1234"
+                      value={checkoutForm.cardNumber}
                       onChange={(e) => {
-                        onFormChange('expiry', e.target.value);
-                        onClearError('expiry');
+                        onFormChange('cardNumber', e.target.value);
+                        onClearError('cardNumber');
                       }}
-                      className={checkoutErrors.expiry ? 'border-red-500' : ''}
+                      className={
+                        checkoutErrors.cardNumber ? 'border-red-500' : ''
+                      }
                     />
-                    {checkoutErrors.expiry && (
+                    {checkoutErrors.cardNumber && (
                       <p className="text-sm text-red-500 mt-1">
-                        {checkoutErrors.expiry}
+                        {checkoutErrors.cardNumber}
                       </p>
                     )}
                   </div>
-                  <div>
-                    <Label>CVC</Label>
-                    <Input
-                      placeholder="CVC code"
-                      value={checkoutForm.cvc}
-                      onChange={(e) => {
-                        onFormChange('cvc', e.target.value);
-                        onClearError('cvc');
-                      }}
-                      className={checkoutErrors.cvc ? 'border-red-500' : ''}
-                    />
-                    {checkoutErrors.cvc && (
-                      <p className="text-sm text-red-500 mt-1">
-                        {checkoutErrors.cvc}
-                      </p>
-                    )}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="block mb-2 text-sm font-semibold text-[var(--df-text-dark)]">
+                        有效日期
+                      </Label>
+                      <Input
+                        placeholder="MM/YY"
+                        value={checkoutForm.expiry}
+                        onChange={(e) => {
+                          onFormChange('expiry', e.target.value);
+                          onClearError('expiry');
+                        }}
+                        className={
+                          checkoutErrors.expiry ? 'border-red-500' : ''
+                        }
+                      />
+                      {checkoutErrors.expiry && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {checkoutErrors.expiry}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <Label className="block mb-2 text-sm font-semibold text-[var(--df-text-dark)]">
+                        CVC
+                      </Label>
+                      <Input
+                        placeholder="CVC code"
+                        value={checkoutForm.cvc}
+                        onChange={(e) => {
+                          onFormChange('cvc', e.target.value);
+                          onClearError('cvc');
+                        }}
+                        className={checkoutErrors.cvc ? 'border-red-500' : ''}
+                      />
+                      {checkoutErrors.cvc && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {checkoutErrors.cvc}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="mt-6">
+                  <LinePayQRCode />
+                </div>
+              )}
             </div>
 
             {/* 按鈕區 */}
@@ -320,7 +387,8 @@ export default function CheckoutPage() {
             <DFOrderSummary
               items={cartItems}
               subtotal={subtotal}
-              discount={discount}
+              discount={appliedDiscount}
+              promoCode={appliedPromoCode || undefined}
               sticky
             />
           </div>
