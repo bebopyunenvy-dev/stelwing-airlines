@@ -63,6 +63,7 @@ export default function CheckoutPage() {
     'card'
   );
   const [card, setCard] = useState({ number: '', exp: '', cvc: '' });
+  const [payLoading, setPayLoading] = useState(false);
 
   /* ===== 1) 讀取訂單 ===== */
   useEffect(() => {
@@ -183,10 +184,68 @@ export default function CheckoutPage() {
   }, [data, obFareStore, ibFareStore]);
 
   /* ===== 5) 付款 ===== */
-  const onPay = () => {
+  const onPay = async () => {
+    if (!data) return;
+
+    // 綠界流程
     if (payMethod === 'ecpay') {
-      alert('已切換至綠界金流（ECPay）模擬付款流程');
-    } else if (payMethod === 'linepay') {
+      try {
+        setPayLoading(true);
+
+        // 金額：優先用後端 booking.totalAmount，沒有就用畫面上的 segments.total
+        const amount = Math.round(data.totalAmount || segments.total || 0);
+        if (!amount) {
+          alert('金額為 0，無法建立綠界訂單');
+          return;
+        }
+
+        // 呼叫剛剛測試 OK 的後端 API
+        const qs = new URLSearchParams({
+          amount: String(amount),
+          items: '機票與加購項目', // 顯示在綠界的商品名稱
+        });
+
+        const res = await fetch(
+          `http://localhost:3007/api/ecpay-test-only?${qs.toString()}`
+        );
+        const json = await res.json();
+
+        if (json.status !== 'success') {
+          alert(json.message || '建立綠界訂單失敗');
+          return;
+        }
+
+        const { action, params: ecpayParams } = json.data as {
+          action: string;
+          params: Record<string, string | number>;
+        };
+
+        // 動態建立 form 並送出到綠界
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = action;
+
+        Object.entries(ecpayParams).forEach(([key, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = String(value);
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit(); // 🚀 這裡會直接跳到綠界頁面
+      } catch (e) {
+        console.error(e);
+        alert('建立綠界訂單時發生錯誤');
+      } finally {
+        setPayLoading(false);
+      }
+      return;
+    }
+
+    // 其它付款方式先維持原本的 demo 行為
+    if (payMethod === 'linepay') {
       alert('已切換至 LinePay 模擬付款流程');
     } else {
       alert('模擬信用卡付款成功！（此區可串接金流或導至 3D 驗證頁）');
@@ -501,8 +560,8 @@ export default function CheckoutPage() {
               onPrev={onPrev}
               onNext={onPay}
               prevText="上一步"
-              nextText="付款"
-              nextDisabled={false}
+              nextText={payLoading ? '付款中…' : '付款'}
+              nextDisabled={payLoading}
             />
           </section>
         </div>

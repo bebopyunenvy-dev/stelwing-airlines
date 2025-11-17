@@ -408,6 +408,39 @@ export default function ExtrasPage() {
     } catch {}
   }, []);
 
+  // ❶ 每次行李 / 餐點變動，就同步寫進 sessionStorage
+  useEffect(() => {
+    try {
+      // 去程
+      if (obBag || obMeal) {
+        sessionStorage.setItem(
+          'extras_outbound',
+          JSON.stringify({
+            baggageId: obBag,
+            mealId: obMeal,
+          })
+        );
+      } else {
+        sessionStorage.removeItem('extras_outbound');
+      }
+
+      // 回程
+      if (ibBag || ibMeal) {
+        sessionStorage.setItem(
+          'extras_inbound',
+          JSON.stringify({
+            baggageId: ibBag,
+            mealId: ibMeal,
+          })
+        );
+      } else {
+        sessionStorage.removeItem('extras_inbound');
+      }
+    } catch (e) {
+      console.error('寫入 extras sessionStorage 失敗：', e);
+    }
+  }, [obBag, obMeal, ibBag, ibMeal]);
+
   const obFare = Math.round(outbound?.finalFare || 0);
   const ibFare = Math.round(inbound?.finalFare || 0);
   useEffect(() => {

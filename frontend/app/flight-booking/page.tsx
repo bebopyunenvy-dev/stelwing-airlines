@@ -31,7 +31,7 @@ function genFareCells(start: Date, len = 7, cheapestIdx = 3): FareCell[] {
     return {
       iso: ymd(d),
       label: labelOf(d),
-      fare: i === cheapestIdx ? 7777 : 8888,
+      fare: i === cheapestIdx ? 3232 : 4545,
       currency: 'TWD',
       isCheapest: i === cheapestIdx,
     };

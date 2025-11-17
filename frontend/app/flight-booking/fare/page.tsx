@@ -11,7 +11,7 @@ function buildBundles(currency = 'TWD'): FareBundle[] {
     {
       id: 'value',
       name: '超值',
-      price: 8888,
+      price: 3232,
       currency,
       features: [
         { key: 'hand', label: '手提行李', included: true },
@@ -24,7 +24,7 @@ function buildBundles(currency = 'TWD'): FareBundle[] {
     {
       id: 'basic',
       name: '基本',
-      price: 9999,
+      price: 4100,
       currency,
       features: [
         { key: 'hand', label: '手提行李', included: true },
@@ -37,7 +37,7 @@ function buildBundles(currency = 'TWD'): FareBundle[] {
     {
       id: 'luxury',
       name: '豪華',
-      price: 12000,
+      price: 4500,
       currency,
       features: [
         { key: 'hand', label: '手提行李', included: true },
@@ -138,7 +138,10 @@ export default function FarePage() {
               </div>
             </div>
             <div className="flex justify-end gap-3">
-              <button className="sw-btn" onClick={handleBack}>
+              <button
+                className="sw-btn sw-btn--grey-primary"
+                onClick={handleBack}
+              >
                 返回上一頁
               </button>
               <button
