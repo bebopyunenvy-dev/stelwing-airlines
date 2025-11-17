@@ -70,7 +70,7 @@ export default function TripCard({ trip, onDeleteSuccess }: TripCardProps) {
       );
 
       const tripForUI = transformTripForUI(data);
-      console.log(tripForUI);
+      // console.log(tripForUI);
       setCurrentTrip(tripForUI);
 
       // 通過驗證 → 跳轉到動態路由
@@ -88,10 +88,13 @@ export default function TripCard({ trip, onDeleteSuccess }: TripCardProps) {
   // 功能：處理刪除旅程
   const handleDelete = useCallback(async () => {
     try {
-      const data = await fetch(`http://localhost:3007/api/plans/${trip.id}`, {
-        // const data = await apiFetch(`${API_BASE}/plans/${trip.id}`, {
-        method: 'DELETE',
-      });
+      const data = await apiFetch(
+        `http://localhost:3007/api/plans/${trip.id}`,
+        {
+          // const data = await apiFetch(`${API_BASE}/plans/${trip.id}`, {
+          method: 'DELETE',
+        }
+      );
 
       onDeleteSuccess(trip.id);
 

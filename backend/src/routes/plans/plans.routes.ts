@@ -180,14 +180,20 @@ router.get('/:planId', async (req, res) => {
 
 // | DELETE | /api/plans/:planId | 刪除旅程 |
 router.delete('/:id', async (req: Request, res: Response) => {
+  // console.log('有觸發刪除 API')
 
   try {
+    // console.log('有進入 try')
     const userId = getMemberIdFromToken(req); //之後改為從 JWT 取 userID
     const planId = Number(req.params.id);
+    console.log(userId)
+    console.log(planId)
 
     // 驗證：(有沒有提供 userId)、有沒有提供 tripId、tripId 是不是數字
     if (!userId) throw new Error('沒有提供 User ID'); //之後有 JWT 驗證時拉掉
     if (!planId || isNaN(planId)) throw new Error('沒有提供有效的旅程 ID');
+
+    console.log('userId 為 Null，卻還在 try 的道路上')
 
     const plan = await prisma.plan.findUnique({
       where: { id: planId },
@@ -211,6 +217,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
     res.json(response);
 
   } catch (err: any) {
+    console.log('沒有 userId 進入 catch 了')
     const errorResponse: ApiErrorResponse = {
       success: false,
       message: err.message || '系統錯誤，請再試一次',
