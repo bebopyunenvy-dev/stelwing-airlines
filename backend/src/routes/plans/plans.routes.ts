@@ -7,6 +7,10 @@ import { authMiddleware } from "../../middleware/authMiddleware.js";
 import { success } from "zod";
 import { serializeBigInt } from "../../utils/serializeBigInt.js"
 import jwt from "jsonwebtoken";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
@@ -94,12 +98,91 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 // | POST | /api/plans | 新增旅程 |
-router.post("/", async (req: Request, res: Response) => {
-  const userId = getMemberIdFromToken(req); //之後改為從 JWT 取 userID
+// router.post("/", async (req: Request, res: Response) => {
+//   const userId = getMemberIdFromToken(req); //之後改為從 JWT 取 userID
 
-  if (!userId) return res.status(404).json({ message: "沒有提供User ID" }) //之後有 JWT 驗證時拉掉
+//   if (!userId) return res.status(404).json({ message: "沒有提供User ID" }) //之後有 JWT 驗證時拉掉
+
+//   try {
+//     const {
+//       title,
+//       destination,
+//       startDate,
+//       startTimezone,
+//       endDate,
+//       endTimezone,
+//       note,
+//       coverImage,
+//     } = req.body;
+
+//     const newPlan = await prisma.plan.create({
+//       data: {
+//         userId,
+//         title,
+//         destination, //選填
+//         startDate,
+//         startTimezone,
+//         endDate,
+//         endTimezone,
+//         note,  //選填
+//         coverImage, //選填
+//       },
+//     });
+
+//     const response: ApiResponse = {
+//       success: true,
+//       message: "旅程新增成功",
+//       data: newPlan
+//     }
+
+//     res.status(201).json(response)
+//   } catch (err) {
+//     const errorResponse: ApiErrorResponse = {
+//       success: false,
+//       error: (err as Error).message,
+//       message: "旅程新增失敗，請稍後再試",
+//     }
+
+//     res.status(500).json(errorResponse);
+//   }
+// });
+
+// 設定封面圖片檔案存放位置
+// 從專案根目錄算絕對路徑
+const uploadPath = path.join(process.cwd(), "public/planner/cover");
+
+// 確保資料夾存在
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+  console.log("資料夾建立成功:", uploadPath);
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadPath); // 本機資料夾路徑
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    const filename = `${Date.now()}${ext}`;
+    cb(null, filename);
+  },
+});
+
+const upload = multer({ storage });
+
+router.post("/", upload.single("coverImage"), async (req: Request, res: Response) => {
+  const userId = getMemberIdFromToken(req); // 之後改用 JWT
+
+  if (!userId) return res.status(404).json({ message: "沒有提供User ID" });
+
+  console.log("=== req.body ===");
+  console.log(req.body);
+
+  console.log("=== req.file ===");
+  console.log(req.file);
 
   try {
+    // 從 req.body 拿文字欄位
     const {
       title,
       destination,
@@ -108,20 +191,24 @@ router.post("/", async (req: Request, res: Response) => {
       endDate,
       endTimezone,
       note,
-      coverImage,
     } = req.body;
+
+    // 從 req.file 拿檔案資訊
+    const coverImagePath = req.file
+      ? `/planner/cover/${req.file.filename}`
+      : null;
 
     const newPlan = await prisma.plan.create({
       data: {
         userId,
         title,
-        destination, //選填
+        destination,
         startDate,
         startTimezone,
         endDate,
         endTimezone,
-        note,  //選填
-        coverImage, //選填
+        note,
+        coverImage: coverImagePath, // 存檔案路徑
       },
     });
 
@@ -186,14 +273,14 @@ router.delete('/:id', async (req: Request, res: Response) => {
     // console.log('有進入 try')
     const userId = getMemberIdFromToken(req); //之後改為從 JWT 取 userID
     const planId = Number(req.params.id);
-    console.log(userId)
-    console.log(planId)
+    // console.log(userId)
+    // console.log(planId)
 
     // 驗證：(有沒有提供 userId)、有沒有提供 tripId、tripId 是不是數字
     if (!userId) throw new Error('沒有提供 User ID'); //之後有 JWT 驗證時拉掉
     if (!planId || isNaN(planId)) throw new Error('沒有提供有效的旅程 ID');
 
-    console.log('userId 為 Null，卻還在 try 的道路上')
+    // console.log('userId 為 Null，卻還在 try 的道路上')
 
     const plan = await prisma.plan.findUnique({
       where: { id: planId },
@@ -217,7 +304,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
     res.json(response);
 
   } catch (err: any) {
-    console.log('沒有 userId 進入 catch 了')
+    // console.log('沒有 userId 進入 catch 了')
     const errorResponse: ApiErrorResponse = {
       success: false,
       message: err.message || '系統錯誤，請再試一次',
