@@ -234,7 +234,7 @@ export default function HotelResultCard({
             />
             {/* 關閉按鈕 - 確保點擊 X 不會跳轉 */}
             <button
-              className="absolute top-4 right-4 text-white text-3xl p-2 rounded-full bg-black/50 hover:bg-black/80 transition"
+              className="absolute top-5 right-6 text-white text-xl p-2 rounded-full bg-black/50 hover:bg-black/80 transition"
               onClick={(e) => {
                 e.stopPropagation(); // 💥 阻止點擊 X 後事件冒泡到父級 Link/onClick
                 setIsImageModalOpen(false);
