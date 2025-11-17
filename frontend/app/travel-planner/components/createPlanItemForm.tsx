@@ -107,7 +107,13 @@ export default function CreatePlanItemForm({
         {/* 旅程標題 */}
         <div className="sw-l-input">
           <label htmlFor="title">行程標題</label>
-          <input id="title" name="title" type="text" onChange={handleChange} />
+          <input
+            id="title"
+            name="title"
+            type="text"
+            onChange={handleChange}
+            required
+          />
         </div>
 
         {/* 開始日期及時區 */}
@@ -120,6 +126,7 @@ export default function CreatePlanItemForm({
               type="datetime-local"
               value={formData.startTime}
               onChange={(e) => handleStartTimeChange(e.target.value)}
+              required
             />
           </div>
           <div className="flex-2 sw-l-input">
@@ -128,6 +135,7 @@ export default function CreatePlanItemForm({
               id="startTimezone"
               name="startTimezone"
               onChange={handleChange}
+              required
             >
               <option value="">選擇時區 ⭣</option>
               {timezones.map((tz) => (
@@ -141,7 +149,7 @@ export default function CreatePlanItemForm({
         {/* 結束日期及時區 */}
         <div className="flex gap-4">
           <div className="flex-1 sw-l-input">
-            <label htmlFor="endTime">結束日期</label>
+            <label htmlFor="endTime">結束日期 (選填)</label>
             <input
               id="endTime"
               name="endTime"

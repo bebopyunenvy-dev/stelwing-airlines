@@ -9,7 +9,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTripContext } from '../../../src/context/TripContext';
 import TripCardSortSample from '../components/tripCardShortSample';
-import TripItemCard from '../components/tripItemCard';
 import { timezones } from '../src/data/timezone';
 import { Trip, TripItem } from '../types';
 import { apiFetch } from '../utils/apiFetch';
@@ -17,175 +16,13 @@ import { apiFetch } from '../utils/apiFetch';
 import momentTimezonePlugin from '@fullcalendar/moment-timezone';
 import CreatePlanItemForm from '../components/createPlanItemForm';
 import EditDialog from '../components/editDialog';
+import TripItemCardDialog from '../components/tripItemCard';
 import { transformTripForUI } from '../utils/tripUtils';
 
 // export interface TripDetailPageProps {}
 // {  }: TripDetailPageProps
 
 export default function TripDetailPage() {
-  const events12 = [
-    // 🛫 12/22 出發日（含跨時段活動）
-    {
-      title: '桃園 > 成田',
-      start: '2025-12-22T08:30:00',
-      end: '2025-12-22T13:00:00',
-    },
-    {
-      title: '抵達飯店 Check-in',
-      start: '2025-12-22T14:00:00',
-      end: '2025-12-22T15:00:00',
-    },
-    {
-      title: '澀谷散步',
-      start: '2025-12-22T16:00:00',
-      end: '2025-12-22T17:30:00',
-      color: '#DCBB87',
-    },
-    {
-      title: '晚餐：燒肉 Like',
-      start: '2025-12-22T18:30:00',
-      end: '2025-12-22T20:00:00',
-      color: '#A87B47',
-    },
-    {
-      title: '藥妝店採購',
-      start: '2025-12-22T20:30:00',
-      end: '2025-12-22T21:30:00',
-      color: '#1F2E3C',
-    },
-
-    // 🏙️ 12/23 東京一日遊（多筆）
-    {
-      title: '淺草寺參拜',
-      start: '2025-12-23T09:00:00',
-      end: '2025-12-23T10:00:00',
-    },
-    {
-      title: '晴空塔展望台',
-      start: '2025-12-23T10:30:00',
-      end: '2025-12-23T12:00:00',
-    },
-    {
-      title: '午餐：築地壽司',
-      start: '2025-12-23T12:30:00',
-      end: '2025-12-23T13:30:00',
-      color: '#B35E2E',
-    },
-    {
-      title: '銀座逛街',
-      start: '2025-12-23T14:00:00',
-      end: '2025-12-23T17:30:00',
-      color: '#6E6658',
-    },
-    {
-      title: '歌舞伎町夜拍',
-      start: '2025-12-23T20:00:00',
-      end: '2025-12-23T22:00:00',
-      color: '#1F2E3C',
-    },
-
-    // 🎄 12/24–25：聖誕跨夜活動（跨日事件）
-    {
-      title: '聖誕燈節夜拍',
-      start: '2025-12-24T19:00:00',
-      end: '2025-12-25T01:00:00',
-      color: '#DCBB87',
-    },
-
-    // 🎅 12/24 當日滿滿行程（觸發 +more）
-    {
-      title: '原宿表參道',
-      start: '2025-12-24T10:00:00',
-      end: '2025-12-24T11:00:00',
-    },
-    {
-      title: '代代木公園散步',
-      start: '2025-12-24T11:00:00',
-      end: '2025-12-24T12:00:00',
-    },
-    {
-      title: '午餐：Bills 鬆餅',
-      start: '2025-12-24T12:30:00',
-      end: '2025-12-24T13:30:00',
-    },
-    {
-      title: '澀谷十字路口拍照',
-      start: '2025-12-24T14:00:00',
-      end: '2025-12-24T14:30:00',
-    },
-    {
-      title: '涉谷 Parco 逛街',
-      start: '2025-12-24T15:00:00',
-      end: '2025-12-24T17:00:00',
-    },
-    {
-      title: '回飯店小睡',
-      start: '2025-12-24T17:00:00',
-      end: '2025-12-24T18:00:00',
-    },
-    {
-      title: '六本木夜景',
-      start: '2025-12-24T19:00:00',
-      end: '2025-12-24T20:00:00',
-      color: '#1F2E3C',
-    },
-    {
-      title: '聖誕晚餐',
-      start: '2025-12-24T20:00:00',
-      end: '2025-12-24T21:30:00',
-      color: '#DCBB87',
-    },
-
-    // 🎁 12/25 聖誕節
-    {
-      title: '新宿早餐',
-      start: '2025-12-25T09:00:00',
-      end: '2025-12-25T10:00:00',
-    },
-    {
-      title: '明治神宮',
-      start: '2025-12-25T10:30:00',
-      end: '2025-12-25T12:00:00',
-    },
-    {
-      title: '午餐：烏龍麵',
-      start: '2025-12-25T12:30:00',
-      end: '2025-12-25T13:30:00',
-    },
-    {
-      title: '涉谷 109',
-      start: '2025-12-25T14:00:00',
-      end: '2025-12-25T16:00:00',
-    },
-    {
-      title: '甜點咖啡廳',
-      start: '2025-12-25T20:00:00',
-      end: '2025-12-25T21:30:00',
-      color: '#DCBB87',
-    },
-    {
-      title: '回飯店休息',
-      start: '2025-12-25T22:00:00',
-      end: '2025-12-25T23:30:00',
-    },
-
-    // 🛬 12/26 回程
-    {
-      title: '早餐 Buffet',
-      start: '2025-12-26T08:00:00',
-      end: '2025-12-26T09:00:00',
-    },
-    {
-      title: 'Check-out',
-      start: '2025-12-26T10:00:00',
-      end: '2025-12-26T11:00:00',
-    },
-    {
-      title: '羽田 > 桃園',
-      start: '2025-12-26T13:00:00',
-      end: '2025-12-26T17:00:00',
-    },
-  ];
   const params = useParams();
   const router = useRouter();
   const { tripId } = params;
@@ -200,6 +37,7 @@ export default function TripDetailPage() {
   const [isOpenCreateItem, setIsOpenCreateItem] = useState(false);
   const initialDate = useMemo(() => computeInitialDate(items), [items]);
   const calendarRef = useRef<FullCalendar | null>(null);
+  const [selectedItem, setSelectedItem] = useState<TripItem | null>(null);
 
   // Data：撈旅程資料，用前一頁傳來的 context，沒有就重撈，每隔五分鐘也再撈一次
   useEffect(() => {
@@ -308,6 +146,7 @@ export default function TripDetailPage() {
     return isTodayInside ? today : earliestDate;
   }
 
+  // Data：FullCalendar 顯示用資料
   const calendarEvents = items.map((item) => ({
     id: String(item.id),
     title: item.title,
@@ -353,7 +192,7 @@ export default function TripDetailPage() {
   // 資料好了才渲染真的卡片
   return (
     <>
-      <div className="flex-1 flex px-16 py-8 w-full">
+      <main className="flex-1 flex px-16 py-8 w-full">
         <section
           className="flex-1 min-h-full border border-solid border-black rounded-2xl
           w-full flex 
@@ -410,6 +249,7 @@ export default function TripDetailPage() {
           </div>
           {/* 右邊日曆 */}
           <div className="flex-2 px-6 py-4">
+            {/* 工具列 */}
             <div className="flex items-center gap-2 mb-3">
               <label htmlFor="timezone">切換所在時區顯示</label>
               <select
@@ -427,6 +267,7 @@ export default function TripDetailPage() {
                 ))}
               </select>
             </div>
+            {/* 日曆區 */}
             <FullCalendar
               ref={calendarRef}
               plugins={[
@@ -461,15 +302,19 @@ export default function TripDetailPage() {
               events={calendarEvents}
               eventColor="#DCBB87"
               eventClick={(info) => {
-                // 阻止預設的導向行為（例如連到網址）
                 info.jsEvent.preventDefault();
-                setIsOpenItemCard(true);
+
+                // 假設 event.id 就是 TripItem 的 id
+                const item = items.find((i) => i.id === info.event.id);
+                if (item) {
+                  setSelectedItem(item);
+                  setIsOpenItemCard(true);
+                }
               }}
             />
           </div>
         </section>
-        {isOpenItemCard && <TripItemCard />}
-      </div>
+      </main>
       <EditDialog
         open={isOpenCreateItem}
         onOpenChange={setIsOpenCreateItem}
@@ -480,6 +325,13 @@ export default function TripDetailPage() {
           onSuccess={handleFormSuccess}
         />
       </EditDialog>
+      {selectedItem && (
+        <TripItemCardDialog
+          open={isOpenItemCard}
+          onOpenChange={setIsOpenItemCard}
+          item={selectedItem}
+        ></TripItemCardDialog>
+      )}
     </>
   );
 }
