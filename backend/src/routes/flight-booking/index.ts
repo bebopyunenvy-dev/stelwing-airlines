@@ -369,6 +369,7 @@ router.post("/bookings", async (req, res) => {
 router.get("/bookings/:pnr", async (req, res) => {
   try {
     const pnr = req.params.pnr;
+    const tz = safeTz(String(req.query.tz ?? "Asia/Taipei"), "Asia/Taipei");
 
     const booking = await prisma.booking.findUnique({
       where: { pnr },
@@ -388,12 +389,24 @@ router.get("/bookings/:pnr", async (req, res) => {
       return res.status(404).json({ success: false, message: "找不到訂單" });
     }
 
-    res.json({ success: true, data: booking });
+    const createdAtLocal = booking.createdAt
+      ? moment(booking.createdAt).tz(tz).format("YYYY-MM-DD HH:mm:ss")
+      : null;
+
+    return res.json({
+      success: true,
+      data: {
+        ...booking,
+        bookingId: String(booking.bookingId),
+        createdAt: createdAtLocal,
+        // 如果還有 BigInt 欄位記得一併轉字串
+      },
+    });
   } catch (e) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "查詢訂單失敗",
-      error: onmessage,
+      error: String(e),
     });
   }
 });
@@ -401,13 +414,15 @@ router.get("/bookings/:pnr", async (req, res) => {
 /* ===================== 查詢訂單列表 GET /bookings ===================== */
 router.get("/bookings", async (req, res) => {
   try {
+    const tz = safeTz(String(req.query.tz ?? "Asia/Taipei"), "Asia/Taipei");
+
     const rows = await prisma.$queryRawUnsafe<any[]>(`
       SELECT
         b.booking_id       AS bookingId,
         b.pnr              AS pnr,
         b.payment_method   AS paymentMethod,
         b.payment_status   AS paymentStatus,
-        CAST(b.created_at AS CHAR) AS createdAt,
+        CAST(b.created_at AS CHAR) AS createdAtUtc,
 
         -- 去程航段
         MIN(
@@ -442,9 +457,20 @@ router.get("/bookings", async (req, res) => {
       ORDER BY b.booking_id DESC;
     `);
 
+    const data = rows.map((row) => {
+      const createdAtLocal = row.createdAtUtc
+        ? moment.tz(row.createdAtUtc, "UTC").tz(tz).format("YYYY-MM-DD HH:mm:ss")
+        : null;
+
+      return {
+        ...row,
+        createdAt: createdAtLocal, // 給前端用這個欄位
+      };
+    });
+
     return res.json({
       success: true,
-      data: rows,
+      data, // 這裡要用 data，不是 rows
     });
   } catch (e) {
     console.error("查詢訂單列表失敗（raw）：", e);
@@ -455,7 +481,6 @@ router.get("/bookings", async (req, res) => {
     });
   }
 });
-
 
 
 /* ===================== 動態路由（放最後） ===================== */
