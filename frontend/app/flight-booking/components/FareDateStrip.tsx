@@ -40,7 +40,7 @@ export default function FareDateStrip({
       <div className="flex items-center gap-2">
         <button
           onClick={onPrev}
-          className="h-10 w-10 rounded-full flex items-center justify-center"
+          className="h-10 w-10 rounded-full border border-[var(--sw-grey)] hover:bg-neutral-50 flex items-center justify-center"
           aria-label="previous dates"
         >
           <ChevronLeft size={18} />

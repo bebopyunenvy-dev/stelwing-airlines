@@ -6,8 +6,10 @@ import {
   ChevronRight,
   Luggage,
   Plus,
+  Search,
   User2,
   Utensils,
+  X,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -187,51 +189,69 @@ function MealCard({
   option,
   selected,
   onToggle,
+  onPreview,
 }: {
   option: MealOption & { imageUrl?: string };
   selected: boolean;
   onToggle: () => void;
+  onPreview?: () => void;
 }) {
+  // 依照 mealCode 使用固定圖片，確保六張都不同
+  const imgSrc =
+    MEAL_IMAGE_MAP[option.mealCode] ||
+    option.imageUrl ||
+    '/images/meals/meal_vgml.png';
+
   return (
     <div
       className={[
-        'group flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-md transition',
+        'group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-md transition',
         selected
           ? 'ring-2 ring-[color:var(--sw-accent)]'
           : 'hover:-translate-y-1 hover:shadow-lg',
       ].join(' ')}
     >
-      {/* 上半部：圖片區 */}
+      {/* 圖片區 */}
       <div className="aspect-[4/3] w-full overflow-hidden bg-[#e7cfc4]">
         <Image
-          src={option.imageUrl || '/images/meals/vgml.png'}
+          src={imgSrc}
           alt={option.mealName}
           width={600}
           height={450}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
         />
       </div>
+
+      {/* 右上角放大鏡按鈕 */}
+      {onPreview && (
+        <button
+          type="button"
+          onClick={onPreview}
+          className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white shadow hover:bg-black/75 transition"
+          aria-label="放大查看餐點圖片"
+        >
+          <Search className="h-4 w-4" />
+        </button>
+      )}
 
       {/* 下半部：名稱 + 價格 + 加入按鈕 */}
       <div className="mt-auto flex items-center justify-between gap-3 bg-white px-4 py-3">
         <div>
           <div className="text-sm font-semibold text-[color:var(--sw-primary)]">
-            <span className="mr-1 font-semibold text-[color:var(--sw-accent)]">
-              Stelwing
-            </span>
             {option.mealName}
           </div>
-          <div className="mt-1 text-sm text-[color:var(--sw-primary)]">
+          <div className="mt-1 text-sm text-[color:var(--sw-primary)]/80">
             {fmtMoney(option.price)}
           </div>
         </div>
 
+        {/* 右下角＋按鈕：統一 36x36 正圓 */}
         <button
           type="button"
           aria-label={selected ? '取消' : '加入'}
           onClick={onToggle}
           className={[
-            'flex h-9 w-9 items-center justify-center rounded-full border transition',
+            'inline-flex w-9 h-9 items-center justify-center rounded-full border transition',
             selected
               ? 'border-[color:var(--sw-accent)] bg-[color:var(--sw-accent)] text-[color:var(--sw-primary)]'
               : 'border-[color:var(--sw-accent)] text-[color:var(--sw-accent)] hover:bg-[color:var(--sw-accent)]/10',
@@ -264,6 +284,9 @@ export default function ExtrasPage() {
   const [ibBag, setIbBag] = useState<number | null>(null);
   const [obMeal, setObMeal] = useState<number | null>(null);
   const [ibMeal, setIbMeal] = useState<number | null>(null);
+  const [previewMeal, setPreviewMeal] = useState<
+    (MealOption & { imageUrl?: string }) | null
+  >(null);
 
   const [bagTab, setBagTab] = useState<'ob' | 'ib'>('ob');
   const [mealTab, setMealTab] = useState<'ob' | 'ib'>('ob');
@@ -665,12 +688,6 @@ export default function ExtrasPage() {
                         return aIdx - bIdx;
                       })
                       // 2️⃣ 每筆加上 imageUrl，對應資料庫的命名
-                      .map((m) => ({
-                        ...m,
-                        imageUrl:
-                          MEAL_IMAGE_MAP[m.mealCode] ||
-                          '/images/meals/vgml.png',
-                      }))
                       .map((m) => {
                         const selected =
                           mealTab === 'ob'
@@ -694,6 +711,7 @@ export default function ExtrasPage() {
                             option={m}
                             selected={!!selected}
                             onToggle={onToggle}
+                            onPreview={() => setPreviewMeal(m)} // ⬅ 點圖時要開 popup
                           />
                         );
                       })}
@@ -709,6 +727,50 @@ export default function ExtrasPage() {
             />
 
             <FareDetailsFromStore />
+            {/* 圖片放大預覽 */}
+            {previewMeal && (
+              <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60">
+                <div className="relative w-[min(90vw,640px)] overflow-hidden rounded-2xl bg-white shadow-xl">
+                  {/* 關閉按鈕 */}
+                  <button
+                    type="button"
+                    onClick={() => setPreviewMeal(null)}
+                    className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                    aria-label="關閉預覽"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+
+                  {/* 大圖 */}
+                  <div className="aspect-[4/3] w-full bg-[#e7cfc4]">
+                    <Image
+                      src={
+                        MEAL_IMAGE_MAP[previewMeal.mealCode] ||
+                        previewMeal.imageUrl ||
+                        '/images/meals/meal_vgml.png'
+                      }
+                      alt={previewMeal.mealName}
+                      width={900}
+                      height={675}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+
+                  {/* 文案區 */}
+                  <div className="p-4 md:p-5">
+                    <div className="text-base font-semibold text-[color:var(--sw-primary)]">
+                      <span className="mr-1 font-semibold text-[color:var(--sw-accent)]">
+                        Stelwing
+                      </span>
+                      {previewMeal.mealName}
+                    </div>
+                    <div className="mt-2 text-sm text-[color:var(--sw-primary)]/80">
+                      {fmtMoney(previewMeal.price)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

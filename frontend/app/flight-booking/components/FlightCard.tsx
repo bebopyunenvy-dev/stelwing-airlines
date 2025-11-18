@@ -3,6 +3,9 @@
 import { Clock3 } from 'lucide-react';
 
 export type FlightItem = {
+  originIata: string;
+  destinationIata: string;
+  flightId: any;
   flightNo: string;
   leg: {
     originCode: string;
