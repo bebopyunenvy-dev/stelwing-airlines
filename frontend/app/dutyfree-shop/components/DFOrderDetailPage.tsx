@@ -33,6 +33,8 @@ export function DFOrderDetailPage({
         return '已取消';
       case 'refunding':
         return '退款中';
+      case 'refunded':
+        return '已退款';
       default:
         return status;
     }
