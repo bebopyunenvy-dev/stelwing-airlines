@@ -338,22 +338,22 @@ export default function MemberInfoPage() {
 
       <MileageTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {activeTab === "rule" && (
-        <div className="p-6 border border-[#BA9A60] rounded-xl mt-4">
-          <h3 className="font-semibold text-[#1F2E3C] mb-3">哩程說明</h3>
-          <ul className="text-sm text-[#444] space-y-2">
-            <li>．每消費 NT$30 可累積 1 哩程</li>
-            <li>．哩程可用於兌換機票、升等、免稅商品等優惠</li>
-            <li>．哩程有效期限為 2 年，請於期限內使用</li>
-          </ul>
-        </div>
-      )}
-
-      {activeTab === "detail" && (
-        <div className="mt-4">
-          <MileageTable />
-        </div>
-      )}
+      <div className="mt-4 min-h-[420px]">
+        {activeTab === "rule" ? (
+          <div className="p-6 border border-[#BA9A60] rounded-xl h-full">
+            <h3 className="font-semibold text-[#1F2E3C] mb-3">哩程說明</h3>
+            <ul className="text-sm text-[#444] space-y-2">
+              <li>．每消費 NT$30 可累積 1 哩程</li>
+              <li>．哩程可用於兌換機票、升等、免稅商品等優惠</li>
+              <li>．哩程有效期限為 2 年，請於期限內使用</li>
+            </ul>
+          </div>
+        ) : (
+          <div className="h-full">
+            <MileageTable />
+          </div>
+        )}
+      </div>
       {/* =========================
           ✅【新增】頭像選擇 Modal
          ========================= */}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Info } from "lucide-react";
+import { useToast } from "@/app/context/toast-context";
 
 // 💡 UI 基礎元件
 const Button = ({ children, className = "", ...props }) => (
@@ -38,6 +39,7 @@ const CardContent = ({ children, className = "" }) => <div>{children}</div>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -49,7 +51,6 @@ export default function RegisterPage() {
   });
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [showNameGuide, setShowNameGuide] = useState(false);
 
@@ -83,7 +84,6 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
 
     const errs = validateRegistration(formData);
     if (errs.length) {
@@ -114,7 +114,11 @@ export default function RegisterPage() {
         return;
       }
 
-      setSuccess("註冊成功！即將導向登入頁...");
+      showToast({
+        title: "註冊成功",
+        message: "請使用此帳號登入 Stelwing 會員中心。",
+        type: "success",
+      });
       setTimeout(() => router.push("/member-center/login"), 1500);
     } catch (err) {
       console.error(err);
@@ -132,7 +136,6 @@ export default function RegisterPage() {
           <p className="text-xs text-left text-red-500 mb-2">* 必填項目</p>
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             {error && <p className="text-red-500 text-center text-sm">{error}</p>}
-            {success && <p className="text-[#1F2E3C] text-center text-sm font-medium">{success}</p>}
 
             {/* 姓名 */}
             <div className="grid grid-cols-2 gap-4">

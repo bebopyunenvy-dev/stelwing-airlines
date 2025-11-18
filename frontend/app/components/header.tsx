@@ -18,6 +18,7 @@ import { Button } from "../dutyfree-shop/components/ui/button";
 
 // 🔼 新增：Auth Context
 import { useAuth } from "@/app/context/auth-context";
+import { useToast } from "@/app/context/toast-context";
 
 // ======================
 // 型別
@@ -48,7 +49,8 @@ export default function Header({
   const [profileOpen, setProfileOpen] = useState(false);
 
   // 🔼 新增：使用登入狀態
-  const { isLoggedIn, avatar, logout } = useAuth();
+  const { isLoggedIn, avatar, logout, member } = useAuth();
+  const { showToast } = useToast();
 
   const pathname = usePathname();
   const router = useRouter();
@@ -62,6 +64,17 @@ export default function Header({
     { name: "旅程規劃", href: "/travel-planner" },
     { name: "旅遊分享", href: "/travel-community" },
   ];
+
+  const handleLogout = () => {
+    setProfileOpen(false);
+    logout();
+    showToast({
+      title: "已成功登出",
+      message: "期待再次與你同行。",
+      type: "success",
+    });
+    router.push("/member-center/login");
+  };
 
   return (
     <header className="bg-[var(--sw-primary)] text-white sticky top-0 z-50">
@@ -243,6 +256,15 @@ export default function Header({
                     transform: profileOpen ? "translateY(0)" : "translateY(-4px)",
                   }}
                 >
+                  <div className="px-4 py-3 border-b border-[#D1D5DB]">
+                    <div className="text-base font-semibold text-[#1F2E3C] truncate">
+                      {member?.lastName || member?.firstName
+                        ? `${member?.lastName ?? ""}${member?.firstName ?? ""}`.trim() ||
+                          member?.username ||
+                          "會員"
+                        : "會員"}
+                    </div>
+                  </div>
                   {/* (R) Read：前往會員中心 */}
                   <Link
                     href="/member-center"
@@ -261,7 +283,7 @@ export default function Header({
 
                   {/* (D) Delete：登出（刪除 token） */}
                   <button
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="w-full text-left px-4 py-3 hover:bg-[#DCBB87]/20 text-[#C5A872]"
                   >
                     登出
@@ -316,7 +338,7 @@ export default function Header({
             </Button>
           ) : (
             <Button
-              onClick={logout}
+              onClick={handleLogout}
               className="w-[80%] mt-4 bg-[#C5A872] hover:bg-[#C5A872] text-white"
             >
               登出
