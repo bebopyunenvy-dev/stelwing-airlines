@@ -71,7 +71,7 @@ export default function PageTabs({
         </form>
 
         {/* 分類 Tabs + 右側動作 */}
-        <div className="flex flex-1 min-w-[280px] items-center gap-3">
+        <div className="flex flex-1 min-w-[280px] items-center gap-35">
           <div className="flex items-center gap-2 overflow-x-auto">
             {TABS.map((t) => (
               <button
