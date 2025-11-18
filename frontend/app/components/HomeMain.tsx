@@ -44,21 +44,21 @@ const dutyfree = [
   },
   {
     id: 4,
-    brand: 'Dior',
-    name: 'Dior 迪奧雪晶靈透亮粉餅',
-    img: '/images/dutyfree/dior6.png',
+    brand: 'Laura Mercier',
+    name: 'Laura Mercier 柔光透明香氛',
+    img: '/images/dutyfree/aromatherapy.png',
   },
   {
     id: 5,
-    brand: 'Estee Lauder',
-    name: '雅詩蘭黛特潤導入全方位修護露100ML',
-    img: '/images/dutyfree/brown.png',
+    brand: 'Giorgio Armani',
+    name: 'Giorgio Armani 光韻持久粉底液',
+    img: '/images/dutyfree/essence.png',
   },
   {
     id: 6,
-    brand: 'Estee Lauder',
-    name: '雅詩蘭黛特潤導入全方位修護露100ML',
-    img: '/images/dutyfree/brown.png',
+    brand: 'YSL',
+    name: 'YSL 奢華緞面唇膏',
+    img: '/images/dutyfree/mainRight.jpg',
   },
 ];
 
