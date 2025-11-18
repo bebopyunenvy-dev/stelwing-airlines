@@ -317,4 +317,43 @@ router.delete('/:id', async (req: Request, res: Response) => {
 
 });
 
+// | PUT | /api/plans/:planId/cover | 更新封面圖片 |
+router.put("/:id/cover", upload.single("cover"), async (req: Request, res: Response) => {
+  try {
+    console.log('觸發了後端 API')
+    const userId = getMemberIdFromToken(req);
+    if (!userId) throw new Error('沒有提供 User ID');
+
+    const tripId = Number(req.params.id);
+    if (!tripId || isNaN(tripId)) throw new Error('沒有提供有效的旅程 ID');
+
+    if (!req.file) throw new Error('沒有上傳檔案');
+
+    console.log(tripId)
+    console.log(req.file)
+    // 最終檔案路徑（給 DB）
+    const coverUrl = `/planner/cover/${req.file.filename}`;
+
+    // 更新 DB
+    await prisma.plan.update({
+      where: { id: tripId },
+      data: { coverImage: coverUrl },
+    });
+
+    res.json({
+      success: true,
+      message: "封面更新成功",
+      coverImage: coverUrl,
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Upload failed",
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+});
+
 export default router;
