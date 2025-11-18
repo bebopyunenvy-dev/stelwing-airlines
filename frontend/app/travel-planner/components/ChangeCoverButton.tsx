@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Cropper from 'react-easy-crop';
 import AlertDialogBox from '../components/alertDialog/alertDialogBox';
 import { useAlertDialog } from '../components/alertDialog/useAlertDialog';
-import type { Trip } from '../types';
+import type { Trip } from '../types'; // 你專案已有
 import { apiFetch } from '../utils/apiFetch';
+import { getCroppedImg } from '../utils/image';
 
 export default function ChangeCoverButton({
   tripId,
@@ -13,17 +15,47 @@ export default function ChangeCoverButton({
   tripId: string;
   onUpdated: (newCoverUrl: string | null) => void;
 }) {
+  // 狀態
   const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+
   const { alert, showAlert } = useAlertDialog();
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 1. 使用者選圖片
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // 2. 完成裁切
+  const handleCropDone = async () => {
+    if (!preview || !croppedAreaPixels) return;
+
+    const croppedImage = await getCroppedImg(preview, croppedAreaPixels);
+    setCroppedPreview(croppedImage);
+  };
+
+  // 3. 送出更新
+  const submitCroppedImage = async () => {
+    if (!croppedPreview) return;
+
     setUploading(true);
     try {
+      // Base64 → Blob
+      const blob = await (await fetch(croppedPreview)).blob();
+
       const formData = new FormData();
-      formData.append('cover', file);
+      formData.append('cover', blob, 'cover.jpg');
 
       const data = await apiFetch<Trip>(
         `http://localhost:3007/api/plans/${tripId}/cover`,
@@ -32,6 +64,8 @@ export default function ChangeCoverButton({
           body: formData,
         }
       );
+
+      console.log(data);
 
       showAlert({
         title: '封面更新成功',
@@ -51,16 +85,79 @@ export default function ChangeCoverButton({
   };
 
   return (
-    <div>
-      <label className="sw-btn sw-btn--gold-square cursor-pointer">
+    <div className="space-y-4">
+      {/* 選檔案 */}
+      {/* <label className="sw-btn sw-btn--gold-square cursor-pointer">
         {uploading ? '上傳中...' : '從電腦中選擇圖片'}
         <input
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handleFileChange}
+          onChange={handleFileSelect}
         />
-      </label>
+      </label> */}
+
+      <div className="flex-1 sw-l-input">
+        <label htmlFor="coverImage" className="block mb-1 cursor-pointer">
+          {uploading ? '上傳中...' : '從電腦中選擇圖片'}
+        </label>
+        {/* 真正的檔案輸入 */}
+        <input
+          id="coverImage"
+          // name="coverImage"
+          type="file"
+          accept="image/*"
+          onChange={handleFileSelect}
+          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+                 file:rounded-md file:border file:border-gray-300
+                 file:text-sm file:font-semibold
+                 file:bg-gray-100 file:text-gray-700
+                 hover:file:bg-gray-200"
+        />
+      </div>
+
+      {/* 預覽 + 裁切器 */}
+      {preview && !croppedPreview && (
+        <div>
+          <div className="relative w-80 h-80 bg-gray-100">
+            <Cropper
+              image={preview}
+              crop={crop}
+              zoom={zoom}
+              aspect={2 / 3}
+              showGrid={false}
+              cropShape="rect"
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={(_, area) => setCroppedAreaPixels(area)}
+            />
+          </div>
+
+          <button
+            className="mt-2 px-3 py-1 bg-blue-500 text-white rounded"
+            onClick={handleCropDone}
+          >
+            完成裁切
+          </button>
+        </div>
+      )}
+
+      {/* 完成裁切後顯示結果 */}
+      {croppedPreview && (
+        <div>
+          <img
+            src={croppedPreview}
+            className="w-40 h-60 object-cover rounded border"
+          />
+
+          <button
+            className="mt-3 px-4 py-2 bg-green-600 text-white rounded"
+            onClick={submitCroppedImage}
+          >
+            上傳封面
+          </button>
+        </div>
+      )}
 
       {alert.open && <AlertDialogBox alert={alert} />}
     </div>
