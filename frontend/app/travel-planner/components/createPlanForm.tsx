@@ -35,7 +35,7 @@ export default function CreatePlanForm({
     endDate: '',
     endTimezone: '',
     note: '',
-    coverImage: '',
+    // coverImage: '',
   });
 
   // 功能：監看欄位變化
@@ -135,7 +135,13 @@ export default function CreatePlanForm({
         {/* 旅程標題 */}
         <div className="sw-l-input">
           <label htmlFor="title">旅程標題</label>
-          <input id="title" name="title" type="text" onChange={handleChange} />
+          <input
+            id="title"
+            name="title"
+            type="text"
+            onChange={handleChange}
+            required
+          />
         </div>
         {/* 目的地 */}
         <div className="sw-l-input">
@@ -157,6 +163,7 @@ export default function CreatePlanForm({
               type="date"
               value={formData.startDate}
               onChange={(e) => handleStartDateChange(e.target.value)}
+              required
             />
           </div>
           <div className="flex-2 sw-l-input">
@@ -164,7 +171,9 @@ export default function CreatePlanForm({
             <select
               id="startTimezone"
               name="startTimezone"
+              value={formData.startTimezone}
               onChange={handleChange}
+              required
             >
               <option value="">選擇時區 ⭣</option>
               {timezones.map((tz) => (
@@ -186,11 +195,18 @@ export default function CreatePlanForm({
               value={formData.endDate}
               min={formData.startDate || undefined}
               onChange={handleChange}
+              required
             />
           </div>
           <div className="flex-2 sw-l-input">
             <label htmlFor="endTimezone">結束日期時區</label>
-            <select id="endTimezone" name="endTimezone" onChange={handleChange}>
+            <select
+              id="endTimezone"
+              name="endTimezone"
+              value={formData.endTimezone}
+              onChange={handleChange}
+              required
+            >
               <option value="">選擇時區 ⭣</option>
               {timezones.map((tz) => (
                 <option key={tz.value} value={tz.value}>
@@ -202,7 +218,7 @@ export default function CreatePlanForm({
         </div>
         {/* 備註 */}
         <div className="flex-1 sw-l-input">
-          <label htmlFor="startDate">備註 (選填)</label>
+          <label htmlFor="note">備註 (選填)</label>
           <textarea
             id="note"
             name="note"
@@ -219,7 +235,7 @@ export default function CreatePlanForm({
             {/* 真正的檔案輸入 */}
             <input
               id="coverImage"
-              name="coverImage"
+              // name="coverImage"
               type="file"
               accept="image/png, image/jpeg"
               onChange={handleFileChange}
@@ -259,11 +275,10 @@ export default function CreatePlanForm({
                     );
                     setCroppedPreview(croppedImage);
 
-                    // ✅ 這裡同時更新 formData
-                    setFormData((prev) => ({
-                      ...prev,
-                      coverImage: croppedImage,
-                    }));
+                    // setFormData((prev) => ({
+                    //   ...prev,
+                    //   coverImage: croppedImage,
+                    // }));
                   }}
                 >
                   完成裁切
