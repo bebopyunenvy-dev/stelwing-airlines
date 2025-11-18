@@ -546,40 +546,75 @@ router.patch("/bookings/:pnr/change", async (req, res) => {
 });
 
 /* ===================== 退票 POST /bookings/:pnr/refund ===================== */
-router.post("/bookings/:pnr/refund", async (req, res) => {
-  try {
-    const { pnr } = req.params;
+router.post('/bookings/:pnr/refund', async (req, res) => {
+  const pnr = req.params.pnr;
+  const tripType = req.body?.tripType as 'OB' | 'IB' | undefined; // 可選：去程 / 回程
 
-    // 查詢是否存在
+  try {
     const booking = await prisma.booking.findUnique({
       where: { pnr },
+      include: {
+        details: true,
+      },
     });
 
     if (!booking) {
-      return res.status(404).json({
-        success: false,
-        message: "查無此訂單（PNR）",
+      return res
+        .status(404)
+        .json({ success: false, message: '找不到訂單，無法退票' });
+    }
+
+    // 如果已經是 refunded，就直接回傳
+    if (booking.paymentStatus === 'refunded') {
+      return res.json({
+        success: true,
+        message: '此訂單已退款',
+        data: booking,
       });
     }
 
-    // 更新 payment_status = REFUND
-    await prisma.booking.update({
-      where: { pnr },
-      data: {
-        paymentStatus: "REFUND", // 依你的 enum or string
-      },
+    const result = await prisma.$transaction(async (tx) => {
+      // 要處理的明細：如果有帶 tripType，就只處理去程或回程；沒帶就整筆都退
+      const targetDetails = booking.details.filter((d) =>
+        tripType ? d.tripType === tripType : true
+      );
+
+      // 1) 釋放座位
+      for (const d of targetDetails) {
+        if (d.seatId) {
+          await tx.seatOption.update({
+            where: { seatId: d.seatId },
+            data: { isAvailable: true },
+          });
+        }
+      }
+
+      // 2) 簡化處理：整筆訂單標記為 refunded
+      //   之後如果要做到「部分退票」，可以在 booking_details 上增加 status 欄位再優化
+      const updatedBooking = await tx.booking.update({
+        where: { bookingId: booking.bookingId },
+        data: {
+          paymentStatus: 'refunded',
+        },
+        include: {
+          details: true,
+        },
+      });
+
+      return updatedBooking;
     });
 
     return res.json({
       success: true,
-      message: "退票成功，已申請退款",
+      message: '退票成功（目前直接標記為 refunded）',
+      data: result,
     });
-  } catch (err) {
-    console.error("退票錯誤：", err);
-    res.status(500).json({
+  } catch (e) {
+    console.error('退票失敗：', e);
+    return res.status(500).json({
       success: false,
-      message: "退票失敗",
-      error: String(err),
+      message: '退票失敗',
+      error: String(e),
     });
   }
 });
