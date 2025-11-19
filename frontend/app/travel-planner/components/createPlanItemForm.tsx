@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { timezones } from '../src/data/timezone';
 // @ts-expect-error 我不寫就跳錯我只好加啊氣死
 import { DateTime } from 'luxon';
+import CategorySelect from '../components/CategorySelect';
 import { Trip } from '../types';
 import { apiFetch } from '../utils/apiFetch';
 import AlertDialogBox from './alertDialog/alertDialogBox';
@@ -21,9 +22,10 @@ export default function CreatePlanItemForm({
 }) {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
   const { alert, showAlert } = useAlertDialog();
+  const [categoryId, setCategoryId] = useState('');
   const [formData, setFormData] = useState({
     title: '',
-    destination: '',
+    // destination: '',
     allDay: false,
     startTime: '',
     startTimezone: '',
@@ -72,11 +74,12 @@ export default function CreatePlanItemForm({
 
       const adjustedData = {
         ...formData,
+        typeId: Number(categoryId),
         startTime: startDateTime.toUTC().toISO(),
         endTime: endDateTime.toUTC().toISO(),
       };
 
-      // console.log(JSON.stringify(adjustedData));
+      console.log(JSON.stringify(adjustedData));
 
       const data = await apiFetch<Trip>(
         `http://localhost:3007/api/plans/${tripId}/items`,
@@ -90,7 +93,7 @@ export default function CreatePlanItemForm({
 
       showAlert({
         title: '新增成功',
-        description: '點擊確認跳轉行程規劃頁面',
+        description: '點擊確認回到日曆',
         confirmText: '確認',
         onConfirm: () => onSuccess(data.id),
       });
@@ -116,6 +119,11 @@ export default function CreatePlanItemForm({
             onChange={handleChange}
             required
           />
+        </div>
+        {/* 分類 */}
+        <div className="sw-l-input">
+          <label>分類</label>
+          <CategorySelect value={categoryId} onChange={setCategoryId} />
         </div>
         {/* allDay 勾選 */}
         <div className="mb-3">

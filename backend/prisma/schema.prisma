@@ -286,8 +286,18 @@ model PlanItem {
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   plan Plan @relation(fields: [planId], references: [id])
+  category Category? @relation(fields: [typeId], references: [id])
 
   @@map("plan_items")
+}
+
+model Category {
+  id        Int     @id @default(autoincrement())
+  name      String  @db.VarChar(50)
+  bgColor   String  @db.VarChar(20)
+  textColor String  @db.VarChar(20)
+
+  items     PlanItem[]
 }
 
 // =========================
