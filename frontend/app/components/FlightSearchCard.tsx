@@ -12,11 +12,11 @@ import {
   X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { JSX, useMemo, useRef, useState } from 'react';
+import React, { JSX } from 'react';
 import { ymdInTZ } from '../utils/date';
 
 const TZ = 'Asia/Taipei';
-const TODAY_YMD = ymdInTZ(new Date(), TZ); //SSR/Client 一致
+const TODAY_YMD = ymdInTZ(new Date(), TZ); // 目前沒用到，但先保留
 
 export type TripType = 'roundtrip' | 'oneway';
 export type CabinClass = 'Economy' | 'Business';
@@ -77,10 +77,7 @@ function Modal({
       <div className="relative w-[min(680px,92vw)] rounded-[var(--sw-r-lg)] bg-white shadow-xl border border-[color:var(--sw-accent)]">
         <div className="flex items-center justify-between px-4 py-2 border-b">
           <div className="font-semibold">{title ?? '選擇機場'}</div>
-          <button
-            onClick={onClose}
-            className="sw-btn sw-btn--grey-square h-8 px-2 py-1"
-          >
+          <button onClick={onClose} className="sw-btn h-8 px-2 py-1">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -90,58 +87,51 @@ function Modal({
   );
 }
 
-/* ---------- 搜尋式挑選器 ---------- */
+/* ---------- AirportSearchPicker（打開就載全部 + 禁選同一機場） ---------- */
 function AirportSearchPicker({
   onConfirm,
   onCancel,
-  hint,
+  forbiddenIata,
 }: {
   onConfirm: (pick: { iata: string; label: string }) => void;
   onCancel: () => void;
-  hint?: string;
+  forbiddenIata?: string;
 }) {
-  const [q, setQ] = useState(hint ?? '');
-  const [list, setList] = useState<
-    Array<{
-      id: string;
-      iata: string;
-      name: string;
-      city: string;
-      countryCode: string;
-    }>
-  >([]);
-  const [loading, setLoading] = useState(false);
+  type AirportItem = {
+    id: string | number;
+    iata: string;
+    name: string;
+    city: string;
+    countryCode: string;
+  };
 
-  const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3007';
+  // UI 仍保留搜尋框（但不過濾資料）
+  const [q, setQ] = React.useState('');
+  const [list, setList] = React.useState<AirportItem[]>([]);
+  const [loading, setLoading] = React.useState(false);
 
-  // --- 自動搜尋 + debounce ---
+  // 打開就抓全部機場
   React.useEffect(() => {
-    const t = setTimeout(async () => {
-      if (!q.trim()) {
-        setList([]);
-        return;
-      }
+    (async () => {
       try {
         setLoading(true);
-        const res = await fetch(
-          `${API_BASE}/api/flight-search/airports?query=${encodeURIComponent(q)}`
-        );
+        const res = await fetch(`${API_BASE}/api/flight-search/airports`, {
+          cache: 'no-store',
+        });
         const json = await res.json();
-        setList(json);
+        setList(Array.isArray(json) ? json : []);
       } catch (e) {
-        console.error('airports search failed', e);
+        console.error('airports load failed', e);
         setList([]);
       } finally {
         setLoading(false);
       }
-    }, 300);
-    return () => clearTimeout(t);
-  }, [q]);
+    })();
+  }, []);
 
   return (
     <div className="space-y-4 text-[color:var(--sw-primary)]">
-      {/* 搜尋框 */}
+      {/* 搜尋框（純 UI、不觸發查詢） */}
       <div className="flex items-center border border-[color:var(--sw-accent)] rounded-[var(--sw-r-md)] px-3 py-2 focus-within:shadow-[0_0_0_2px_var(--sw-accent)] transition-shadow">
         <Plane className="w-4 h-4 text-[color:var(--sw-primary)]/70 mr-2" />
         <input
@@ -157,38 +147,47 @@ function AirportSearchPicker({
       <div className="max-h-[48vh] overflow-auto space-y-2">
         {loading && (
           <div className="text-sm text-[color:var(--sw-primary)]/70 px-2">
-            查詢中…
+            載入中…
           </div>
         )}
-        {!loading && list.length === 0 && q && (
+
+        {!loading && list.length === 0 && (
           <div className="text-sm text-[color:var(--sw-primary)]/70 px-2">
-            找不到符合的機場
+            目前沒有可選擇的機場
           </div>
         )}
-        {list.map((a) => (
-          <button
-            key={`${a.id}-${a.iata}`}
-            onClick={() =>
-              onConfirm({ iata: a.iata, label: `${a.iata} — ${a.name}` })
-            }
-            className="w-full flex items-center justify-between px-4 py-3 border border-[color:var(--sw-grey)] rounded-[var(--sw-r-md)] hover:border-[color:var(--sw-accent)] hover:bg-[color:var(--sw-accent)]/10 transition"
-          >
-            <div className="font-semibold text-[color:var(--sw-primary)]">
-              {a.iata} · {a.city}
-            </div>
-            <div className="text-sm text-[color:var(--sw-primary)]/70">
-              {a.name}（{a.countryCode}）
-            </div>
-          </button>
-        ))}
+
+        {list.map((a) => {
+          const isDisabled = forbiddenIata && a.iata === forbiddenIata;
+
+          return (
+            <button
+              key={`${a.id}-${a.iata}`}
+              disabled={!!isDisabled}
+              onClick={() => {
+                if (isDisabled) return;
+                onConfirm({ iata: a.iata, label: `${a.iata} — ${a.name}` });
+              }}
+              className={clsx(
+                'w-full flex items-center justify-between px-4 py-3 border border-[color:var(--sw-grey)] rounded-[var(--sw-r-md)] hover:border-[color:var(--sw-accent)] hover:bg-[color:var(--sw-accent)]/10 transition',
+                isDisabled &&
+                  'opacity-40 cursor-not-allowed hover:border-[color:var(--sw-grey)] hover:bg-transparent'
+              )}
+            >
+              <div className="font-semibold text-[color:var(--sw-primary)]">
+                {a.iata} · {a.city}
+              </div>
+              <div className="text-sm text-[color:var(--sw-primary)]/70">
+                {a.name}（{a.countryCode}）
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* 底部按鈕 */}
       <div className="flex justify-end pt-2">
-        <button
-          onClick={onCancel}
-          className="sw-btn sw-btn--grey-square hover:bg-[color:var(--sw-grey)]/30 transition"
-        >
+        <button onClick={onCancel} className="sw-btn transition">
           取消
         </button>
       </div>
@@ -200,7 +199,7 @@ function AirportSearchPicker({
 export default function FlightSearchCard() {
   const router = useRouter();
 
-  const [values, setValues] = useState<FlightSearchValues>({
+  const [values, setValues] = React.useState<FlightSearchValues>({
     tripType: 'roundtrip',
     origin: '',
     destination: '',
@@ -211,18 +210,18 @@ export default function FlightSearchCard() {
   });
 
   // 顯示用標籤（避免還要再查一次機場名稱）
-  const [originLabel, setOriginLabel] = useState('');
-  const [destLabel, setDestLabel] = useState('');
+  const [originLabel, setOriginLabel] = React.useState('');
+  const [destLabel, setDestLabel] = React.useState('');
 
   // Modal
-  const [openOriginPicker, setOpenOriginPicker] = useState(false);
-  const [openDestPicker, setOpenDestPicker] = useState(false);
+  const [openOriginPicker, setOpenOriginPicker] = React.useState(false);
+  const [openDestPicker, setOpenDestPicker] = React.useState(false);
 
   // 日期 input
-  const departRef = useRef<HTMLInputElement | null>(null);
-  const returnRef = useRef<HTMLInputElement | null>(null);
+  const departRef = React.useRef<HTMLInputElement | null>(null);
+  const returnRef = React.useRef<HTMLInputElement | null>(null);
 
-  const canSubmit = useMemo(() => {
+  const canSubmit = React.useMemo(() => {
     const base =
       !!values.origin &&
       !!values.destination &&
@@ -259,6 +258,7 @@ export default function FlightSearchCard() {
 
   const handleSubmit = () => {
     if (!canSubmit) return;
+
     const params = new URLSearchParams({
       tripType: values.tripType,
       origin: values.origin,
@@ -270,6 +270,11 @@ export default function FlightSearchCard() {
       passengers: String(values.passengers),
       cabin: values.cabinClass,
     });
+
+    // 🆕 把前一頁顯示用的 label 一起帶過去
+    if (originLabel) params.set('originLabel', originLabel);
+    if (destLabel) params.set('destLabel', destLabel);
+
     router.push(`/flight-booking?${params.toString()}`);
   };
 
@@ -478,7 +483,7 @@ export default function FlightSearchCard() {
         title="選擇起點"
       >
         <AirportSearchPicker
-          hint="TPE"
+          forbiddenIata={values.destination} // 不能選現在目的地
           onCancel={() => setOpenOriginPicker(false)}
           onConfirm={({ iata, label }) => {
             setValues((v) => ({ ...v, origin: iata }));
@@ -495,7 +500,7 @@ export default function FlightSearchCard() {
         title="選擇到達"
       >
         <AirportSearchPicker
-          hint="NRT"
+          forbiddenIata={values.origin} // 不能選現在出發地
           onCancel={() => setOpenDestPicker(false)}
           onConfirm={({ iata, label }) => {
             setValues((v) => ({ ...v, destination: iata }));

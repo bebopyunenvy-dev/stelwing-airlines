@@ -3,7 +3,6 @@ import { prisma } from "../../utils/prisma-only.js";
 import moment from "moment-timezone";
 import { success, z } from "zod";
 import jwt from "jsonwebtoken";
-import { authMiddleware, type AuthRequest } from '../../middleware/authMiddleware.js';
 
 const router = Router();
 
@@ -518,7 +517,6 @@ router.get("/bookings", async (req, res) => {
     });
   }
 });
-
 
 // 改票 PATCH /bookings/:pnr/change
 router.patch("/bookings/:pnr/change", async (req, res) => {
