@@ -172,6 +172,9 @@ export default function TripDetailPage() {
     start: item.startTime, // 已經是 UTC，帶 Z
     end: item.endTime ?? undefined, // 已經是 UTC
     allDay: item.allDay,
+    backgroundColor: item.category?.bgColor || '#eeeeee', // 沒分類用灰色
+    textColor: item.category?.textColor || '#000000', // 沒分類用黑色
+    borderColor: item.category?.bgColor || '#eeeeee',
   }));
 
   // console.log(calendarEvents);
@@ -316,7 +319,7 @@ export default function TripDetailPage() {
               // timeZone="America/New_York"
               timeZone={selectedTimezone}
               events={calendarEvents}
-              eventColor="#DCBB87"
+              // eventColor="#DCBB87"
               eventClick={(info) => {
                 info.jsEvent.preventDefault();
 

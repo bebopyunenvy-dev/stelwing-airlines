@@ -20,16 +20,16 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 // #endregion
 
 function getMemberIdFromToken(req: Request) {
-  const auth = req.headers.authorization;
-  if (!auth?.startsWith("Bearer ")) return null;
-  try {
-    const token = auth.split(" ")[1];
-    const decoded = jwt.verify(token, JWT_SECRET);
-    if (typeof decoded === "string") return null;
-    return decoded.memberId;
-  } catch {
-    return null;
-  }
+    const auth = req.headers.authorization;
+    if (!auth?.startsWith("Bearer ")) return null;
+    try {
+        const token = auth.split(" ")[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (typeof decoded === "string") return null;
+        return decoded.memberId;
+    } catch {
+        return null;
+    }
 }
 
 // | GET | /api/plans/:planId/items | 讀取所有行程項目 |
@@ -48,9 +48,19 @@ router.get("/", async (req: Request, res: Response) => {
                 isDeleted: 0,
             },
             orderBy: [
-                { startTime: "desc" }, // 先依開始日期降冪
-                { endTime: "desc" }, // 開始日期相同時再依結束日期降冪
+                { startTime: "desc" },
+                { endTime: "desc" },
             ],
+            include: {
+                category: {
+                    select: {
+                        id: true,
+                        name: true,
+                        bgColor: true,
+                        textColor: true,
+                    }
+                }
+            }
         });
 
         const response: ApiResponse = {
@@ -105,12 +115,14 @@ router.post("/", async (req: Request, res: Response) => {
                 note,
                 locationTextchar,
                 locationUrl,
-                typeId,
-                plan: {
-                    connect: { id: planIdNum }, // <-- 這行是你缺少的
-                },
+                plan: { connect: { id: planIdNum } },
+                category: typeId
+                    ? { connect: { id: typeId } }  // 如果有選分類就 connect
+                    : undefined,                  // 沒選分類就留空
             },
         });
+
+        console.log(newPlanItem)
 
         const response: ApiResponse = {
             success: true,
@@ -118,8 +130,12 @@ router.post("/", async (req: Request, res: Response) => {
             data: newPlanItem
         };
 
+        console.log('後端有成功新增行程')
+
         res.status(201).json(response);
     } catch (err) {
+        console.log('後端新增行程進錯誤')
+        console.log(err)
         const errorResponse: ApiErrorResponse = {
             success: false,
             error: (err as Error).message,

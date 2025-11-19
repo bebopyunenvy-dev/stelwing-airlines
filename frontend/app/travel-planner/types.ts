@@ -37,4 +37,10 @@ export type TripItem = {
   isDeleted: number;
   createdAt: string;
   updatedAt: string;
+  category?: {
+    id: number;
+    name: string;
+    bgColor: string;
+    textColor: string;
+  } | null; // 可能為 null
 };

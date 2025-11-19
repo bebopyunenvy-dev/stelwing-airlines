@@ -65,12 +65,30 @@ export default function ViewDialog({
       <Dialog.Root open={open} onOpenChange={onOpenChange}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/50 z-500" />
-          <Dialog.Content className="fixed w-[90vw] max-w-[600px] max-h-[600px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-ticket-side pl-10 pr-7 py-6 rounded-lg shadow-lg flex flex-col z-550">
+          <Dialog.Content
+            className="fixed w-[90vw] max-w-[600px] max-h-[600px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pl-10 pr-7 py-6 rounded-lg shadow-lg flex flex-col z-550"
+            style={{
+              background: `linear-gradient(
+                90deg,
+                ${item.category?.bgColor || '#eeeeee'} 0%,
+                ${item.category?.bgColor || '#eeeeee'} 4%,
+                white 4%,
+                white 100%
+              )`,
+            }}
+          >
             {/* 分類及按鈕 */}
             <div className="flex justify-between items-center mb-2">
               {/* 左上角類別 */}
-              <div className="border-2 border-(--sw-accent) px-3 py-1 rounded-lg">
-                吃的
+              <div
+                className="px-3 py-1 rounded-lg"
+                style={{
+                  borderWidth: '2px',
+                  borderStyle: 'solid',
+                  borderColor: item.category?.bgColor || '#eeeeee', // 如果沒有分類就用灰色
+                }}
+              >
+                {item.category?.name || '未指定類別'}
               </div>
               {/* 右上角的操作按鈕 */}
               <div className="flex gap-2">
