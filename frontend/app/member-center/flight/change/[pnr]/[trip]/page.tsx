@@ -228,10 +228,26 @@ export default function ChangeFlightPage() {
         setLoadingBooking(true);
         setError(null);
 
+        const token =
+          typeof window !== 'undefined'
+            ? localStorage.getItem('stelwing_token')
+            : null;
+
+        if (!token) {
+          router.push('/member-center/login');
+          return;
+        }
+
         const res = await fetch(
           `http://localhost:3007/api/flight-booking/bookings/${pnr}`,
-          { cache: 'no-store' }
+          {
+            cache: 'no-store',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
+
         const json = await res.json();
 
         if (!res.ok || !json.success) {
@@ -263,7 +279,17 @@ export default function ChangeFlightPage() {
         setLoadingFlights(true);
         setError(null);
 
-        const res = await fetch('http://localhost:3007/api/flight');
+        const token =
+          typeof window !== 'undefined'
+            ? localStorage.getItem('stelwing_token')
+            : null;
+
+        const res = await fetch('http://localhost:3007/api/flight', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         const raw = await res.json();
 
         const all: FlightItem[] = (raw || []).map((f: any) => ({
@@ -316,14 +342,20 @@ export default function ChangeFlightPage() {
           ? { outboundFlightId: selected.flightId }
           : { inboundFlightId: selected.flightId };
 
+      const token = localStorage.getItem('stelwing_token');
+
       const res = await fetch(
         `http://localhost:3007/api/flight-booking/bookings/${pnr}/change`,
         {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify(body),
         }
       );
+
       const json = await res.json();
 
       if (!res.ok || !json.success) {
@@ -389,12 +421,12 @@ export default function ChangeFlightPage() {
   return (
     <>
       {/* 主要內容：寬度跟上方 tab 對齊 */}
-      <div className="w-full max-w-6xl mx-auto py-6 space-y-6">
+      <div className="w-full mx-auto py-6 space-y-6">
         {/* 上方標題列 */}
         <div className="flex items-center justify-between">
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => router.push('/member-center/flight')}
             className="inline-flex items-center text-sm text-[color:var(--sw-primary)] hover:text-[color:var(--sw-accent)]"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />

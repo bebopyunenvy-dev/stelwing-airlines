@@ -114,16 +114,16 @@
 //     </div>
 //   );
 // }
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useAuth } from "@/app/context/auth-context";
-import { useToast } from "@/app/context/toast-context";
+import { useAuth } from '@/app/context/auth-context';
+import { useToast } from '@/app/context/toast-context';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 // 💡 Stelwing UI 元件
-const Button = ({ children, className = "", ...props }) => (
+const Button = ({ children, className = '', ...props }) => (
   <button
     {...props}
     className={`px-4 py-2 rounded bg-[#1F2E3C] text-white hover:bg-[#DCBB87] hover:text-[#1F2E3C] transition disabled:opacity-60 ${className}`}
@@ -132,77 +132,94 @@ const Button = ({ children, className = "", ...props }) => (
   </button>
 );
 
-const Input = ({ className = "", ...props }) => (
+const Input = ({ className = '', ...props }) => (
   <input
     {...props}
     className={`w-full border border-[#BA9A60] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#BA9A60] ${className}`}
   />
 );
 
-const Card = ({ children, className = "" }) => (
-  <div className={`rounded-xl border border-[#BA9A60] bg-white p-6 shadow-md ${className}`}>
+const Card = ({ children, className = '' }) => (
+  <div
+    className={`rounded-xl border border-[#BA9A60] bg-white p-6 shadow-md ${className}`}
+  >
     {children}
   </div>
 );
 
-const CardHeader = ({ children, className = "" }) => (
-  <div className={`text-center text-2xl font-semibold mb-4 text-[#1F2E3C] ${className}`}>
+const CardHeader = ({ children, className = '' }) => (
+  <div
+    className={`text-center text-2xl font-semibold mb-4 text-[#1F2E3C] ${className}`}
+  >
     {children}
   </div>
 );
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const { isLoggedIn, login: authLogin } = useAuth();
   const { showToast } = useToast();
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage("");
+    setMessage('');
 
     if (!email.trim() || !password.trim()) {
-      setMessage("請輸入信箱與密碼");
+      setMessage('請輸入信箱與密碼');
       return;
     }
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:3007/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('http://localhost:3007/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      console.log('login status =', res.status);
 
-      if (res.ok) {
+      const data = await res.json();
+      console.log('login response json =', data);
+
+      if (res.ok && data.token) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('stelwing_token', data.token);
+          console.log(
+            'stelwing_token after setItem =',
+            localStorage.getItem('stelwing_token')
+          );
+        }
+
         authLogin(data.token);
+
         showToast({
-          title: "登入成功",
-          message: "歡迎回來，祝旅程愉快！",
-          type: "success",
+          title: '登入成功',
+          message: '歡迎回來，祝旅程愉快！',
+          type: 'success',
         });
-        setTimeout(() => router.push("/member-center"), 1000);
+
+        setTimeout(() => router.push('/member-center'), 1000);
       } else {
-        setMessage(data.message || "帳號或密碼錯誤");
+        setMessage(data.message || '帳號或密碼錯誤');
       }
     } catch (error) {
-      console.error("登入錯誤：", error);
-      setMessage("伺服器連線錯誤，請稍後再試");
+      console.error('登入錯誤：', error);
+      setMessage('伺服器連線錯誤，請稍後再試');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if(isLoggedIn){
-      router.push(`/member-center`)
+    if (isLoggedIn) {
+      router.push(`/member-center`);
     }
-  }, [isLoggedIn])
+  }, [isLoggedIn]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#F5F6F7] py-10">
       <Card className="w-[420px]">
@@ -212,9 +229,9 @@ export default function LoginPage() {
           {message && (
             <p
               className={`text-center text-sm py-2 rounded ${
-                message.includes("成功")
-                  ? "text-[#1F2E3C] bg-[#DCBB87]"
-                  : "text-[#B91C1C] bg-[#FEE2E2]"
+                message.includes('成功')
+                  ? 'text-[#1F2E3C] bg-[#DCBB87]'
+                  : 'text-[#B91C1C] bg-[#FEE2E2]'
               }`}
             >
               {message}
@@ -222,7 +239,10 @@ export default function LoginPage() {
           )}
 
           <div>
-            <label htmlFor="email" className="block text-[#1F2E3C] font-medium mb-2">
+            <label
+              htmlFor="email"
+              className="block text-[#1F2E3C] font-medium mb-2"
+            >
               電子信箱
             </label>
             <Input
@@ -236,7 +256,10 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-[#1F2E3C] font-medium mb-2">
+            <label
+              htmlFor="password"
+              className="block text-[#1F2E3C] font-medium mb-2"
+            >
               密碼
             </label>
             <Input
@@ -250,7 +273,7 @@ export default function LoginPage() {
           </div>
 
           <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "登入中…" : "登入"}
+            {loading ? '登入中…' : '登入'}
           </Button>
 
           <p className="text-center text-sm text-[#1F2E3C] mt-2">

@@ -339,75 +339,101 @@ export default function FlightTicketPage() {
   /* 載入訂單資料 */
   useEffect(() => {
     if (!pnr) return;
+
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('stelwing_token')
+        : null;
+
+    if (!token) {
+      router.push('/member-center/login');
+      return;
+    }
+
     (async () => {
       try {
         setLoading(true);
+
         const res = await fetch(
-          `http://localhost:3007/api/flight-booking/bookings/${pnr}`
+          `http://localhost:3007/api/flight-booking/bookings/${pnr}`,
+          {
+            cache: 'no-store',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
+
+        if (res.status === 401) {
+          router.push('/member-center/login');
+          return;
+        }
+
         const json = await res.json();
+
         if (!json.success) throw new Error(json.message);
+
         setBooking(json.data);
       } catch (err: any) {
-        setError(err?.message);
+        setError(err?.message || '讀取失敗');
       } finally {
         setLoading(false);
       }
     })();
-  }, [pnr]);
+  }, [pnr, router]);
 
   /* 改票（仍然分去程/回程，先維持原生 confirm） */
-  const handleChangeTicket = async (trip: 'OB' | 'IB') => {
-    const confirmMsg =
-      trip === 'OB' ? '確定要進行去程改票？' : '確定要進行回程改票？';
-    if (!window.confirm(confirmMsg)) return;
+  // const handleChangeTicket = async (trip: 'OB' | 'IB') => {
+  //   const confirmMsg =
+  //     trip === 'OB' ? '確定要進行去程改票？' : '確定要進行回程改票？';
+  //   if (!window.confirm(confirmMsg)) return;
 
-    try {
-      setActionLoading(true);
-      const fakeNewFlightId = trip === 'OB' ? 999 : 998;
+  //   try {
+  //     setActionLoading(true);
+  //     const fakeNewFlightId = trip === 'OB' ? 999 : 998;
 
-      const res = await fetch(
-        `http://localhost:3007/api/flight-booking/bookings/${pnr}/change`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            outboundFlightId: trip === 'OB' ? fakeNewFlightId : undefined,
-            inboundFlightId: trip === 'IB' ? fakeNewFlightId : undefined,
-          }),
-        }
-      );
+  //     const res = await fetch(
+  //       `http://localhost:3007/api/flight-booking/bookings/${pnr}/change`,
+  //       {
+  //         method: 'PATCH',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({
+  //           outboundFlightId: trip === 'OB' ? fakeNewFlightId : undefined,
+  //           inboundFlightId: trip === 'IB' ? fakeNewFlightId : undefined,
+  //         }),
+  //       }
+  //     );
 
-      const json = await res.json();
-      if (!json.success) throw new Error(json.message);
+  //     const json = await res.json();
+  //     if (!json.success) throw new Error(json.message);
 
-      router.refresh();
+  //     router.refresh();
 
-      // 改票完成 popup（深色按鈕）
-      setModalConfig({
-        title: '改票完成',
-        heading: trip === 'OB' ? '您的去程航班已更新' : '您的回程航班已更新',
-        description:
-          '最新航班資訊已同步至電子機票頁面，您可以在「機票訂單 > 電子機票」中查看完整細節。',
-        buttonLabel: '返回機票訂單',
-        variant: 'primary',
-        mode: 'result',
-      });
-      setModalOpen(true);
-    } catch (err: any) {
-      setModalConfig({
-        title: '改票失敗',
-        heading: '改票未能順利完成',
-        description: err?.message || '改票失敗，請稍後再試。',
-        buttonLabel: '關閉',
-        variant: 'danger',
-        mode: 'result',
-      });
-      setModalOpen(true);
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  //     // 改票完成 popup（深色按鈕）
+  //     setModalConfig({
+  //       title: '改票完成',
+  //       heading: trip === 'OB' ? '您的去程航班已更新' : '您的回程航班已更新',
+  //       description:
+  //         '最新航班資訊已同步至電子機票頁面，您可以在「機票訂單 > 電子機票」中查看完整細節。',
+  //       buttonLabel: '返回機票訂單',
+  //       variant: 'primary',
+  //       mode: 'result',
+  //     });
+  //     setModalOpen(true);
+  //   } catch (err: any) {
+  //     setModalConfig({
+  //       title: '改票失敗',
+  //       heading: '改票未能順利完成',
+  //       description: err?.message || '改票失敗，請稍後再試。',
+  //       buttonLabel: '關閉',
+  //       variant: 'danger',
+  //       mode: 'result',
+  //     });
+  //     setModalOpen(true);
+  //   } finally {
+  //     setActionLoading(false);
+  //   }
+  // };
 
   /* 真正執行退票的函式（打 API + 顯示結果 popup） */
   const doRefundBooking = async () => {
@@ -416,14 +442,17 @@ export default function FlightTicketPage() {
     try {
       setRefundLoading(true);
 
+      const token = localStorage.getItem('stelwing_token');
+
       const res = await fetch(
         `http://localhost:3007/api/flight-booking/bookings/${booking.pnr}/refund`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({}), // 後端是整筆訂單退票
+          body: JSON.stringify({}),
         }
       );
 
@@ -564,7 +593,9 @@ export default function FlightTicketPage() {
               directionLabel={`${outbound.flight.originIata} → ${outbound.flight.destinationIata}`}
               detail={outbound}
               currency={currency}
-              onChange={() => handleChangeTicket('OB')}
+              onChange={() =>
+                router.push(`/member-center/flight/change/${pnr}/OB`)
+              }
             />
 
             {/* 去程費用 */}
@@ -593,7 +624,9 @@ export default function FlightTicketPage() {
               directionLabel={`${inbound.flight.originIata} → ${inbound.flight.destinationIata}`}
               detail={inbound}
               currency={currency}
-              onChange={() => handleChangeTicket('IB')}
+              onChange={() =>
+                router.push(`/member-center/flight/change/${pnr}/IB`)
+              }
             />
 
             {/* 回程費用 */}

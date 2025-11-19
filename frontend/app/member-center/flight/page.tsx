@@ -75,11 +75,36 @@ export default function FlightOrdersPage() {
 
   useEffect(() => {
     (async () => {
+      // 1. 讀 token
+      const token =
+        typeof window !== 'undefined'
+          ? localStorage.getItem('stelwing_token')
+          : null;
+
+      if (!token) {
+        console.warn('未登入，導回登入頁');
+        router.push('/member-center/login');
+        return;
+      }
+
       try {
+        // 2. 改成帶 Authorization header
         const res = await fetch(
           'http://localhost:3007/api/flight-booking/bookings',
-          { cache: 'no-store' }
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            cache: 'no-store',
+          }
         );
+
+        // 3. 處理 401 未登入（token 過期 / 錯誤）
+        if (res.status === 401) {
+          console.warn('Token 無效或過期，導回登入頁');
+          router.push('/member-center/login');
+          return;
+        }
 
         const json = await res.json();
 
@@ -89,24 +114,18 @@ export default function FlightOrdersPage() {
           return;
         }
 
+        // 4. 正常解析訂單列表
         const rows: FlightOrderRow[] = (json.data || []).map((b: any) => {
-          // --- 航段來自後端 raw SQL ---
           const origin = b.originIata ?? '';
           const dest = b.destinationIata ?? '';
 
-          // 後端有 outboundDate / inboundDate，就用來顯示 12/08 - 12/12
-          // 若還沒改後端，outboundDate 可能是 undefined，就 fallback 用原本的 flightDate
           const obDate = formatMmDd(b.outboundDate ?? b.flightDate);
           const ibDate = formatMmDd(b.inboundDate);
 
           let dateLabel = '';
-          if (obDate && ibDate) {
-            dateLabel = `${obDate} - ${ibDate}`; // 去回
-          } else if (obDate) {
-            dateLabel = obDate; // 單程
-          }
+          if (obDate && ibDate) dateLabel = `${obDate} - ${ibDate}`;
+          else if (obDate) dateLabel = obDate;
 
-          // --- createdAt 轉成兩行顯示 ---
           let createdAt = '';
           try {
             const d = new Date(b.createdAt);
@@ -117,18 +136,12 @@ export default function FlightOrdersPage() {
             createdAt = b.createdAt ?? '';
           }
 
-          // --- 付款方式 ---
           const paymentMethod = '綠界金流';
-
-          // --- 狀態 ---
           const status = b.paymentStatus ?? 'pending';
 
-          // --- 航段文字 ---
           let route = '- (機票)';
           if (origin && dest && dateLabel) {
             route = `${origin} - ${dest} ${dateLabel} (機票)`;
-          } else if (origin && dest) {
-            route = `${origin} - ${dest} (機票)`;
           }
 
           return {
@@ -154,7 +167,7 @@ export default function FlightOrdersPage() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [router]);
 
   const columns: Column[] = [
     { key: 'id', title: 'ID', width: 60, align: 'center' },
@@ -221,7 +234,7 @@ export default function FlightOrdersPage() {
   ];
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto sw-container">
       <div className="flex items-center justify-end mb-3 text-sm text-[#666]">
         共 {orders.length} 筆訂單
       </div>
