@@ -1,7 +1,8 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Pause, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pause, Play, Star } from 'lucide-react';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 const hotels = [
   {
@@ -62,14 +63,73 @@ const dutyfree = [
   },
 ];
 
+// 旅遊文章輪播資料
+const travelArticles = [
+  {
+    id: 1,
+    title: '轉機也能小旅行：半日城市散步提案',
+    description:
+      '利用轉機空檔，快速走進城市生活。從車站周邊商圈、隱藏咖啡店，到必拍地標，一篇幫你排好輕鬆散步路線。',
+    href: '#',
+  },
+  {
+    id: 2,
+    title: '三天兩夜城市快閃：新手自由行行程範例',
+    description:
+      '想要第一次自己規劃行程又不想踩雷？透過實際範例帶你拆解交通、住宿與景點順序，讓短天數旅行也能玩得很充實。',
+    href: '#',
+  },
+  {
+    id: 3,
+    title: '一個人的旅行：適合獨旅的城市與玩法',
+    description:
+      '從安全友善、交通便利到拍照好看，精選適合獨旅的城市，搭配晚間散步與早晨咖啡路線，陪你安心完成第一趟獨自出發。',
+    href: '#',
+  },
+];
+
 export default function HomeMain() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  // 自動輪播
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % travelArticles.length);
+    }, 6000);
+
+    return () => clearInterval(timer);
+  }, [isPlaying]);
+
+  const handlePrev = () => {
+    setCurrentSlide((prev) =>
+      prev === 0 ? travelArticles.length - 1 : prev - 1
+    );
+  };
+
+  const handleNext = () => {
+    setCurrentSlide((prev) => (prev + 1) % travelArticles.length);
+  };
+
+  const handleTogglePlay = () => {
+    setIsPlaying((prev) => !prev);
+  };
+
+  const activeArticle = travelArticles[currentSlide];
+
   return (
     <div className="w-full">
       {/* 住宿預訂（卡片內 footer；不再重疊） */}
-      <section className="max-w-[1140px] mx-auto px-6 py-12 md:py-16">
+      <section className="max-w-[1440px] mx-auto px-6 py-12 md:py-16">
         <h2 className="text-center text-xl font-semibold text-[#1F2E3C]">
           住宿預訂
         </h2>
+        {/* 副標題 */}
+        <p className="mt-3 text-center text-sm md:text-base text-[#4B5563]">
+          精選全球飯店與特色住宿，一站式完成查詢、比價與預訂，讓每一段旅程都住得舒適又安心。
+        </p>
 
         {/* 三欄比例：左2 / 中3 / 右2；固定列高 330px */}
         <div className="mt-10 grid gap-8 grid-cols-1 md:[grid-template-columns:2fr_3fr_2fr] md:auto-rows-[330px]">
@@ -187,10 +247,14 @@ export default function HomeMain() {
 
       {/* 免稅商品 */}
       <section className="bg-[#233544] text-white py-12 md:py-16">
-        <div className="max-w-[1140px] mx-auto px-6">
+        <div className="max-w-[1440px] mx-auto px-6">
           <h2 className="text-center text-lg md:text-xl font-semibold">
             免稅商品
           </h2>
+          {/* 副標題 */}
+          <p className="mt-3 text-center text-sm md:text-base text-white/80">
+            起飛前先選好心儀的美妝、精品與旅遊小物，線上預購機上或機場取貨，讓購物更省時、行李更輕盈。
+          </p>
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
             {dutyfree.map((p) => (
@@ -230,12 +294,12 @@ export default function HomeMain() {
         </div>
       </section>
 
-      {/* 圖像型宣傳 Banner */}
+      {/* 圖像型宣傳 Banner：旅遊文章輪播 */}
       <section className="relative">
         <div className="relative h-[420px] md:h-[520px]">
           <Image
             src="/images/travel1.jpg"
-            alt="promo"
+            alt="Travel inspiration"
             fill
             priority
             sizes="100vw"
@@ -243,41 +307,73 @@ export default function HomeMain() {
           />
 
           {/* 左側資訊卡 */}
-          <div className="absolute left-50 right-auto top-16 md:top-20">
+          <div className="absolute left-64 right-auto top-16 md:top-20">
             <div className="mx-6 md:ml-6">
               <div className="w-[300px] md:w-[360px] rounded-2xl bg-[#1F2E3C]/80 text-white p-5 md:p-6 shadow-lg">
-                <h3 className="text-lg md:text-xl font-semibold">
-                  Book a private jet instantly
+                {/* 小標 */}
+                <p className="text-xs tracking-[0.18em] uppercase text-[#D9B37B]">
+                  TRAVEL STORIES
+                </p>
+
+                {/* 動態標題＋內容：與旅遊文章相關 */}
+                <h3 className="mt-2 text-lg md:text-xl font-semibold">
+                  {activeArticle.title}
                 </h3>
                 <p className="mt-3 text-sm text-white/85 leading-relaxed">
-                  Curly Airline proudly raises the bar and exceeds the standard
-                  for luxury and corporate private jet charter services.
+                  {activeArticle.description}
                 </p>
 
                 <button className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#D9B37B] px-4 py-2 text-[#1F2E3C] text-sm font-semibold hover:brightness-95">
-                  前往文章 <ChevronRight size={16} />
+                  前往文章
+                  <ChevronRight size={16} />
                 </button>
 
-                {/* 圓形控制鈕 */}
+                {/* 控制列：上一張／播放暫停／下一張＋頁面指示 */}
                 <div className="mt-4 flex items-center gap-3">
                   <button
-                    aria-label="prev"
+                    aria-label="上一篇旅遊文章"
+                    onClick={handlePrev}
                     className="w-9 h-9 grid place-items-center rounded-full bg-white/10 hover:bg-white/15"
                   >
                     <ChevronLeft size={18} />
                   </button>
                   <button
-                    aria-label="play/pause"
-                    className="w-9 h-9 grid place-items-center rounded-full bg-white/10 hover:bg-white/15"
+                    aria-label={isPlaying ? '暫停輪播' : '播放輪播'}
+                    onClick={handleTogglePlay}
+                    className="w-9 h-9 grid place-items-center rounded-full bg-white/10 hover:bg白/15"
                   >
-                    <Pause size={18} />
+                    {isPlaying ? <Pause size={18} /> : <Play size={18} />}
                   </button>
                   <button
-                    aria-label="next"
+                    aria-label="下一篇旅遊文章"
+                    onClick={handleNext}
                     className="w-9 h-9 grid place-items-center rounded-full bg-white/10 hover:bg-white/15"
                   >
                     <ChevronRight size={18} />
                   </button>
+
+                  {/* 右側：頁碼＋小 dot 指示器 */}
+                  <div className="ml-auto flex items-center gap-2">
+                    <span className="text-xs text-white/80">
+                      {String(currentSlide + 1).padStart(2, '0')} /{' '}
+                      {String(travelArticles.length).padStart(2, '0')}
+                    </span>
+                    <div className="flex gap-1">
+                      {travelArticles.map((article, idx) => (
+                        <button
+                          key={article.id}
+                          type="button"
+                          onClick={() => setCurrentSlide(idx)}
+                          aria-label={`切換到第 ${idx + 1} 則文章`}
+                          className={`h-1.5 w-4 rounded-full transition ${
+                            idx === currentSlide
+                              ? 'bg-[#D9B37B]'
+                              : 'bg-white/40'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
