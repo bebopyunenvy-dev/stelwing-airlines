@@ -37,7 +37,7 @@ export default function HotelDetailPage() {
 
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [isReady, setIsReady] = React.useState(false); // Hydration-safe flag
+  const [isReady, setIsReady] = React.useState(false);
 
   React.useEffect(() => {
     const savedSearch = JSON.parse(
@@ -71,7 +71,6 @@ export default function HotelDetailPage() {
   if (!hotel)
     return <div className="text-center text-white p-10">飯店不存在</div>;
 
-  // 等待 useEffect 取代原始日期 → 避免 Hydration mismatch
   if (!isReady)
     return <div className="text-center text-white p-10">載入中...</div>;
 
@@ -116,10 +115,11 @@ export default function HotelDetailPage() {
   const handleSubmit = () => {
     if (!validateForm()) return;
 
+    // ✅ 修正：儲存完整的表單資料，包含 roomType 和 smokingPreference
     localStorage.setItem(
       'booking_final',
       JSON.stringify({
-        ...formData,
+        ...formData, // 包含所有表單欄位
         hotelId: hotel.id,
         hotelName: hotel.name,
         price: hotel.price,

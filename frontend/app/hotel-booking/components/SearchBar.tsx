@@ -49,6 +49,7 @@ export default function SearchBar({
 
     const checkin = selectedRange.from.toISOString().split('T')[0];
     const checkout = selectedRange.to.toISOString().split('T')[0];
+    localStorage.setItem('scrollToHotelId', '1');
 
     router.push(
       `/hotel-booking/search?checkin=${checkin}&checkout=${checkout}&adults=${guests}&rooms=${rooms}`
