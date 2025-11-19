@@ -57,7 +57,7 @@ export default function HotelDetailContent({
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-    const starColor = 'text-yellow-500';
+    const starColor = 'text-[#DCBB87]';
 
     return (
       <div className="flex items-center space-x-0.5">
@@ -98,13 +98,13 @@ export default function HotelDetailContent({
         </div>
         <button
           onClick={() => setIsFavorite(!isFavorite)}
-          className="p-2 rounded-full hover:bg-gray-100 transition"
+          className="p-2 bg-gray-50 shadow-3xl rounded-full hover:bg-gray-100 transition"
           aria-label="加入願望清單"
         >
           <Heart
             size={28}
             className={
-              isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-400'
+              isFavorite ? 'text-[#DCBB87] fill-[#DCBB87]' : 'text-gray-400'
             }
           />
         </button>
@@ -142,7 +142,7 @@ export default function HotelDetailContent({
                 placeholder="請輸入姓名"
                 value={formData.name}
                 onChange={(e) => onInputChange('name', e.target.value)}
-                className={`w-full p-3 border rounded-md focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] ${
+                className={`w-full p-3 border rounded-lg focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 ${
                   errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -161,7 +161,7 @@ export default function HotelDetailContent({
                 placeholder="09xxxxxxxx"
                 value={formData.phone}
                 onChange={(e) => onInputChange('phone', e.target.value)}
-                className={`w-full p-3 border rounded-md focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] ${
+                className={`w-full p-3 border rounded-lg focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 ${
                   errors.phone ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -180,7 +180,7 @@ export default function HotelDetailContent({
                 placeholder="example@email.com"
                 value={formData.email}
                 onChange={(e) => onInputChange('email', e.target.value)}
-                className={`w-full p-3 border rounded-md focus:border-[#DCBB87] focus:ring-1 focus:ring-[#DCBB87] ${
+                className={`w-full p-3 border rounded-lg focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 ${
                   errors.email ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -199,7 +199,7 @@ export default function HotelDetailContent({
           </p>
 
           <div className="grid grid-cols-2 gap-12">
-            {/* 吸煙需求 */}
+            {/* 吸煙偏好 */}
             <div>
               <label className="text-base font-semibold block mb-4">
                 吸煙偏好（需視現場狀況安排）
