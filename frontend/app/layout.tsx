@@ -1,22 +1,22 @@
 // app/layout.tsx
-import "@/styles/globals.css";
-import type { Metadata } from "next";
-import { ReactNode } from "react";
-import "styled-jsx/css";
-import Footer from "./components/footer";
+import '@/styles/globals.css';
+import type { Metadata } from 'next';
+import { ReactNode } from 'react';
+import 'styled-jsx/css';
+import Footer from './components/footer';
 
 // ✅ (R) Read：讀取目前路徑決定要不要渲染 Header（免稅頁不顯示）
 //    實作放在 ConditionalHeader 裡
-import ConditionalHeader from "./ConditionalHeader";
+import ConditionalHeader from './ConditionalHeader';
 
 // ✅ (C) Create：建立全站共用的 AuthProvider（登入狀態）
 //    讓 Header 可以用 useAuth() 讀到登入 / 登出狀態
-import { AuthProvider } from "@/app/context/auth-context";
-import { ToastProvider } from "@/app/context/toast-context";
+import { AuthProvider } from '@/app/context/auth-context';
+import { ToastProvider } from '@/app/context/toast-context';
 
 export const metadata: Metadata = {
-  title: "展翼航空 Stelwing",
-  description: "Stelwing Airlines Official Website",
+  title: '展翼航空 Stelwing',
+  description: 'Stelwing Airlines Official Website',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

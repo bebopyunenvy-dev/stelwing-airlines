@@ -1,14 +1,12 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
-import { ChevronRight } from "lucide-react";
-import MemberTabs from "./components/MemberTabs";
-import Breadcrumb from "@/app/components/Breadcrumb";
+import Breadcrumb from '@/app/components/Breadcrumb';
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import MemberTabs from './components/MemberTabs';
 
 // ⭐⭐⭐【新增 Import】把登入狀態帶進 Layout（讓登出立即跳轉）
-import { useAuth } from "@/app/context/auth-context";
+import { useAuth } from '@/app/context/auth-context';
 
 export default function MemberCenterLayout({
   children,
@@ -29,8 +27,8 @@ export default function MemberCenterLayout({
   useEffect(() => {
     // 1) ⭐ 登入 / 註冊頁不做驗證（避免跳轉循環）
     if (
-      pathname === "/member-center/login" ||
-      pathname === "/member-center/register"
+      pathname === '/member-center/login' ||
+      pathname === '/member-center/register'
     ) {
       setLoading(false);
       return;
@@ -40,29 +38,29 @@ export default function MemberCenterLayout({
     if (!isLoggedIn) {
       setLoading(false);
       router.refresh(); // ⭐ 立刻刷新頁面狀態（重要）
-      router.replace("/member-center/login");
+      router.replace('/member-center/login');
       return;
     }
 
     // 3) ⭐ 有 token → 確認是否有效
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (!token) {
       setLoading(false);
-      router.replace("/member-center/login");
+      router.replace('/member-center/login');
       return;
     }
 
     // ⭐ 後端驗證 token
-    fetch("http://localhost:3007/api/auth/verify", {
+    fetch('http://localhost:3007/api/auth/verify', {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then((data) => {
         if (!data.ok) {
-          router.replace("/member-center/login");
+          router.replace('/member-center/login');
         }
       })
-      .catch(() => router.replace("/member-center/login"))
+      .catch(() => router.replace('/member-center/login'))
       .finally(() => setLoading(false));
   }, [pathname, isLoggedIn, router]); // ⭐ 新增 isLoggedIn 監聽
 
@@ -81,8 +79,8 @@ export default function MemberCenterLayout({
   // ⭐⭐ 關鍵：登入 / 註冊頁完全不使用 layout UI
   // ============================================================
   if (
-    pathname === "/member-center/login" ||
-    pathname === "/member-center/register"
+    pathname === '/member-center/login' ||
+    pathname === '/member-center/register'
   ) {
     return <>{children}</>;
   }
@@ -92,13 +90,10 @@ export default function MemberCenterLayout({
   // ============================================================
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
-      <div className="mx-auto max-w-[1312px] w-full px-4 sm:px-6 lg:px-[64px] py-10">
+      <div className="mx-auto max-w-[1440px] w-full px-4 sm:px-6 lg:px-[64px] py-10">
         {/* Breadcrumb */}
         <Breadcrumb
-          items={[
-            { label: "首頁", href: "/" },
-            { label: "會員中心" },
-          ]}
+          items={[{ label: '首頁', href: '/' }, { label: '會員中心' }]}
         />
 
         {/* Page Title */}

@@ -7,7 +7,6 @@ import {
   FareDetailsFromStore,
   type Segment,
 } from '../components/FareDetailsModal';
-import FlightInfoBar from '../components/FlightInfoBar';
 import StepActions from '../components/StepActions';
 
 type Gender = 'M' | 'F';
@@ -204,10 +203,7 @@ export default function PassengerPage() {
 
   return (
     <div>
-      {/* 與前一頁一致的金額＋查看明細 */}
-      <FlightInfoBar />
-
-      <div className="mx-auto w-full max-w-6xl px-4 md:px-6 py-6 md:py-8">
+      <div className="mx-auto px-4 md:px-6 py-6 md:py-8">
         <h2 className="text-xl md:text-2xl font-bold text-[color:var(--sw-primary)] mb-4">
           資料填寫
         </h2>

@@ -13,7 +13,7 @@ export default function AppPage() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_0%_0%,rgba(255,255,255,0.06),rgba(0,0,0,0))]" />
 
         <div className="relative w-full">
-          <div className="mx-auto w-[1140px] px-6">
+          <div className="mx-auto w-[1440px] px-6">
             {/* 縮小上/下 padding */}
             <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-8 pt-8 md:pt-12 pb-20 md:pb-24">
               {/* 左：文字 */}
@@ -56,8 +56,8 @@ export default function AppPage() {
       </section>
 
       {/* 搜尋卡：獨立區塊 + 負 margin 疊上去（不會被吃掉、可操作） */}
-      <section className="relative z-20 -mt-[120px] w-full flex justify-center">
-        <div className="w-[1140px] px-6">
+      <section className="relative z-20 -mt-[120px] w-full">
+        <div className="mx-auto w-full max-w-[1440px] px-6 flex justify-center">
           <FlightSearchCard
             onSubmit={(values) => {
               console.log('search submit:', values);
