@@ -4,18 +4,8 @@
 import Breadcrumb from '@/app/components/Breadcrumb';
 import { useToast } from '@/app/context/toast-context';
 import { apiFetch } from '@/app/travel-community/utils/apiFetch';
-import {
-  ArrowLeft,
-  Book,
-  Camera,
-  Eye,
-  Hash,
-  ImagePlus,
-  Send,
-  Video,
-} from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { tagOptions } from '../data/posts';
 
 type ImageItem = {
