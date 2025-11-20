@@ -1,4 +1,3 @@
-// backend/src/validators/passenger.ts
 export type PassengerPayload = {
   gender: 'M' | 'F';
   firstName: string;

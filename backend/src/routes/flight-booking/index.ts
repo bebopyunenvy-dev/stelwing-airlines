@@ -3,6 +3,7 @@ import { prisma } from "../../utils/prisma-only.js";
 import moment from "moment-timezone";
 import { success, z } from "zod";
 import jwt from "jsonwebtoken";
+import { CreateBookingSchema } from "./schemas";
 
 const router = Router();
 
@@ -208,103 +209,37 @@ function genPNR(len = 6) {
   return out;
 }
 
-const CreateBookingSchema = z.object({
-  tripType: z.enum(["oneway", "roundtrip"]),
-  currency: z.string().length(3).default("TWD"),
-
-  // 旅客資訊
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  gender: z.string().optional().nullable(),
-  nationality: z.string().length(2).optional().nullable(),
-  passportNo: z.string().optional().nullable(),
-
-  cabinClass: z.string().min(1),
-
-  // 總金額
-  totalAmount: z.number().nonnegative(),
-
-  // ⭐ 新增：付款方式（目前先支援這幾種）
-  paymentMethod: z
-    .enum(["ecpay", "credit", "atm", "cash"])
-    .optional(),
-
-  // 去程
-  outbound: z.object({
-    flightId: z
-      .union([z.string(), z.number(), z.bigint()])
-      .transform((v) => BigInt(v)),
-    seats: z
-      .array(
-        z.object({
-          seatId: z
-            .union([z.string(), z.number(), z.bigint()])
-            .transform((v) => BigInt(v)),
-        })
-      )
-      .nonempty(),
-    baggageId: z
-      .union([z.string(), z.number(), z.bigint()])
-      .optional()
-      .nullable()
-      .transform((v) => (v ? BigInt(v) : null)),
-    mealId: z
-      .union([z.string(), z.number(), z.bigint()])
-      .optional()
-      .nullable()
-      .transform((v) => (v ? BigInt(v) : null)),
-  }),
-
-  // 回程（可選）
-  inbound: z
-    .object({
-      flightId: z
-        .union([z.string(), z.number(), z.bigint()])
-        .transform((v) => BigInt(v)),
-      seats: z
-        .array(
-          z.object({
-            seatId: z
-              .union([z.string(), z.number(), z.bigint()])
-              .transform((v) => BigInt(v)),
-          })
-        )
-        .nonempty(),
-      baggageId: z
-        .union([z.string(), z.number(), z.bigint()])
-        .optional()
-        .nullable()
-        .transform((v) => (v ? BigInt(v) : null)),
-      mealId: z
-        .union([z.string(), z.number(), z.bigint()])
-        .optional()
-        .nullable()
-        .transform((v) => (v ? BigInt(v) : null)),
-    })
-    .optional()
-    .nullable(),
-});
-
 // 建立訂單：POST /bookings
 router.post("/bookings", async (req, res) => {
-    const memberId = getMemberIdFromToken(req);
-    if(!memberId){
-        return res.status(401).json({
-            success: false,
-            message: "未登入，請先登入會員再建立訂單",
-        });
-    }
-  const parsed = CreateBookingSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json(parsed.error.flatten());
+  const memberId = getMemberIdFromToken(req);
+
+  if (!memberId) {
+    return res.status(401).json({
+      success: false,
+      message: "未登入，請先登入會員再建立訂單",
+    });
   }
 
-  const data = parsed.data;
+  // 1) 後端欄位驗證（包含護照規則）
+  const parsed = CreateBookingSchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    const flat = parsed.error.flatten();
+
+    return res.status(400).json({
+      success: false,
+      message: "訂單資料驗證失敗",
+      errors: flat.fieldErrors, // 例如 { firstName: [...], passportNo: [...] }
+    });
+  }
+
+  // 2) 驗證通過，才取出整理好的資料
+  const data: CreateBookingInput = parsed.data;
   const pnr = genPNR();
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      /* 1 建 booking */
+      /* 1 建 booking（只要 CreateBookingSchema 有過，這邊就是乾淨的） */
       const booking = await tx.booking.create({
         data: {
           pnr,
@@ -368,7 +303,7 @@ router.post("/bookings", async (req, res) => {
       return { booking, pnr };
     });
 
-    res.json({
+    return res.json({
       success: true,
       pnr,
       bookingId: String(result.booking.bookingId),
@@ -376,13 +311,14 @@ router.post("/bookings", async (req, res) => {
     });
   } catch (err) {
     console.error("建立訂單失敗：", err);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "建立訂單失敗",
       error: err ?? String(err),
     });
   }
 });
+
 
 //查詢訂單明細 GET /bookings/:pnr
 // 讀取訂單：GET /bookings/:pnr

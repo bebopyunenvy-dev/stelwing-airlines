@@ -8,7 +8,6 @@ import type { Segment } from './components/FareDetailsModal';
 import { FareDetailsFromStore } from './components/FareDetailsModal';
 import FlightCard, { FlightItem } from './components/FlightCard';
 import StepActions from './components/StepActions';
-
 /* ================= utils ================= */
 function ymd(d: Date) {
   return d.toISOString().slice(0, 10);
