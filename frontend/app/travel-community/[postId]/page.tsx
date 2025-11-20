@@ -88,14 +88,14 @@ export default function TravelDetailPage() {
       {
         id: 1,
         author: post.author,
-        content: "清晨的巴黎光影真讓人著迷！謝謝大家一起感受旅行氛圍。",
+        content: "清晨的光影真讓人著迷！謝謝大家一起感受旅行氛圍。",
         createdAt: "昨天 20:15",
         avatar: commentAvatars[0],
         isAuthor: true,
         replies: [
           {
             id: 101,
-            author: "旅人 Zoe",
+            author: "一日遊小達人",
             content: "被你的文字打動了，期待下一次分享！",
             createdAt: "昨天 21:05",
             avatar: commentAvatars[2],
@@ -105,7 +105,7 @@ export default function TravelDetailPage() {
       {
         id: 2,
         author: "Charlie",
-        content: "照片太美了，明年也想安排行程！",
+        content: "太讚了，明年也想安排行程！",
         createdAt: "昨天 22:35",
         avatar: commentAvatars[3],
       },
@@ -174,6 +174,7 @@ export default function TravelDetailPage() {
     month: "long",
     day: "numeric",
   });
+  const locationLabel = post.location?.trim() || post.country?.trim() || "";
 
   const handleAddComment = () => {
     if (!newComment.trim()) return;
@@ -250,9 +251,10 @@ export default function TravelDetailPage() {
       />
 
       <section className="space-y-10">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-stretch">
           <div className="flex flex-col rounded-[32px] border border-[#CDA870] bg-white shadow-sm">
-            <div className="relative h-[360px] sm:h-[420px] flex-1 overflow-hidden rounded-[32px] border border-[#CDA870]/40 bg-[#F4F1EC] p-1">
+            <div className="relative w-full pb-[80%] min-h-[320px] overflow-hidden rounded-[32px] border border-[#CDA870]/40 bg-[#F4F1EC] p-1">
+              <div className="absolute inset-0">
               {galleryImages.length > 0 && (
                 <img
                   src={galleryImages[activeImage]}
@@ -260,6 +262,7 @@ export default function TravelDetailPage() {
                   className="h-full w-full rounded-[28px] object-cover"
                 />
               )}
+              </div>
               <button
                 onClick={goPrevImage}
                 disabled={galleryImages.length <= 1}
@@ -305,11 +308,11 @@ export default function TravelDetailPage() {
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="space-y-5 rounded-[28px] border border-[rgba(31,46,60,0.08)] bg-white p-8 shadow-sm">
+          <div className="flex flex-col gap-6 lg:h-full lg:pr-2">
+            <div className="space-y-5 rounded-[28px] border border-[rgba(31,46,60,0.08)] bg-white p-8 shadow-sm flex-1 min-h-[320px]">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-[#4B5563]">
-                  {post.location ? `${post.location}｜` : ""}
+                  {locationLabel ? `${locationLabel}｜` : ""}
                   {post.type}
                 </div>
                 <Bookmark size={18} className="text-[#CDA870]" />
@@ -324,7 +327,7 @@ export default function TravelDetailPage() {
                 <span>時間：{publishedAt}</span>
               </div>
 
-              <article className="space-y-5 text-[15px] leading-7 text-[#1F2E3C]/85">
+              <article className="space-y-5 text-[15px] leading-7 text-[#1F2E3C]/85 max-h-[360px] lg:max-h-[calc(100vh-420px)] overflow-y-auto pr-2">
                 {post.content
                   .split("\n")
                   .filter((paragraph) => paragraph.trim().length > 0)
@@ -345,7 +348,7 @@ export default function TravelDetailPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 rounded-[28px] border border-[#CDA870] bg-white px-6 py-4 text-sm text-[#0F2740] shadow-sm">
+            <div className="flex flex-wrap items-center gap-4 rounded-[28px] border border-[#CDA870] bg-white px-6 py-4 text-sm text-[#0F2740] shadow-sm lg:mt-auto">
               <span className="inline-flex items-center gap-2 font-medium">
                 <Heart size={18} className="text-[#B2773C]" />
                 28 個喜歡
@@ -369,7 +372,7 @@ export default function TravelDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-[24px] border border-[rgba(31,46,60,0.08)] bg-white p-6 shadow-sm">
+        <div className="rounded-[24px] border border-[rgba(31,46,60,0.08)] bg白 p-6 shadow-sm">
           <div className="mb-4 flex items-center gap-2">
             <MessageCircle size={18} className="text-[#DCBB87]" />
             <h2 className="text-lg font-semibold text-[#1F2E3C]">

@@ -48,5 +48,5 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
     throw new Error(data?.message || "操作失敗，請稍後再試。");
   }
 
-  return data;
+  return data?.data ?? data;
 }

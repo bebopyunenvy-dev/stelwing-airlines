@@ -56,8 +56,10 @@ export default function TravelCommunityPage() {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        const data = await apiFetch<Post[]>(`${API_BASE}/travel-community`);
-        setPosts(data);
+        const data = await apiFetch<Post[]>(
+          `${API_BASE}/travel-community?limit=200`
+        );
+        setPosts(Array.isArray(data) ? data : []);
       } catch (err: any) {
         setError(err.message ?? "無法取得旅遊分享");
       } finally {
@@ -79,48 +81,45 @@ export default function TravelCommunityPage() {
   };
 
   const visiblePosts = useMemo(() => {
-    const keywordLower = keyword.trim().toLowerCase();
+  const keywordLower = keyword.trim().toLowerCase();
 
-    const result = posts
+    return posts
       .filter((post) => {
-        if (activeTab !== "全部" && post.type !== activeTab) {
-          return false;
-        }
-
-        if (country && post.country !== country) {
-          return false;
-        }
+        if (activeTab !== "全部" && post.type !== activeTab) return false;
+        if (country && post.country !== country) return false;
 
         if (keywordLower) {
-          const haystack = `${post.title} ${post.summary} ${post.location} ${post.tags.join(" ")}`.toLowerCase();
-          if (!haystack.includes(keywordLower)) {
-            return false;
-          }
+          const haystack = (
+            post.title +
+            " " +
+            post.summary +
+            " " +
+            post.location +
+            " " +
+            post.tags.join(" ")
+          ).toLowerCase();
+
+          if (!haystack.includes(keywordLower)) return false;
         }
 
-        if (!filterByTimeRange(post.createdAt, appliedFilters.timeRange)) {
+        if (!filterByTimeRange(post.createdAt, appliedFilters.timeRange))
           return false;
-        }
 
-        if (!filterByMileage(post.miles, appliedFilters.mileageTier)) {
-          return false;
-        }
+        if (!filterByMileage(post.miles, appliedFilters.mileageTier)) return false;
 
         if (
           appliedFilters.selectedTags.length > 0 &&
           !appliedFilters.selectedTags.some((tag) => post.tags.includes(tag))
-        ) {
+        )
           return false;
-        }
 
         if (
           appliedFilters.selectedCategories.length > 0 &&
-          !appliedFilters.selectedCategories.some((category) =>
-            post.categories.includes(category),
+          !appliedFilters.selectedCategories.some((c) =>
+            post.categories.includes(c)
           )
-        ) {
+        )
           return false;
-        }
 
         return true;
       })
@@ -134,62 +133,71 @@ export default function TravelCommunityPage() {
             return b.shares - a.shares;
           default:
             return (
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              new Date(b.createdAt).getTime() -
+              new Date(a.createdAt).getTime()
             );
-        }
+          }
       });
+  }, [
+    activeTab,
+    country,
+    keyword,
+    appliedFilters,
+    JSON.stringify(posts), // ⭐ 保證重新運算
+  ]);
 
-    return result;
-  }, [activeTab, country, keyword, appliedFilters, posts]);
 
   return (
-    <main className="space-y-6 relative">
-      <Breadcrumb
-        items={[
-          { label: "首頁", href: "/" },
-          { label: "旅遊分享" },
-        ]}
-      />
+    <main className="relative flex flex-col gap-6 lg:h-screen lg:overflow-hidden">
+      <div className="space-y-6 lg:flex-none lg:pr-4">
+        <Breadcrumb
+          items={[
+            { label: "首頁", href: "/" },
+            { label: "旅遊分享" },
+          ]}
+        />
 
-      {/* 次導航 */}
-      <PageTabs
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        keyword={keyword}
-        onKeywordChange={setKeyword}
-        country={country}
-        onCountryChange={setCountry}
-        onSearchSubmit={handleApplyFilters}
-      />
+        <PageTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          keyword={keyword}
+          onKeywordChange={setKeyword}
+          country={country}
+          onCountryChange={setCountry}
+          onSearchSubmit={handleApplyFilters}
+        />
 
-      {applyMessage && (
-        <div className="rounded-full bg-[var(--sw-primary)]/5 text-[var(--sw-primary)] text-sm px-4 py-2 inline-flex items-center">
-          {applyMessage}
-        </div>
-      )}
+        {applyMessage && (
+          <div className="rounded-full bg-[var(--sw-primary)]/5 text-[var(--sw-primary)] text-sm px-4 py-2 inline-flex items-center">
+            {applyMessage}
+          </div>
+        )}
 
-      {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+      </div>
 
-      {/* 內容區：左側固定篩選 + 右側瀑布流 */}
-      <div className="grid grid-cols-12 gap-6">
+      {/* 內容區：左側可獨立滾動的篩選 + 右側瀑布流 */}
+      <div className="flex flex-col gap-6 lg:flex-1 lg:flex-row lg:items-start lg:overflow-hidden">
         {/* 左側 */}
-        <aside className="col-span-12 lg:col-span-3">
-          <div className="lg:sticky lg:top-24">
-            <FilterSidebar
-              filters={filters}
-              onChange={handleFilterChange}
-              onApply={handleApplyFilters}
-              appliedMessage={applyMessage}
-            />
+        <aside className="w-full lg:w-[32%] lg:h-full">
+          <div className="lg:h-full lg:rounded-[24px] lg:bg-white/10">
+            <div className="lg:h-full lg:overflow-y-auto lg:pr-4">
+              <FilterSidebar
+                filters={filters}
+                onChange={handleFilterChange}
+                onApply={handleApplyFilters}
+                appliedMessage={applyMessage}
+              />
+            </div>
           </div>
         </aside>
 
         {/* 右側 */}
-        <section className="col-span-12 lg:col-span-9 space-y-4">
+        <section className="w-full lg:w-[68%] space-y-4 min-w-0 lg:h-full lg:overflow-y-auto lg:pr-1">
           <div className="flex items-center justify-between text-sm text-[#1F2E3C]/60">
             <span>
               共 {visiblePosts.length} 則{activeTab === "全部" ? "" : activeTab}

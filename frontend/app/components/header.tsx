@@ -49,7 +49,14 @@ export default function Header({
   const [profileOpen, setProfileOpen] = useState(false);
 
   // 🔼 新增：使用登入狀態
-  const { isLoggedIn, avatar, logout, member } = useAuth();
+  // const { isLoggedIn, avatar, logout, member } = useAuth();
+  const { isLoggedIn, logout, member } = useAuth();
+
+  const avatarSrc =
+  member?.avatar?.imagePath
+    ? member.avatar.imagePath
+    : "/avatars/default.png";
+
   const { showToast } = useToast();
 
   const pathname = usePathname();
@@ -247,7 +254,7 @@ export default function Header({
                   aria-expanded={profileOpen}
                 >
                   <img
-                    src={avatar}
+                    src={avatarSrc}
                     alt="avatar"
                     className="w-full h-full object-cover"
                   />

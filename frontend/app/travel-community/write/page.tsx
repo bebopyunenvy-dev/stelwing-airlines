@@ -15,6 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 import Breadcrumb from "@/app/components/Breadcrumb";
 import { apiFetch } from "@/app/travel-community/utils/apiFetch";
+import { tagOptions } from "../data/posts";
 import { useToast } from "@/app/context/toast-context";
 
 type ImageItem = {
@@ -33,6 +34,8 @@ export default function TravelWritePage() {
   const [title, setTitle] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
+  const [videoDescription, setVideoDescription] = useState("");
+  const [location, setLocation] = useState("");
 
   // 各別內容狀態
   const [content, setContent] = useState("");
@@ -67,11 +70,27 @@ export default function TravelWritePage() {
     };
   }, [images]);
 
-  const handleAddTag = () => {
-    if (newTag && !tags.includes(newTag)) {
-      setTags([...tags, newTag]);
+  const MAX_TAGS = 3;
+
+  const handleAddTag = (tagValue?: string) => {
+    const targetTag = (tagValue ?? newTag).trim();
+    if (!targetTag) return;
+    if (tags.includes(targetTag)) {
       setNewTag("");
+      return;
     }
+
+    if (tags.length >= MAX_TAGS) {
+      showToast({
+        type: "info",
+        title: "標籤上限",
+        message: `最多選擇 ${MAX_TAGS} 個標籤，請先移除再新增。`,
+      });
+      return;
+    }
+
+    setTags((prev) => [...prev, targetTag]);
+    if (!tagValue) setNewTag("");
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,13 +111,26 @@ export default function TravelWritePage() {
     });
 
   const handleSubmit = async () => {
-    if (!title.trim()) {
+    if (!location.trim()) {
+      alert("請輸入旅遊的國家或城市");
+      return;
+    }
+
+    if (!title.trim() && tab !== "photo") {
       alert("請輸入標題");
       return;
     }
 
+    const travelContent = content.trim();
+    const snapshotContent = photoCaption.trim();
+    const videoContent = videoDescription.trim();
+
     const articleContent =
-      tab === "photo" ? photoCaption.trim() : content.trim() || photoCaption.trim();
+      tab === "travelogue"
+        ? travelContent
+        : tab === "video"
+        ? videoContent
+        : snapshotContent;
 
     if (!articleContent) {
       alert("請輸入內容");
@@ -136,7 +168,7 @@ export default function TravelWritePage() {
       content: articleContent,
       tags,
       postType: tab,
-      location: title.trim(),
+      location: location.trim(),
       media,
       videoUrl: tab === "video" ? videoUrl : undefined,
     };
@@ -159,10 +191,15 @@ export default function TravelWritePage() {
 
   const tabLabel =
     tab === "travelogue" ? "遊記" : tab === "video" ? "影片" : "隨手拍";
+  const travelPreview = content.trim();
+  const videoPreview = videoDescription.trim();
+  const photoPreview = photoCaption.trim();
   const previewBody =
     tab === "photo"
-      ? photoCaption.trim() || "還沒寫下照片故事。"
-      : content.trim() || "還沒撰寫內容。";
+      ? photoPreview || "還沒寫下照片故事。"
+      : tab === "video"
+      ? videoPreview || "還沒撰寫影片描述。"
+      : travelPreview || "還沒撰寫內容。";
   const previewMediaHint =
     tab === "video"
       ? videoUrl
@@ -254,40 +291,86 @@ export default function TravelWritePage() {
               </div>
             )}
 
-            {(tab === "travelogue" || tab === "video") && (
-              <div className="mb-6">
-                <label className="block text-sm mb-2 text-[#1F2E3C]/80 flex items-center gap-2">
-                  <Hash size={16} className="text-[#DCBB87]" /> 標籤
-                </label>
+            {/* 旅遊地點 */}
+            <div className="mb-6">
+              <label className="block text-sm mb-2 text-[#1F2E3C]/80">
+                旅遊國家／城市
+              </label>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="例如：日本 東京"
+                className="w-full border border-[#DCBB87] rounded-md p-3 text-sm focus:ring-1 focus:ring-[#DCBB87] outline-none"
+              />
+            </div>
 
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={newTag}
-                    onChange={(e) => setNewTag(e.target.value)}
-                    placeholder="請輸入標籤"
-                    className="flex-1 border border-[#DCBB87] rounded-md p-2 text-sm focus:ring-1 focus:ring-[#DCBB87] outline-none"
-                  />
-                  <button
-                    onClick={handleAddTag}
-                    className="px-4 py-2 bg-[#DCBB87] text-white rounded-md hover:bg-[#BA9A60]"
+            <div className="mb-6">
+              <label className="block text-sm mb-2 text-[#1F2E3C]/80 flex items-center gap-2">
+                <Hash size={16} className="text-[#DCBB87]" /> 標籤
+              </label>
+
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  placeholder="請輸入標籤"
+                  className="flex-1 border border-[#DCBB87] rounded-md p-2 text-sm focus:ring-1 focus:ring-[#DCBB87] outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleAddTag()}
+                  className="px-4 py-2 bg-[#DCBB87] text-white rounded-md hover:bg-[#BA9A60]"
+                >
+                  新增
+                </button>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="flex items-center gap-1 px-3 py-1 text-sm border border-[#DCBB87] rounded-full text-[#1F2E3C]/80 bg-[#FFF7EE]"
                   >
-                    新增
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 text-sm border border-[#DCBB87] rounded-full text-[#1F2E3C]/80"
+                    #{tag}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setTags((prev) => prev.filter((item) => item !== tag))
+                      }
+                      className="text-xs text-[#8C6231] hover:text-[#5A3B1F]"
+                      aria-label={`移除標籤 ${tag}`}
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-[#1F2E3C]/60">
+                最多選擇 {MAX_TAGS} 個標籤，可不填。
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {tagOptions.map((tag) => {
+                  const disabled = tags.includes(tag) || tags.length >= MAX_TAGS;
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => handleAddTag(tag)}
+                      className={`rounded-full border px-3 py-1 text-sm transition ${
+                        disabled
+                          ? "border-[#DCBB87]/40 text-[#1F2E3C]/30 cursor-not-allowed"
+                          : "border-[#DCBB87] text-[#1F2E3C]/80 hover:bg-[#DCBB87]/10"
+                      }`}
                     >
                       #{tag}
-                    </span>
-                  ))}
-                </div>
+                    </button>
+                  );
+                })}
               </div>
-            )}
+            </div>
 
             {/* ===== 遊記：內容 + 圖片 ===== */}
             {tab === "travelogue" && (
@@ -340,6 +423,17 @@ export default function TravelWritePage() {
             {/* ===== 影片 ===== */}
             {tab === "video" && (
               <>
+                <div className="mb-6">
+                  <label className="block text-sm mb-2 text-[#1F2E3C]/80">
+                    影片內容
+                  </label>
+                  <textarea
+                    value={videoDescription}
+                    onChange={(e) => setVideoDescription(e.target.value)}
+                    placeholder="分享這支影片想說的故事或重點。"
+                    className="w-full h-[180px] border border-[#DCBB87] rounded-md p-3 text-sm resize-none focus:ring-1 focus:ring-[#DCBB87] outline-none"
+                  />
+                </div>
                 <div className="mb-6">
                   <label className="block text-sm mb-2 text-[#1F2E3C]/80">
                     影片連結 (YouTube)

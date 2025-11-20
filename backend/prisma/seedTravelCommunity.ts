@@ -190,26 +190,30 @@ async function generatePosts(members: any[], tags: any[]) {
     const location = cities[Math.floor(Math.random() * cities.length)];
     const title = 
       postType === PostType.travel
-        ? `${location}｜旅途中的小故事`
+        ? `旅途中的小故事`
         : postType === PostType.video
-          ? `${location}｜旅遊影片分享`
-          : `${location}｜隨手拍`;
+          ? `旅遊影片分享`
+          : `隨手拍`;
 
     // 先建立 TravelPost
+    const content =
+    postType === PostType.travel
+        ? generateTravelContent()
+        : postType === PostType.video
+        ? generateVideoDescription()
+        : generateSnapshotCaption();
+
     const post = await prisma.travelPost.create({
-      data: {
+    data: {
         authorId: author.memberId,
         postType,
         title,
-        content:
-          postType === PostType.travel
-            ? generateTravelContent()
-            : postType === PostType.video
-              ? generateVideoDescription()
-              : generateSnapshotCaption(),
+        content,
+        summary: generateSummary(content),  // ⭐ 新增
         location,
-      },
+    },
     });
+
 
     // 建立 media（1～5 張，或影片）
     if (postType === PostType.video) {
@@ -234,17 +238,24 @@ async function generatePosts(members: any[], tags: any[]) {
       }
     }
 
-    // Tag（1–3 個）
-    const tagCount = Math.floor(Math.random() * 3) + 1;
-    for (let t = 0; t < tagCount; t++) {
-      const chosenTag = tags[Math.floor(Math.random() * tags.length)];
-      await prisma.postTag.create({
-        data: {
-          postId: post.postId,
-          tagId: chosenTag.tagId,
-        },
-      });
-    }
+    // Tag（1–3 個，避免重複）
+// Tag（1–3 個，避免重複）
+const tagCount = Math.floor(Math.random() * 3) + 1;
+
+// 隨機打亂 tags
+const shuffled = [...tags].sort(() => 0.5 - Math.random());
+
+// 取前 N 個（保證不重複）
+const selectedTags = shuffled.slice(0, tagCount);
+
+for (let tg of selectedTags) {
+  await prisma.postTag.create({
+    data: {
+      postId: post.postId,
+      tagId: tg.tagId,
+    },
+  });
+}
 
     posts.push(post);
   }

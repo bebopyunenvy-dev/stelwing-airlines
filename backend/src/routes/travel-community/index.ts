@@ -50,11 +50,18 @@ function parseBigInt(value?: string | null) {
 
 function mapPostToCard(post: any) {
   const firstMedia = post.media?.[0];
+  const displayName =
+    post.author?.username?.trim() ||
+    `${post.author?.firstName ?? ""}${post.author?.lastName ?? ""}`.trim() ||
+    "匿名旅人";
+
   return {
     id: Number(post.postId),
     title: post.title,
     summary: post.content.slice(0, 110) + (post.content.length > 110 ? "..." : ""),
-    author: `${post.author?.firstName ?? ""}${post.author?.lastName ?? ""}`.trim() || "匿名旅人",
+    author: displayName,
+    nickname: post.author?.username || null,
+    nickname: post.author?.username || null,
     authorAvatar: post.author?.avatar?.imagePath
       ? `/avatars/${post.author.avatar.imagePath.split("/").pop()}`
       : "/avatars/default.png",
@@ -77,7 +84,11 @@ function mapPostToCard(post: any) {
 }
 
 router.get("/", async (req, res) => {
-  const limit = Math.min(Number(req.query.limit) || 20, 50);
+  const limitParam = Number(req.query.limit);
+  const limit =
+    Number.isFinite(limitParam) && limitParam > 0
+      ? Math.min(Math.floor(limitParam), 200)
+      : null;
   const excludeId = parseBigInt(req.query.exclude as string | undefined);
   const requestedType = req.query.type ? FRONT_TO_DB_TYPE[String(req.query.type)] : null;
 
@@ -89,11 +100,12 @@ router.get("/", async (req, res) => {
         deletedAt: null,
       },
       orderBy: { createdAt: "desc" },
-      take: limit,
+      ...(limit ? { take: limit } : {}),
       include: {
         author: {
           select: {
             memberId: true,
+            username: true,
             firstName: true,
             lastName: true,
             mileage: true,
@@ -128,6 +140,7 @@ router.get("/:postId", async (req, res) => {
         author: {
           select: {
             memberId: true,
+            username: true,
             firstName: true,
             lastName: true,
             mileage: true,

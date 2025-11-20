@@ -7,9 +7,10 @@ import "dotenv/config";
 // 載入各種路由
 import { requireAuth } from "./middleware/jwt.js";
 import apiRouter from "./routes/index.js";
-// //rosa測試會員
+// 11/19rosa新增旅遊分享
 // import authRoutes from "./routes/auth.routes.js";
 // import memberRoutes from "./routes/member.routes.js"; 
+import travelPostRoutes from "./routes/travel-posts.routes.js";
 // 周邊工具安裝：zod 驗證、session 們
 import { z } from "zod";
 import session from "express-session";
@@ -31,6 +32,8 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 // 11/11rosa新增 會員頭像圖庫
 app.use("/avatars", express.static(path.join(process.cwd(), "public/avatars")));
 app.use('/planner/cover', express.static(path.join(process.cwd(), 'public/planner/cover')));
+// 11/19rosa新增旅遊分享
+app.use("/api/travel-posts", travelPostRoutes);
 // 允許所有來源訪問
 app.use(
   cors({
