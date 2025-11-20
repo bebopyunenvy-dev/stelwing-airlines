@@ -378,7 +378,7 @@ export default function PassengerPage() {
                       onChange={(e) =>
                         setContact({ ...contact, phone: e.target.value })
                       }
-                      className="flex-1 bg-white/10 border border-white/20 rounded-lg py-2 outline-none placeholder:opacity-60"
+                      className="flex-1 bg-white/10 border border-white/20 rounded-lg py-2 px-3 outline-none placeholder:opacity-60"
                       placeholder="0912-345-678"
                     />
                   </div>
@@ -530,15 +530,14 @@ export default function PassengerPage() {
                     <label className="text-xs opacity-90 block mb-1">
                       生日
                     </label>
-                    <div className="relative">
-                      <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-70" />
+                    <div>
                       <input
                         type="date"
                         value={pax.birthday}
                         onChange={(e) =>
                           setPax({ ...pax, birthday: e.target.value })
                         }
-                        className={`w-full bg-white/10 rounded-lg pl-9 pr-3 py-2 outline-none ${
+                        className={`w-full bg-white/10 rounded-lg pl-3 pr-3 py-2 outline-none ${
                           paxErrors.birthday
                             ? 'border border-red-400'
                             : 'border border-white/20'
@@ -628,6 +627,7 @@ export default function PassengerPage() {
                   </div>
 
                   <div className="md:col-span-4">
+                    <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-70" />
                     <label className="text-xs opacity-90 block mb-1">
                       護照到期日
                     </label>

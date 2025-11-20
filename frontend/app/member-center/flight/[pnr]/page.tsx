@@ -577,7 +577,7 @@ export default function FlightTicketPage() {
         {/* 返回 */}
         <div>
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/member-center/flight')}
             className="inline-flex items-center text-sm text-[color:var(--sw-primary)]"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />

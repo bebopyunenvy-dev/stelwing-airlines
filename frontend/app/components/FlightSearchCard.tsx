@@ -32,10 +32,9 @@ export interface FlightSearchValues {
   cabinClass: CabinClass;
 }
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL
-    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`
-    : "http://localhost:3007/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL
+  ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`
+  : 'http://localhost:3007/api';
 const TODAY = new Date().toISOString().slice(0, 10);
 
 /* ---------- UI wrappers ---------- */
@@ -120,7 +119,7 @@ function AirportSearchPicker({
     (async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${API_BASE}/api/flight-search/airports`, {
+        const res = await fetch(`${API_BASE}/flight-search/airports`, {
           cache: 'no-store',
         });
         const json = await res.json();

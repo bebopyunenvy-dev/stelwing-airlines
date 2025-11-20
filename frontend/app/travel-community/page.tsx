@@ -58,7 +58,7 @@ export default function TravelCommunityPage() {
       try {
         setLoading(true);
         const data = await apiFetch<Post[]>(
-          'http://localhost:3007/api/travel-community?limit=20'
+          'http://localhost:3007/api/travel-community'
         );
         setPosts(Array.isArray(data) ? data : []);
       } catch (err: any) {
