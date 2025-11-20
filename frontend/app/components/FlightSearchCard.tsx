@@ -1,5 +1,6 @@
 'use client';
 
+import { useLanguage } from '@/src/i18n/LanguageContext';
 import clsx from 'clsx';
 import {
   Armchair,
@@ -76,7 +77,7 @@ function Modal({
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
       <div className="relative w-[min(680px,92vw)] rounded-[var(--sw-r-lg)] bg-white shadow-xl border border-[color:var(--sw-accent)]">
         <div className="flex items-center justify-between px-4 py-2 border-b">
-          <div className="font-semibold">{title ?? '選擇機場'}</div>
+          <div className="font-semibold">{title}</div>
           <button onClick={onClose} className="sw-btn h-8 px-2 py-1">
             <X className="w-4 h-4" />
           </button>
@@ -104,6 +105,8 @@ function AirportSearchPicker({
     city: string;
     countryCode: string;
   };
+
+  const { t } = useLanguage();
 
   // UI 仍保留搜尋框（但不過濾資料）
   const [q, setQ] = React.useState('');
@@ -137,7 +140,7 @@ function AirportSearchPicker({
         <input
           autoFocus
           className="flex-1 bg-transparent outline-none text-[color:var(--sw-primary)] placeholder:text-[color:var(--sw-primary)]/50"
-          placeholder="輸入城市、機場或 IATA 代碼，例如：TPE、Tokyo、NRT"
+          placeholder={t('search.airport.placeholder')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -147,13 +150,13 @@ function AirportSearchPicker({
       <div className="max-h-[48vh] overflow-auto space-y-2">
         {loading && (
           <div className="text-sm text-[color:var(--sw-primary)]/70 px-2">
-            載入中…
+            {t('search.airport.loading')}
           </div>
         )}
 
         {!loading && list.length === 0 && (
           <div className="text-sm text-[color:var(--sw-primary)]/70 px-2">
-            目前沒有可選擇的機場
+            {t('search.airport.empty')}
           </div>
         )}
 
@@ -188,7 +191,7 @@ function AirportSearchPicker({
       {/* 底部按鈕 */}
       <div className="flex justify-end pt-2">
         <button onClick={onCancel} className="sw-btn transition">
-          取消
+          {t('search.airport.cancel')}
         </button>
       </div>
     </div>
@@ -198,6 +201,7 @@ function AirportSearchPicker({
 /* ---------- 主元件 ---------- */
 export default function FlightSearchCard() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [values, setValues] = React.useState<FlightSearchValues>({
     tripType: 'roundtrip',
@@ -298,7 +302,7 @@ export default function FlightSearchCard() {
                   : 'text-[color:var(--sw-primary)]/80 hover:bg-[color:var(--sw-white)]/30'
               )}
             >
-              來回
+              {t('search.roundtrip')}
             </button>
             <button
               onClick={() => setTripType('oneway')}
@@ -309,7 +313,7 @@ export default function FlightSearchCard() {
                   : 'text-[color:var(--sw-primary)]/80 hover:bg-[color:var(--sw-white)]/30'
               )}
             >
-              單程
+              {t('search.oneway')}
             </button>
           </div>
         </div>
@@ -320,7 +324,10 @@ export default function FlightSearchCard() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4">
             {/* 起點 */}
             <div className="md:col-span-5">
-              <FieldShell label="起點" icon={<Plane className="w-4 h-4" />}>
+              <FieldShell
+                label={t('search.origin.label')}
+                icon={<Plane className="w-4 h-4" />}
+              >
                 <button
                   type="button"
                   onClick={() => setOpenOriginPicker(true)}
@@ -332,7 +339,7 @@ export default function FlightSearchCard() {
                     </span>
                   ) : (
                     <span className="text-[color:var(--sw-primary)]/50">
-                      搜尋城市 / 機場 / IATA
+                      {t('search.origin.placeholder')}
                     </span>
                   )}
                 </button>
@@ -344,13 +351,13 @@ export default function FlightSearchCard() {
               <button
                 type="button"
                 onClick={swapOD}
-                aria-label="交換出發與到達"
+                aria-label={t('search.swap')}
                 className={clsx(
                   'h-12 w-12 rounded-full border border-[color:var(--sw-accent)]',
                   'bg-[color:var(--sw-white)] hover:bg-[color:var(--sw-accent)]/10',
                   'flex items-center justify-center transition'
                 )}
-                title="交換出發與到達"
+                title={t('search.swap')}
               >
                 <ArrowLeftRight className="w-5 h-5 text-[color:var(--sw-primary)]" />
               </button>
@@ -358,7 +365,10 @@ export default function FlightSearchCard() {
 
             {/* 到達 */}
             <div className="md:col-span-5">
-              <FieldShell label="到達" icon={<Plane className="w-4 h-4" />}>
+              <FieldShell
+                label={t('search.destination.label')}
+                icon={<Plane className="w-4 h-4" />}
+              >
                 <button
                   type="button"
                   onClick={() => setOpenDestPicker(true)}
@@ -370,7 +380,7 @@ export default function FlightSearchCard() {
                     </span>
                   ) : (
                     <span className="text-[color:var(--sw-primary)]/50">
-                      搜尋城市 / 機場 / IATA
+                      {t('search.destination.placeholder')}
                     </span>
                   )}
                 </button>
@@ -382,7 +392,7 @@ export default function FlightSearchCard() {
           <div className="mt-3 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4">
             <div className="md:col-span-6">
               <FieldShell
-                label="日期"
+                label={t('search.date.label')}
                 icon={<Calendar className="w-4 h-4" />}
                 showChevron={false}
               >
@@ -392,7 +402,7 @@ export default function FlightSearchCard() {
                     className="flex items-center gap-2"
                   >
                     <span className="text-xs text-[color:var(--sw-primary)] font-medium">
-                      出發
+                      {t('search.date.depart')}
                     </span>
                     <input
                       ref={departRef}
@@ -410,7 +420,7 @@ export default function FlightSearchCard() {
                     className="flex items-center gap-2 disabled:opacity-50"
                   >
                     <span className="text-xs text-[color:var(--sw-primary)] font-medium">
-                      回程
+                      {t('search.date.return')}
                     </span>
                     <input
                       ref={returnRef}
@@ -427,7 +437,10 @@ export default function FlightSearchCard() {
             </div>
 
             <div className="md:col-span-3">
-              <FieldShell label="乘客" icon={<User className="w-4 h-4" />}>
+              <FieldShell
+                label={t('search.passenger')}
+                icon={<User className="w-4 h-4" />}
+              >
                 <select
                   className="w-full bg-transparent outline-none text-[color:var(--sw-primary)] font-semibold"
                   value={values.passengers}
@@ -443,7 +456,10 @@ export default function FlightSearchCard() {
             </div>
 
             <div className="md:col-span-3">
-              <FieldShell label="艙等" icon={<Armchair className="w-4 h-4" />}>
+              <FieldShell
+                label={t('search.cabin')}
+                icon={<Armchair className="w-4 h-4" />}
+              >
                 <select
                   className="w-full bg-transparent outline-none text-[color:var(--sw-primary)] font-semibold"
                   value={values.cabinClass}
@@ -451,8 +467,8 @@ export default function FlightSearchCard() {
                     handle('cabinClass', e.target.value as CabinClass)
                   }
                 >
-                  <option value="Economy">經濟艙</option>
-                  <option value="Business">商務艙</option>
+                  <option value="Economy">{t('cabin.economy')}</option>
+                  <option value="Business">{t('cabin.business')}</option>
                 </select>
               </FieldShell>
             </div>
@@ -470,7 +486,7 @@ export default function FlightSearchCard() {
               )}
             >
               <Ticket className="w-4 h-4 text-[color:var(--sw-primary)] mr-2" />
-              訂購機票
+              {t('search.submit')}
             </button>
           </div>
         </div>
@@ -480,7 +496,7 @@ export default function FlightSearchCard() {
       <Modal
         open={openOriginPicker}
         onClose={() => setOpenOriginPicker(false)}
-        title="選擇起點"
+        title={t('search.airport.originTitle')}
       >
         <AirportSearchPicker
           forbiddenIata={values.destination} // 不能選現在目的地
@@ -497,7 +513,7 @@ export default function FlightSearchCard() {
       <Modal
         open={openDestPicker}
         onClose={() => setOpenDestPicker(false)}
-        title="選擇到達"
+        title={t('search.airport.destTitle')}
       >
         <AirportSearchPicker
           forbiddenIata={values.origin} // 不能選現在出發地

@@ -16,7 +16,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '../dutyfree-shop/components/ui/button';
 
-// 🔼 新增：Auth Context
+// 🔼 新增：多語 Context
+import { useLanguage } from '@/src/i18n/LanguageContext';
+
+// 🔼 已有：Auth / Toast
 import { useAuth } from '@/app/context/auth-context';
 import { useToast } from '@/app/context/toast-context';
 
@@ -47,8 +50,8 @@ export default function Header({
   const [isOpen, setIsOpen] = useState(false); // 手機版選單
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
 
-  // 🔼 新增：使用登入狀態
   const { isLoggedIn, avatar, logout, member } = useAuth();
   const { showToast } = useToast();
 
@@ -57,13 +60,17 @@ export default function Header({
 
   const isDutyfree = pathname.startsWith('/dutyfree-shop');
 
+  // 🔤 多語：取得目前語言 + 翻譯函式
+  const { locale, setLocale, t } = useLanguage();
+
+  // 導覽列改用 key，文字由 t() 決定
   const navItems = [
-    { name: '訂購機票', href: '/flight-booking' },
-    { name: '住宿預定', href: '/hotel-booking' },
-    { name: '免稅商品', href: '/dutyfree-shop' },
-    { name: '旅程規劃', href: '/travel-planner' },
-    { name: '旅遊分享', href: '/travel-community' },
-    { name: '常見問題', href: '/FAQ' },
+    { key: 'nav.flight', href: '/flight-booking' },
+    { key: 'nav.hotel', href: '/hotel-booking' },
+    { key: 'nav.dutyfree', href: '/dutyfree-shop' },
+    { key: 'nav.itinerary', href: '/travel-planner' },
+    { key: 'nav.share', href: '/travel-community' },
+    { key: 'nav.faq', href: '/hotel-booking/FAQ' },
   ];
 
   const handleLogout = () => {
@@ -75,6 +82,11 @@ export default function Header({
       type: 'success',
     });
     router.push('/member-center/login');
+  };
+
+  // 🔁 點一下語言按鈕，在中 / 英 之間切換
+  const toggleLocale = () => {
+    setLocale(locale === 'zh-TW' ? 'en' : 'zh-TW');
   };
 
   return (
@@ -104,7 +116,7 @@ export default function Header({
                     'text-(--sw-accent) font-semibold'
                 )}
               >
-                {item.name}
+                {t(item.key)}
               </Link>
             ))}
           </nav>
@@ -197,20 +209,55 @@ export default function Header({
             </div>
           )}
 
-          {/* 🌐 語言切換 */}
-          <button className="inline-flex items-center h-10 gap-2 text-white hover:text-(--sw-accent) transition">
-            <Globe className="w-4 h-4" />
-            <span>繁體中文</span>
-            <ChevronDown className="w-4 h-4" />
-          </button>
+          {/* 🌐 語言切換下拉 */}
+          <div className="relative">
+            <button
+              onClick={() => setLangOpen((o) => !o)}
+              className="inline-flex items-center h-10 gap-2 text-white hover:text-(--sw-accent) transition"
+            >
+              <Globe className="w-4 h-4" />
+              <span>{locale === 'zh-TW' ? '繁體中文' : 'English'}</span>
+              <ChevronDown
+                className={clsx(
+                  'w-4 h-4 transition-transform',
+                  langOpen && 'rotate-180'
+                )}
+              />
+            </button>
+
+            {langOpen && (
+              <div className="absolute right-0 mt-2 w-32 rounded-lg bg-white text-[color:var(--sw-primary)] shadow-lg border border-gray-200 z-50">
+                <button
+                  onClick={() => {
+                    setLocale('zh-TW');
+                    setLangOpen(false);
+                  }}
+                  className={clsx(
+                    'w-full text-left px-3 py-2 text-sm hover:bg-gray-100',
+                    locale === 'zh-TW' && 'font-semibold'
+                  )}
+                >
+                  繁體中文
+                </button>
+                <button
+                  onClick={() => {
+                    setLocale('en');
+                    setLangOpen(false);
+                  }}
+                  className={clsx(
+                    'w-full text-left px-3 py-2 text-sm hover:bg-gray-100',
+                    locale === 'en' && 'font-semibold'
+                  )}
+                >
+                  English
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* ⭐⭐ 會員登入 / 頭像選單 */}
-          {/* ==========================
-               ✔ 修正區塊（含 CRUD 註解）
-             ========================== */}
           {isLoggedIn ? (
             <>
-              {/* (R) Read：顯示目前登入者頭像 */}
               <div
                 className="relative"
                 onMouseEnter={() => setProfileOpen(true)}
@@ -241,10 +288,8 @@ export default function Header({
                   />
                 </button>
 
-                {/* 透明橋接區域，避免滑鼠經過時立即關閉 */}
                 <div className="absolute left-0 right-0 top-full h-4" />
 
-                {/* 下拉選單：保持 hover 不中斷 */}
                 <div
                   className="
                     absolute right-0 mt-2 w-48 
@@ -268,7 +313,7 @@ export default function Header({
                         : '會員'}
                     </div>
                   </div>
-                  {/* (R) Read：前往會員中心 */}
+
                   <Link
                     href="/member-center"
                     className="block px-4 py-3 hover:bg-[#DCBB87]/20"
@@ -276,7 +321,6 @@ export default function Header({
                     會員中心
                   </Link>
 
-                  {/* (R) Read：查看訂單 */}
                   <Link
                     href="/member-center/flight"
                     className="block px-4 py-3 hover:bg-[#DCBB87]/20"
@@ -284,7 +328,6 @@ export default function Header({
                     訂單總覽
                   </Link>
 
-                  {/* (D) Delete：登出（刪除 token） */}
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-3 hover:bg-[#DCBB87]/20 text-[#C5A872]"
@@ -296,12 +339,12 @@ export default function Header({
             </>
           ) : (
             <>
-              {/* (C) Create：前往登入頁 */}
               <Link
                 href="/member-center/login"
                 className="hidden md:inline-flex items-center gap-2 h-10 px-4 rounded-full bg-[#DCBB87] hover:bg-[#BAA06D] text-[#1F2E3C] font-medium transition"
               >
-                <Plane className="w-4 h-4" /> 登入
+                <Plane className="w-4 h-4" />
+                {t('auth.login')}
               </Link>
             </>
           )}
@@ -327,7 +370,7 @@ export default function Header({
               className="text-white hover:text-[#DCBB87] py-2"
               onClick={() => setIsOpen(false)}
             >
-              {item.name}
+              {t(item.key)}
             </Link>
           ))}
 
