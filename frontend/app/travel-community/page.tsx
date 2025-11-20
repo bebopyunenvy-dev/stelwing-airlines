@@ -58,7 +58,7 @@ export default function TravelCommunityPage() {
       try {
         setLoading(true);
         const data = await apiFetch<Post[]>(
-          `${API_BASE}/travel-community?limit=200`
+          'http://localhost:3007/api/travel-community?limit=20'
         );
         setPosts(Array.isArray(data) ? data : []);
       } catch (err: any) {
@@ -75,7 +75,7 @@ export default function TravelCommunityPage() {
     const fetchTags = async () => {
       try {
         const data = await apiFetch<{ name: string; count: number }[]>(
-          `${API_BASE}/travel-community/tags/top`
+          'http://localhost:3007/api/travel-community/tags/top'
         );
         setPopularTags(
           Array.isArray(data) ? data.map((item) => item.name) : []

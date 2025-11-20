@@ -33,7 +33,9 @@ export interface FlightSearchValues {
 }
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3007';
+  process.env.NEXT_PUBLIC_API_BASE_URL
+    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`
+    : "http://localhost:3007/api";
 const TODAY = new Date().toISOString().slice(0, 10);
 
 /* ---------- UI wrappers ---------- */

@@ -166,7 +166,7 @@ export default function TravelWritePage() {
 
     try {
       setSubmitting(true);
-      await apiFetch(`${API_BASE}/travel-community`, {
+      await apiFetch('http://localhost:3007/api/travel-community', {
         method: 'POST',
         body: JSON.stringify(payload),
       });

@@ -62,13 +62,13 @@ export default function TravelDetailPage() {
   const [replyAsAuthor, setReplyAsAuthor] = useState(false);
   const seededRef = useRef(false);
   const [activeImage, setActiveImage] = useState(0);
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3007/api";
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3007";
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        const data = await apiFetch<TravelPostDetail>(`${API_BASE}/travel-community/${postId}`);
+        const data = await apiFetch<TravelPostDetail>(`http://localhost:3007/api/travel-community/${postId}`);
         setPost(data);
         setError(null);
       } catch (err: any) {
@@ -117,7 +117,7 @@ export default function TravelDetailPage() {
     const fetchRelated = async () => {
       try {
         const data = await apiFetch<Post[]>(
-          `${API_BASE}/travel-community?limit=6&type=${encodeURIComponent(post.type)}&exclude=${post.id}`
+          `http://localhost:3007/api/travel-community?limit=6&type=${encodeURIComponent(post.type)}&exclude=${post.id}`
         );
         setRelatedPosts(data);
       } catch (err) {
