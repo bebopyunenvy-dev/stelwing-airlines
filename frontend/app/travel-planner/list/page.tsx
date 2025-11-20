@@ -180,13 +180,19 @@ export default function ListPage() {
           <div className="flex-1 flex p-10 bg-(--sw-primary)">
             <div className="flex-1 flex flex-col">
               {/* 新增行程按鈕 */}
-              <div className="mb-6">
+              <div className="mb-6 flex gap-4">
                 <button
                   className="sw-btn sw-btn--gold-square"
                   onClick={() => setIsOpenCreatePlan(true)}
                 >
                   <h6>建立新旅程</h6>
                 </button>
+                {/* <button
+                  className="text-white cursor-pointer border border-white px-5"
+                  onClick={() => router.push('/travel-planner/example')}
+                >
+                  <h6>參考看看範例</h6>
+                </button> */}
               </div>
               {/* 行程列表 */}
               <div className="flex-1 flex flex-col">

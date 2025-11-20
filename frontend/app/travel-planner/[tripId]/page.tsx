@@ -4,7 +4,6 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import listPlugin from '@fullcalendar/list';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
-import { ChevronUp } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTripContext } from '../../../src/context/TripContext';
@@ -19,6 +18,8 @@ import CreatePlanItemForm from '../components/createPlanItemForm';
 import EditDialog from '../components/editDialog';
 import TripItemCardDialog from '../components/tripItemCard';
 import { transformTripForUI } from '../utils/tripUtils';
+// @ts-expect-error 我不寫就跳錯我只好加啊氣死
+import { DateTime } from 'luxon';
 
 // export interface TripDetailPageProps {}
 // {  }: TripDetailPageProps
@@ -166,16 +167,31 @@ export default function TripDetailPage() {
   }, [items]);
 
   // Data：FullCalendar 顯示用資料
-  const calendarEvents = items.map((item) => ({
-    id: String(item.id),
-    title: item.title,
-    start: item.startTime, // 已經是 UTC，帶 Z
-    end: item.endTime ?? undefined, // 已經是 UTC
-    allDay: item.allDay,
-    backgroundColor: item.category?.bgColor || '#eeeeee', // 沒分類用灰色
-    textColor: item.category?.textColor || '#000000', // 沒分類用黑色
-    borderColor: item.category?.bgColor || '#eeeeee',
-  }));
+  const calendarEvents = items.map((item) => {
+    // allDay = true → 取 startTime 轉指定時區後，只保留日期
+    const start = item.allDay
+      ? DateTime.fromISO(item.startTime, {
+          zone: item.startTimezone,
+        }).toISODate() // YYYY-MM-DD
+      : item.startTime; // allDay = false → 直接用 UTC 時間
+
+    // allDay = true → 取 endTime 轉指定時區後，只保留日期，若 endTime 為 null 可留 undefined
+    const end =
+      item.allDay && item.endTime
+        ? DateTime.fromISO(item.endTime, { zone: item.endTimezone }).toISODate()
+        : (item.endTime ?? undefined);
+
+    return {
+      id: String(item.id),
+      title: item.title,
+      start,
+      end,
+      allDay: item.allDay,
+      backgroundColor: item.category?.bgColor || '#eeeeee',
+      textColor: item.category?.textColor || '#000000',
+      borderColor: item.category?.bgColor || '#eeeeee',
+    };
+  });
 
   // console.log(calendarEvents);
   // console.log('Calendar timezone:', selectedTimezone);
@@ -251,19 +267,29 @@ export default function TripDetailPage() {
                 {/* 標題 */}
                 <div className="text-white flex justify-between border-b border-white py-2">
                   <div>備註</div>
-                  <ChevronUp />
                 </div>
                 {/* 內容 */}
                 <div className=" text-white rounded-lg py-4 mt-2 whitespace-pre-wrap">
-                  {currentTrip.note}
+                  {currentTrip.note ? currentTrip.note : '尚未輸入備註'}
                 </div>
               </div>
             </div>
             {/* 匯出按鈕 */}
-            <div>
+            {/* <div>
               <button className="sw-btn text-white w-full">
                 匯出旅程及行程 PDF 檔
               </button>
+            </div> */}
+            <div className=" text-white">
+              行程建立完是什麼樣子？{' '}
+              <a
+                href="/travel-planner/example"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline ml-1"
+              >
+                參考看看
+              </a>
             </div>
           </div>
           {/* 右邊日曆 */}
@@ -335,6 +361,7 @@ export default function TripDetailPage() {
           </div>
         </section>
       </main>
+      {/* 彈出視窗：新增行程 */}
       <EditDialog
         open={isOpenCreateItem}
         onOpenChange={setIsOpenCreateItem}
@@ -345,6 +372,7 @@ export default function TripDetailPage() {
           onSuccess={handleFormSuccess}
         />
       </EditDialog>
+      {/* 彈出視窗：更新旅程封面 */}
       <EditDialog
         open={isOpenChangeCover}
         onOpenChange={setIsOpenChangeCover}

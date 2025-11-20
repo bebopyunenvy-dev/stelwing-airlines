@@ -26,7 +26,18 @@ export default function EditDialog({
 
   return (
     <>
-      <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Root
+        open={open}
+        // onOpenChange={onOpenChange}
+        onOpenChange={(next) => {
+          if (!next) {
+            // 用戶正在嘗試關閉 → 不直接關閉 → 改跳 confirm
+            setIsOpenCloseComfirm(true);
+            return;
+          }
+          onOpenChange(true);
+        }}
+      >
         {/* Portal：入口網頁，所有彈出相關內容 */}
         <Dialog.Portal>
           {/* Overlay：背景遮罩 */}
