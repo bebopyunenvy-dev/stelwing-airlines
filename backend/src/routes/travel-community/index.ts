@@ -128,6 +128,36 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/tags/top", async (_req, res) => {
+  try {
+    const tags = await prisma.postTag.groupBy({
+      by: ["tagId"],
+      _count: { tagId: true },
+      orderBy: { _count: { tagId: "desc" } },
+      take: 10,
+    });
+
+    const tagDetails = await prisma.tag.findMany({
+      where: { tagId: { in: tags.map((t) => t.tagId) } },
+    });
+
+    const tagMap = new Map(tagDetails.map((t) => [t.tagId, t.name]));
+
+    res.json({
+      success: true,
+      data: tags
+        .map((t) => ({
+          name: tagMap.get(t.tagId) ?? "",
+          count: t._count.tagId,
+        }))
+        .filter((t) => t.name),
+    });
+  } catch (error) {
+    console.error("GET /travel-community/tags/top error", error);
+    res.status(500).json({ success: false, message: "無法取得熱門標籤" });
+  }
+});
+
 router.get("/:postId", async (req, res) => {
   const postId = parseBigInt(req.params.postId);
   if (!postId) {

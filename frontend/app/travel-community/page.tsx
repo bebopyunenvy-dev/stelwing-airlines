@@ -49,6 +49,7 @@ export default function TravelCommunityPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [popularTags, setPopularTags] = useState<string[]>([]);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3007/api";
 
@@ -68,6 +69,22 @@ export default function TravelCommunityPage() {
     };
 
     fetchPosts();
+  }, [API_BASE]);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const data = await apiFetch<{ name: string; count: number }[]>(
+          `${API_BASE}/travel-community/tags/top`
+        );
+        setPopularTags(
+          Array.isArray(data) ? data.map((item) => item.name) : []
+        );
+      } catch (err) {
+        console.error("熱門標籤載入失敗", err);
+      }
+    };
+    fetchTags();
   }, [API_BASE]);
 
   const handleFilterChange = (update: Partial<FilterState>) => {
@@ -191,6 +208,7 @@ export default function TravelCommunityPage() {
                 onChange={handleFilterChange}
                 onApply={handleApplyFilters}
                 appliedMessage={applyMessage}
+                popularTags={popularTags}
               />
             </div>
           </div>
