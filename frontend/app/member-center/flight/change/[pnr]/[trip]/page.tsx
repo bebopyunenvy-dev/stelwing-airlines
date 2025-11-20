@@ -555,7 +555,7 @@ export default function ChangeFlightPage() {
               type="button"
               onClick={() => {
                 setShowSuccessModal(false);
-                router.push(`/member-center/flight/${pnr}`);
+                router.push(`/member-center/flight/`);
               }}
               className="w-full rounded-full bg-[color:var(--sw-primary)] px-4 py-2.5 text-sm font-semibold text-white"
             >
