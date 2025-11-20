@@ -65,12 +65,19 @@ export default function CreatePlanItemForm({
 
     try {
       // 資料整理：日期轉為帶有時區資料的時間物件格式
-      const startDateTime = DateTime.fromISO(formData.startTime, {
+      // 取得帶時區的 DateTime
+      let startDateTime = DateTime.fromISO(formData.startTime, {
         zone: formData.startTimezone,
       });
-      const endDateTime = DateTime.fromISO(formData.endTime, {
+      let endDateTime = DateTime.fromISO(formData.endTime, {
         zone: formData.endTimezone,
       });
+
+      if (formData.allDay) {
+        // allDay = true → 起始日 00:00，結束日隔天 00:00（半開區間）
+        startDateTime = startDateTime.startOf('day');
+        endDateTime = endDateTime.plus({ days: 1 }).startOf('day');
+      }
 
       const adjustedData = {
         ...formData,
@@ -134,23 +141,24 @@ export default function CreatePlanItemForm({
             checked={formData.allDay} // 綁定狀態
             onChange={(e) => {
               const checked = e.target.checked;
-              setFormData((prev) => ({
-                ...prev,
-                allDay: checked, // 更新 allDay 狀態
-                // 如果勾選，時間部分可自動設為 00:00
-                startTime: checked
-                  ? prev.startTime
-                    ? prev.startTime.split('T')[0] + 'T00:00'
-                    : DateTime.now().toISODate() + 'T00:00'
-                  : prev.startTime,
-                endTime: checked
-                  ? prev.endTime
-                    ? prev.endTime.split('T')[0] + 'T00:00'
-                    : prev.startTime
-                      ? prev.startTime.split('T')[0] + 'T00:00'
-                      : DateTime.now().toISODate() + 'T00:00'
-                  : prev.endTime,
-              }));
+
+              setFormData((prev) => {
+                // 先抓日期：如果有 startTime 就切日期，沒有就用今天
+                const baseDate = prev.startTime
+                  ? prev.startTime.split('T')[0]
+                  : DateTime.now().toISODate();
+
+                // allDay 時間邏輯
+                const newStart = checked ? `${baseDate}T00:00` : prev.startTime;
+                const newEnd = checked ? `${baseDate}T23:59` : prev.endTime;
+
+                return {
+                  ...prev,
+                  allDay: checked,
+                  startTime: newStart,
+                  endTime: newEnd,
+                };
+              });
             }}
           />
           <label htmlFor="allDay" className="ml-2">

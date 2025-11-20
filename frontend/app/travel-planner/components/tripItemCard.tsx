@@ -210,19 +210,19 @@ export default function ViewDialog({
                     </div>
                   </div>
                   {/* 卡片資料 */}
-                  <div className="py-4 flex flex-col gap-2">
-                    {/* 單張卡片 */}
-                    <div className="flex h-25 gap-2 p-3 shadow-[0_0_10px_rgba(0,0,0,0.15)] rounded-lg">
-                      {/* 左邊圖片 */}
-                      <div className="aspect-square bg-gray-200 overflow-hidden shrink-0">
+                  {/* <div className="py-4 flex flex-col gap-2"> */}
+                  {/* 單張卡片 */}
+                  {/* <div className="flex h-25 gap-2 p-3 shadow-[0_0_10px_rgba(0,0,0,0.15)] rounded-lg"> */}
+                  {/* 左邊圖片 */}
+                  {/* <div className="aspect-square bg-gray-200 overflow-hidden shrink-0">
                         <img
                           src="https://upssmile.com/wp-content/uploads/2023/11/20231111-IMG_2970-2.jpg"
                           alt="og"
                           className="w-full h-full object-cover object-center"
                         />
-                      </div>
-                      {/* 右邊文字 */}
-                      <div className="flex-1 min-w-0 flex flex-col gap-2">
+                      </div> */}
+                  {/* 右邊文字 */}
+                  {/* <div className="flex-1 min-w-0 flex flex-col gap-2">
                         <div className="truncate">
                           繼Blue Bottle
                           Coffee藍瓶咖啡後，加州人氣咖啡廳來東京新宿展店，新宿神等級好喝拿鐵與單品咖啡，曾被GQ評為「世界咖啡館BEST
@@ -236,19 +236,19 @@ export default function ViewDialog({
                           Coffee勁敵，從早上7點營業到晚上10點，東京自
                         </p>
                       </div>
-                    </div>
-                    {/* 單張卡片 */}
-                    <div className="flex h-25 gap-2 p-3 shadow-[0_0_10px_rgba(0,0,0,0.15)] rounded-lg">
-                      {/* 左邊圖片 */}
-                      <div className="aspect-square bg-gray-200 overflow-hidden shrink-0">
+                    </div> */}
+                  {/* 單張卡片 */}
+                  {/* <div className="flex h-25 gap-2 p-3 shadow-[0_0_10px_rgba(0,0,0,0.15)] rounded-lg"> */}
+                  {/* 左邊圖片 */}
+                  {/* <div className="aspect-square bg-gray-200 overflow-hidden shrink-0">
                         <img
                           src="https://resize-image.vocus.cc/resize?norotation=true&quality=80&url=https%3A%2F%2Fimages.vocus.cc%2Fef0070fe-468d-4f00-9a23-806d635c3a14.jpg&width=1200&sign=Ua3x-tNJsLLRRdzR_1DkopGmcV6dbdJi8Op2_4t-1lw"
                           alt="og"
                           className="w-full h-full object-cover object-center"
                         />
-                      </div>
-                      {/* 右邊文字 */}
-                      <div className="flex-1 min-w-0 flex flex-col gap-2">
+                      </div> */}
+                  {/* 右邊文字 */}
+                  {/* <div className="flex-1 min-w-0 flex flex-col gap-2">
                         <div className="truncate">
                           東京鎌倉的加州風味VERVE COFFEE
                           ROASTERS｜寵物友善咖啡廳
@@ -258,9 +258,9 @@ export default function ViewDialog({
                           ROASTERS》進駐東京、鎌倉，充滿加州風格的咖啡廳。這家咖啡廳最大特色就是允許毛小孩進入，非常難得。推薦給大家的VERVE
                           COFFEE的咖啡菜單。
                         </p>
-                      </div>
-                    </div>
-                  </div>
+                      </div> */}
+                  {/* </div> */}
+                  {/* </div> */}
                 </div>
               </div>
 
