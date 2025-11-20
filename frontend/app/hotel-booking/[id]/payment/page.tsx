@@ -8,6 +8,8 @@ export default function PaymentPage() {
   const router = useRouter();
 
   const handlePayment = (formData: FormDataType) => {
+    console.log(formData);
+
     const hotelId = localStorage.getItem('booking_final')
       ? JSON.parse(localStorage.getItem('booking_final') || '{}').hotelId
       : '1';

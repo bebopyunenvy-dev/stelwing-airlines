@@ -274,6 +274,8 @@ export default function OrderPage({
 
   // ✅ 處理表單提交
   const handleFormSubmit = () => {
+    console.log('Submitting form with data:');
+
     // 標記所有欄位為 touched
     const fieldsToValidate = ['email', 'phone'];
     if (paymentMethod === 'creditCard') {
@@ -316,14 +318,16 @@ export default function OrderPage({
       const firstErrorField = Object.keys(newErrors)[0];
       const element = document.querySelector(`[name="${firstErrorField}"]`);
       element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
+      console.log('Form has errors, not submitting:', newErrors);
+
+      // return;
     }
 
     // ✅ 提交成功後清除暫存
     if (typeof window !== 'undefined') {
       localStorage.removeItem('payment_form');
     }
-
+    console.log('Submitting form with data2:');
     onSubmit({ ...formData, paymentMethod });
   };
 
