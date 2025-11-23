@@ -49,7 +49,7 @@ export function DFCategorySection({ onCategoryClick }: DFCategorySectionProps) {
                 : 'bg-[var(--df-accent-gold)] border-[var(--df-accent-gold)] text-white hover:bg-white hover:text-[var(--df-accent-gold)]'
             }`}
           >
-            <span className="font-medium text-sm md:text-base">
+            <span className="font-medium text-sm md:text-[18px]">
               {category.name}
             </span>
             {openCategory === category.name ? (
