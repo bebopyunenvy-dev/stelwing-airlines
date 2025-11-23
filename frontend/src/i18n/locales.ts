@@ -55,6 +55,12 @@ export const messages: Record<Locale, Record<string, string>> = {
     'home.hotels.subtitle':
       '精選全球飯店與特色住宿，一站式完成查詢、比價與預訂，讓每一段旅程都住得舒適又安心。',
 
+    'hotel.name.a': '成田日航酒店',
+    'hotel.name.b': '東京成田機場旅館',
+    'hotel.name.c': '成田東武酒店',
+    'hotel.name.d': '普雷米爾飯店',
+    'hotel.name.e': 'Grand Hotel Narita',
+
     // 首頁：免稅商品
     'home.dutyfree.title': '免稅商品',
     'home.dutyfree.subtitle':
@@ -142,6 +148,12 @@ export const messages: Record<Locale, Record<string, string>> = {
     'home.hotels.title': 'Hotel Booking',
     'home.hotels.subtitle':
       'Browse curated hotels and unique stays worldwide. Compare, book, and manage your stays in one place for a comfortable journey.',
+
+    'hotel.name.a': 'Narita Nikko Hotel',
+    'hotel.name.b': 'Narita Airport Hotel Tokyo',
+    'hotel.name.c': 'Tobu Hotel Narita',
+    'hotel.name.d': 'Premier Hotel',
+    'hotel.name.e': 'Grand Hotel Narita',
 
     // Home: duty-free
     'home.dutyfree.title': 'Duty-Free Shopping',

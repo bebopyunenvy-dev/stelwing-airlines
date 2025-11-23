@@ -3,6 +3,7 @@
 import { useLanguage } from '@/src/i18n/LanguageContext';
 import { ChevronLeft, ChevronRight, Pause, Play, Star } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 // 免稅商品（商品名稱就保持各自語言）
@@ -110,6 +111,7 @@ export default function HomeMain() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const { t, locale } = useLanguage();
+  const router = useRouter();
 
   const articles = locale === 'en' ? travelArticlesEn : travelArticlesZh;
   const totalSlides = articles.length;
@@ -154,7 +156,10 @@ export default function HomeMain() {
         {/* 三欄比例：左2 / 中3 / 右2；固定列高 330px */}
         <div className="mt-10 grid gap-8 grid-cols-1 md:[grid-template-columns:2fr_3fr_2fr] md:auto-rows-[330px]">
           {/* A：左上 */}
-          <article className="group md:col-start-1 md:col-end-2 md:row-start-1">
+          <article
+            className="group cursor-pointer md:col-start-1 md:col-end-2 md:row-start-1"
+            onClick={() => router.push('/hotel-booking')}
+          >
             <div className="h-full rounded-[14px] border-2 border-[#D9B37B] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col">
               {/* ✅ 手機版用固定比例顯示圖片 */}
               <div className="relative w-full aspect-[4/3] md:flex-1 md:aspect-auto">
@@ -166,7 +171,9 @@ export default function HomeMain() {
                 />
               </div>
               <div className="px-4 py-3 flex items-center justify-between">
-                <p className="text-lg font-semibold text-[#1F2E3C]">Hotel A</p>
+                <p className="text-lg font-semibold text-[#1F2E3C]">
+                  {t('hotel.name.a')}
+                </p>
                 <div className="flex items-center gap-1 text-[#D9B37B]">
                   <Star size={18} className="fill-current" />
                   <span className="text-sm text-[#8A8F98]">4.8</span>
@@ -176,7 +183,10 @@ export default function HomeMain() {
           </article>
 
           {/* C：中間大卡（跨兩列） */}
-          <article className="md:col-start-2 md:col-end-3 md:row-start-1 md:row-span-2">
+          <article
+            className="cursor-pointer md:col-start-2 md:col-end-3 md:row-start-1 md:row-span-2"
+            onClick={() => router.push('/hotel-booking')}
+          >
             <div className="h-full rounded-[14px] border-2 border-[#D9B37B] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col">
               <div className="relative w-full aspect-[4/3] md:flex-1 md:aspect-auto">
                 <Image
@@ -188,7 +198,7 @@ export default function HomeMain() {
               </div>
               <div className="px-4 py-3 flex items-center justify-between">
                 <p className="text-lg md:text-xl font-semibold text-[#1F2E3C]">
-                  Hotel C
+                  {t('hotel.name.b')}
                 </p>
                 <div className="flex items-center gap-1 text-[#D9B37B]">
                   <Star size={18} className="fill-current" />
@@ -199,7 +209,10 @@ export default function HomeMain() {
           </article>
 
           {/* D：右上 */}
-          <article className="group md:col-start-3 md:col-end-4 md:row-start-1">
+          <article
+            className="group cursor-pointer md:col-start-3 md:col-end-4 md:row-start-1"
+            onClick={() => router.push('/hotel-booking')}
+          >
             <div className="h-full rounded-[14px] border-2 border-[#D9B37B] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col">
               <div className="relative w-full aspect-[4/3] md:flex-1 md:aspect-auto">
                 <Image
@@ -210,7 +223,9 @@ export default function HomeMain() {
                 />
               </div>
               <div className="px-4 py-3 flex items-center justify-between">
-                <p className="text-lg font-semibold text-[#1F2E3C]">Hotel D</p>
+                <p className="text-lg font-semibold text-[#1F2E3C]">
+                  {t('hotel.name.e')}
+                </p>
                 <div className="flex items-center gap-1 text-[#D9B37B]">
                   <Star size={18} className="fill-current" />
                   <span className="text-sm text-[#8A8F98]">4.8</span>
@@ -220,7 +235,10 @@ export default function HomeMain() {
           </article>
 
           {/* B：左下 */}
-          <article className="group md:col-start-1 md:col-end-2 md:row-start-2">
+          <article
+            className="group cursor-pointer md:col-start-1 md:col-end-2 md:row-start-2"
+            onClick={() => router.push('/hotel-booking')}
+          >
             <div className="h-full rounded-[14px] border-2 border-[#D9B37B] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col">
               <div className="relative w-full aspect-[4/3] md:flex-1 md:aspect-auto">
                 <Image
@@ -231,7 +249,9 @@ export default function HomeMain() {
                 />
               </div>
               <div className="px-4 py-3 flex items-center justify-between">
-                <p className="text-lg font-semibold text-[#1F2E3C]">Hotel B</p>
+                <p className="text-lg font-semibold text-[#1F2E3C]">
+                  {t('hotel.name.c')}
+                </p>
                 <div className="flex items-center gap-1 text-[#D9B37B]">
                   <Star size={18} className="fill-current" />
                   <span className="text-sm text-[#8A8F98]">4.8</span>
@@ -241,7 +261,10 @@ export default function HomeMain() {
           </article>
 
           {/* E：右下 */}
-          <article className="group md:col-start-3 md:col-end-4 md:row-start-2">
+          <article
+            className="group cursor-pointer md:col-start-3 md:col-end-4 md:row-start-2"
+            onClick={() => router.push('/hotel-booking')}
+          >
             <div className="h-full rounded-[14px] border-2 border-[#D9B37B] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col">
               <div className="relative w-full aspect-[4/3] md:flex-1 md:aspect-auto">
                 <Image
@@ -252,7 +275,9 @@ export default function HomeMain() {
                 />
               </div>
               <div className="px-4 py-3 flex items-center justify-between">
-                <p className="text-lg font-semibold text-[#1F2E3C]">Hotel E</p>
+                <p className="text-lg font-semibold text-[#1F2E3C]">
+                  {t('hotel.name.d')}
+                </p>
                 <div className="flex items-center gap-1 text-[#D9B37B]">
                   <Star size={18} className="fill-current" />
                   <span className="text-sm text-[#8A8F98]">4.8</span>
@@ -278,7 +303,8 @@ export default function HomeMain() {
             {dutyfree.map((p) => (
               <article
                 key={p.id}
-                className="rounded-2xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-sm"
+                onClick={() => router.push('/dutyfree-shop')}
+                className="cursor-pointer rounded-2xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-sm"
               >
                 {/* 圖片 */}
                 <div className="relative aspect-[16/10]">
@@ -344,7 +370,10 @@ export default function HomeMain() {
                   {activeArticle.description}
                 </p>
 
-                <button className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#D9B37B] px-4 py-2 text-[#1F2E3C] text-sm font-semibold hover:brightness-95">
+                <button
+                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#D9B37B] px-4 py-2 text-[#1F2E3C] text-sm font-semibold hover:brightness-95"
+                  onClick={() => router.push('/travel-community')}
+                >
                   {t('home.travelstories.read')}
                   <ChevronRight size={16} />
                 </button>
