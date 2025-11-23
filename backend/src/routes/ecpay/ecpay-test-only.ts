@@ -21,7 +21,7 @@ router.get(
     const itemName =
       items.split(',').length > 1
         ? items.split(',').join('#')
-        : '線上商店購買一批';
+        : 'Stelwing線上來回機票';
 
     if (isDev) console.log('amount:', amount);
     if (isDev) console.log('items:', items);
@@ -44,7 +44,7 @@ router.get(
 
     // 二、輸入參數
     const TotalAmount = amount; // 整數，不可有小數點。金額不可為0。
-    const TradeDesc = '商店線上付款'; // String(200)
+    const TradeDesc = '線上付款'; // String(200)
     const ItemName = itemName; // String(400)
 
     // 付款結果通知回傳網址 (這網址需為可被外部呼叫的網址)
