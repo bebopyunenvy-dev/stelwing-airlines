@@ -1,11 +1,62 @@
 // app/travel-community/components/PageTabs.tsx
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Bell, PenSquare, Search } from "lucide-react";
+import { Bell, PenSquare, Search, ChevronDown } from "lucide-react";
 import { countryOptions, PostType } from "../data/posts";
 
 const TABS: PostType[] = ["全部", "遊記", "影片", "隨手拍"];
+
+function CountrySelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (country: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const currentLabel =
+    countryOptions.find((option) => option.value === value)?.label ??
+    countryOptions[0].label;
+
+  return (
+    <div className="relative flex-shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex h-10 min-w-[130px] items-center justify-between rounded-full border border-[#1F2E3C]/20 bg-white px-4 text-sm text-[#1F2E3C]"
+      >
+        {currentLabel}
+        <ChevronDown
+          size={16}
+          className={`transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-20 mt-1 w-full rounded-[12px] border border-[#E1E5EB] bg-white shadow-[0_12px_24px_rgba(15,23,42,0.12)]">
+          {countryOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+              className={`w-full px-4 py-2 text-left text-sm hover:bg-[var(--sw-accent)]/15 ${
+                option.value === value
+                  ? "text-[var(--sw-primary)] font-semibold"
+                  : "text-[#1F2E3C]/80"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface PageTabsProps {
   activeTab: PostType;
@@ -30,20 +81,7 @@ export default function PageTabs({
     <div className="w-full rounded-[12px] bg-white border border-[rgba(45,64,87,0.1)] shadow-sm">
       <div className="flex flex-wrap items-center gap-3 lg:flex-nowrap p-4">
         {/* 國家下拉 */}
-        <div className="relative flex-shrink-0">
-          <select
-            className="h-10 rounded-full border px-4 pr-8 text-sm"
-            value={country}
-            onChange={(e) => onCountryChange(e.target.value)}
-            aria-label="選擇國家"
-          >
-            {countryOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <CountrySelect value={country} onChange={onCountryChange} />
 
         {/* 搜尋 */}
         <form
@@ -71,8 +109,8 @@ export default function PageTabs({
         </form>
 
         {/* 分類 Tabs + 右側動作 */}
-        <div className="flex flex-1 min-w-[280px] items-center gap-4">
-          <div className="flex items-center gap-2 overflow-x-auto">
+        <div className="flex flex-1 min-w-[280px] items-center justify-between gap-4">
+          <div className="flex items-center gap-2 overflow-x-auto pr-4">
             {TABS.map((t) => (
               <button
                 key={t}
@@ -85,7 +123,7 @@ export default function PageTabs({
             ))}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 ml-auto">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               type="button"
               className="relative w-12 h-12 rounded-full border border-[var(--sw-accent)] bg-white flex items-center justify-center text-[var(--sw-accent)] hover:bg-[var(--sw-accent)]/10 transition"

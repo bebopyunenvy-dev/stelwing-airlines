@@ -1,6 +1,9 @@
 // app/travel-community/components/FilterSidebar.tsx
 "use client";
 
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+
 import {
   FilterState,
   mileageOptions,
@@ -15,6 +18,55 @@ interface FilterSidebarProps {
   appliedMessage?: string | null;
   popularTags: string[];
 }
+
+const SelectField = ({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const currentLabel =
+    options.find((opt) => opt.value === value)?.label ?? options[0].label;
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex h-11 w-full items-center justify-between rounded-[10px] border border-[#1F2E3C]/15 bg-white px-4 text-left text-sm text-[#1F2E3C]"
+      >
+        {currentLabel}
+        <ChevronDown
+          size={16}
+          className={`transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-10 mt-1 w-full rounded-[12px] border border-[#E1E5EB] bg-white shadow-[0_10px_25px_rgba(8,15,40,0.08)]">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
+              className={`w-full px-4 py-2 text-left text-sm hover:bg-[var(--sw-accent)]/15 ${
+                opt.value === value ? "text-[var(--sw-primary)] font-semibold" : "text-[#1F2E3C]/80"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function FilterSidebar({
   filters,
@@ -51,7 +103,7 @@ export default function FilterSidebar({
       </div>
 
       <Field label="發佈時間">
-        <Select
+        <SelectField
           options={timeRangeOptions}
           value={filters.timeRange}
           onChange={(value) => onChange({ timeRange: value as FilterState["timeRange"] })}
@@ -59,7 +111,7 @@ export default function FilterSidebar({
       </Field>
 
       <Field label="獎勵哩程">
-        <Select
+        <SelectField
           options={mileageOptions}
           value={filters.mileageTier}
           onChange={(value) => onChange({ mileageTier: value as FilterState["mileageTier"] })}
@@ -109,30 +161,6 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <div className="text-sm font-semibold text-[#1F2E3C]/80">{label}</div>
       {children}
     </div>
-  );
-}
-
-function Select({
-  options,
-  value,
-  onChange,
-}: {
-  options: { value: string; label: string }[];
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <select
-      className="h-10 w-full rounded-[8px] border px-3 text-sm"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-    </select>
   );
 }
 
