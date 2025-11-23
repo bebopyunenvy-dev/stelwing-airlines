@@ -4,11 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { Post } from "../data/posts";
 
-const dateFormatter = new Intl.DateTimeFormat("zh-TW", {
-  month: "short",
-  day: "numeric",
-});
-
 const getYoutubeThumbnail = (url?: string | null) => {
   if (!url) return null;
   try {
@@ -31,7 +26,6 @@ export default function PostCard({ post }: { post: Post }) {
   const [error, setError] = useState(false);
 
   const isVideo = post.type === "影片";
-  const createdLabel = dateFormatter.format(new Date(post.createdAt));
   const avatarSrc = post.authorAvatar || "/avatars/default.png";
   const displayName = post.nickname?.trim() || post.author;
   const locationLabel = post.location?.trim() || post.country?.trim() || "";
@@ -136,11 +130,8 @@ export default function PostCard({ post }: { post: Post }) {
               />
               <span>{displayName}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span>{createdLabel}</span>
-              <span className="text-[#DCBB87] font-semibold">
-                💳 {post.miles.toLocaleString()} 哩程
-              </span>
+            <div className="text-[#DCBB87] font-semibold">
+              💳 {post.miles.toLocaleString()} 哩程
             </div>
           </div>
         </div>

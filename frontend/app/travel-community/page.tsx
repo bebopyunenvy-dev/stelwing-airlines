@@ -9,7 +9,12 @@ import FloatingWriteButton from './components/FloatingWriteButton';
 import Masonry from './components/Masonry';
 import PageTabs from './components/PageTabs';
 import type { Post } from './data/posts';
-import { defaultFilterState, FilterState, PostType } from './data/posts';
+import {
+  defaultFilterState,
+  FilterState,
+  PostType,
+  countryOptions,
+} from './data/posts';
 
 const filterByTimeRange = (
   createdAt: string,
@@ -99,11 +104,18 @@ export default function TravelCommunityPage() {
 
   const visiblePosts = useMemo(() => {
     const keywordLower = keyword.trim().toLowerCase();
+    const selectedCountryLabel =
+      countryOptions.find((opt) => opt.value === country)?.label ?? '';
 
     return posts
       .filter((post) => {
         if (activeTab !== '全部' && post.type !== activeTab) return false;
-        if (country && post.country !== country) return false;
+        if (
+          country &&
+          post.country !== country &&
+          post.country !== selectedCountryLabel
+        )
+          return false;
 
         if (keywordLower) {
           const haystack = (
