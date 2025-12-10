@@ -1,5 +1,4 @@
 'use client';
-
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import Calendar, { DateRange } from './components/Calendar';
@@ -111,17 +110,13 @@ export default function Page() {
     },
   ];
 
-  // ✅ 初始狀態全部為 undefined，不載入 localStorage
   const [selectedRange, setSelectedRange] = React.useState<
     DateRange | undefined
   >(undefined);
   const [guests, setGuests] = React.useState(2);
   const [rooms, setRooms] = React.useState(1);
 
-  // ✅ 首頁不自動載入 localStorage，保持乾淨的初始狀態
   React.useEffect(() => {
-    // 首頁只需要設定 isLoaded，不讀取 localStorage
-    // 這樣每次訪問首頁都是全新的狀態
     setIsLoaded(true);
   }, []);
 
@@ -173,7 +168,6 @@ export default function Page() {
     return calculateNights(selectedRange.from, selectedRange.to);
   };
 
-  // ✅ 簡化載入邏輯
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-[url('/images/hotel/bg1.jpeg')] bg-cover bg-center sm:bg-top bg-no-repeat bg-black/70 bg-blend-darken pb-10">
@@ -196,29 +190,29 @@ export default function Page() {
       />
 
       <div className="flex justify-center px-4 mb-10">
-        <div className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl">
+        <div className="w-auto max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl">
           <Calendar selected={selectedRange} onSelect={handleDateChange} />
         </div>
       </div>
 
-      <div className="bg-white/90 py-[24] rounded-lg shadow-md mx-50">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-800 mb-3 text-center">
-            TOP 5 附近優質飯店
-          </h2>
-          <div className="[grid-template-columns:repeat(auto-fit,minmax(220px,0fr))] justify-center grid gap-y-2 gap-x-2 py-3 px-2">
-            {hotels.map((hotel) => (
-              <div
-                key={hotel.id}
-                className="w-full transition-all duration-300 ease-in-out"
-                onClick={() => handleCardClick(hotel)}
-              >
-                <HotelCard
-                  hotel={{ ...hotel, price: hotel.price * getNights() }}
-                />
-              </div>
-            ))}
-          </div>
+      {/* ⭐ 優化白色容器自適應 + 卡片間距 */}
+      <div className="bg-white/90 py-7 rounded-lg shadow-md mx-auto px-5 max-w-6xl">
+        <h2 className="text-2xl font-bold text-gray-800 mb-3 text-center">
+          TOP 5 附近優質飯店
+        </h2>
+
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {hotels.map((hotel) => (
+            <div
+              key={hotel.id}
+              className="transition-all duration-300 ease-in-out cursor-pointer"
+              onClick={() => handleCardClick(hotel)}
+            >
+              <HotelCard
+                hotel={{ ...hotel, price: hotel.price * getNights() }}
+              />
+            </div>
+          ))}
         </div>
       </div>
     </div>

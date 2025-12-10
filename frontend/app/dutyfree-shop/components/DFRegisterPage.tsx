@@ -5,14 +5,17 @@ import { Label } from './ui/label';
 import { Checkbox } from './ui/checkbox';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { validateRegisterForm } from '../utils/validation';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface DFRegisterPageProps {
   onRegisterSuccess: () => void;
   onBackToLogin?: () => void;
 }
 
-export function DFRegisterPage({ onRegisterSuccess, onBackToLogin }: DFRegisterPageProps) {
+export function DFRegisterPage({
+  onRegisterSuccess,
+  onBackToLogin,
+}: DFRegisterPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -24,7 +27,7 @@ export function DFRegisterPage({ onRegisterSuccess, onBackToLogin }: DFRegisterP
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // 驗證表單
     const validation = validateRegisterForm(
       email,
@@ -34,18 +37,18 @@ export function DFRegisterPage({ onRegisterSuccess, onBackToLogin }: DFRegisterP
       lastName,
       phone
     );
-    
+
     if (!validation.isValid) {
       setErrors(validation.errors);
       toast.error('請檢查表單填寫');
       return;
     }
-    
+
     if (!agreeTerms) {
       toast.error('請同意隱私權政策和使用條款');
       return;
     }
-    
+
     // 驗證通過
     toast.success('註冊成功！');
     onRegisterSuccess();
@@ -56,11 +59,18 @@ export function DFRegisterPage({ onRegisterSuccess, onBackToLogin }: DFRegisterP
       {/* Left Side - Form */}
       <div className="flex items-center justify-center p-8 lg:p-12">
         <div className="w-full max-w-md">
-          <h1 style={{ fontSize: '1.5rem', lineHeight: '2rem', fontWeight: '600' }} className="mb-2">
+          <h1
+            style={{
+              fontSize: '1.5rem',
+              lineHeight: '2rem',
+              fontWeight: '600',
+            }}
+            className="mb-2"
+          >
             加入會員
           </h1>
           <p className="text-gray-600 mb-8">創建您的 STELWING 帳戶</p>
-          
+
           <form onSubmit={handleRegister} className="space-y-6">
             <div>
               <Label htmlFor="registerEmail">電子郵件</Label>
@@ -178,16 +188,20 @@ export function DFRegisterPage({ onRegisterSuccess, onBackToLogin }: DFRegisterP
                 className={`mt-1 ${errors.confirmPassword ? 'border-red-500' : ''}`}
               />
               {errors.confirmPassword && (
-                <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>
+                <p className="text-sm text-red-500 mt-1">
+                  {errors.confirmPassword}
+                </p>
               )}
             </div>
 
             <div>
               <div className="flex items-start space-x-2">
-                <Checkbox 
-                  id="registerTerms" 
+                <Checkbox
+                  id="registerTerms"
                   checked={agreeTerms}
-                  onCheckedChange={(checked) => setAgreeTerms(checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    setAgreeTerms(checked as boolean)
+                  }
                 />
                 <label
                   htmlFor="registerTerms"
@@ -198,7 +212,7 @@ export function DFRegisterPage({ onRegisterSuccess, onBackToLogin }: DFRegisterP
               </div>
             </div>
 
-            <Button 
+            <Button
               type="submit"
               className="w-full bg-[var(--df-accent-gold)] hover:bg-[var(--df-accent-gold)]/90 text-white h-12"
               disabled={!agreeTerms}
